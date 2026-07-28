@@ -31,7 +31,7 @@ export function baseOptions(): BaseLayoutProps {
         label: 'Website',
         text: 'Website',
         icon: <Globe size={16} />,
-        url: 'https://owlstack.dev',
+        url: 'https://owlstack.app',
         external: true,
       },
       {
@@ -39,7 +39,7 @@ export function baseOptions(): BaseLayoutProps {
         label: 'Dashboard',
         text: 'Dashboard',
         icon: <LayoutDashboard size={16} />,
-        url: 'https://app.owlstack.dev',
+        url: 'https://app.owlstack.app',
         external: true,
       },
     ],

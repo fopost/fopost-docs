@@ -18,7 +18,7 @@ graph TB
     end
 
     subgraph "OwlStack Cloud"
-        API["api.owlstack.dev"]
+        API["api.owlstack.app"]
         FMT[Smart Formatters]
         RATE[Rate Limiter]
         RETRY[Retry Engine]
@@ -65,10 +65,10 @@ The SDK packages are **thin clients** with no platform logic:
 | `Media` | Immutable value object for attachments |
 | `Platform` | Enum of supported platforms |
 | `DeliveryResult` | Result object returned after publishing |
-| `OwlStackClient` | HTTP client that calls `api.owlstack.dev` |
+| `OwlStackClient` | HTTP client that calls `api.owlstack.app` |
 | Events | `PostPublished`, `PostFailed` fired locally |
 
-### On OwlStack's cloud (api.owlstack.dev)
+### On OwlStack's cloud (api.owlstack.app)
 
 All business logic runs on our servers:
 
@@ -90,7 +90,7 @@ All business logic runs on our servers:
 sequenceDiagram
     participant User as Your App
     participant SDK as OwlStack SDK
-    participant Cloud as api.owlstack.dev
+    participant Cloud as api.owlstack.app
     participant Platform as Twitter / LinkedIn / etc.
 
     User->>SDK: OwlStackClient(apiKey)
@@ -108,7 +108,7 @@ sequenceDiagram
 | Package | Purpose | License |
 |:--------|:--------|:--------|
 | `owlstack/core` | Interfaces, value objects, enums | MIT |
-| `owlstack/cloud` | API client for `api.owlstack.dev` | Proprietary |
+| `owlstack/cloud` | API client for `api.owlstack.app` | Proprietary |
 | `owlstack/laravel` | Laravel service provider + facade | MIT |
 | `owlstack/wordpress` | WordPress plugin with admin UI | MIT |
 
@@ -118,7 +118,7 @@ You have two options for managing platform credentials:
 
 ### Option A: Managed OAuth (recommended)
 
-Connect platforms through the [OwlStack dashboard](https://app.owlstack.dev). We store and refresh tokens automatically. You never handle platform API keys in your code.
+Connect platforms through the [OwlStack dashboard](https://app.owlstack.app). We store and refresh tokens automatically. You never handle platform API keys in your code.
 
 ### Option B: Pass-per-request
 
