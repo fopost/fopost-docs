@@ -48,5 +48,9 @@ export async function generateMetadata(
   return {
     title: page.data.title,
     description: page.data.description,
+    // page.url is the public path under /docs; root ('/') must not end with a slash
+    alternates: {
+      canonical: `https://owlstack.app/docs${page.url === '/' ? '' : page.url}`,
+    },
   };
 }

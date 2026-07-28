@@ -8,6 +8,7 @@ import { GeistMono } from 'geist/font/mono';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://owlstack.app/docs'),
   title: {
     template: '%s - OwlStack Docs',
     default: 'OwlStack Docs',
