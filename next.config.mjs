@@ -24,6 +24,13 @@ const config = {
     return [
       { source: '/introduction', destination: '/', permanent: true },
       { source: '/introduction/:path+', destination: '/:path+', permanent: true },
+      // Section indexes with no page of their own (GSC 404s)
+      { source: '/api', destination: '/api/overview', permanent: true },
+      { source: '/guide/plans', destination: '/guide/plans/overview', permanent: true },
+      { source: '/guide/ai', destination: '/guide', permanent: true },
+      { source: '/guide/pro', destination: '/guide', permanent: true },
+      { source: '/support', destination: 'https://owlstack.app/contact', permanent: true },
+      { source: '/changelog', destination: 'https://owlstack.app/roadmap', permanent: true },
     ];
   },
 };
