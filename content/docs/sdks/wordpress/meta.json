@@ -2,6 +2,7 @@
   "title": "WordPress",
   "pages": [
     "installation",
+    "cloud-connect",
     "admin-panel",
     "meta-boxes",
     "platforms",
