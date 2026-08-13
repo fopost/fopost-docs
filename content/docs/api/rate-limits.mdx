@@ -1,54 +1,51 @@
 ---
 title: Rate Limits
-description: API rate limits by plan.
+description: How API rate limits work, and how to handle a 429.
 ---
 
 # Rate Limits
 
-OwlStack applies rate limits to ensure fair usage and service stability.
+OwlStack limits how many requests an API key can make per minute, so one integration cannot degrade the service for everyone else. Each key gets its own budget, so a busy key never eats another key's allowance.
 
 ## Limits by plan
 
-| Plan | Requests/minute | Requests/day | Posts/month |
-|:-----|:----------------|:-------------|:------------|
-| Free / Starter | 30 | 1,000 | 50 |
-| Pro | 120 | 10,000 | 5,000 |
-| Pro + AI | 120 | 10,000 | 5,000 |
-| Enterprise | Custom | Custom | Unlimited |
+The ceiling depends on the plan behind the key. Every plan with API access sits well above what a publishing integration needs, and Business runs on the highest ceiling, for teams automating at agency volume.
+
+We do not publish the exact threshold, because it is a moving abuse control rather than a promise. Read the current value from the `X-RateLimit-Limit` header instead of hardcoding a number.
 
 ## Rate limit headers
 
-Every response includes rate limit headers:
+Every response carries the current state of your budget:
 
 ```http
-X-RateLimit-Limit: 120
-X-RateLimit-Remaining: 117
-X-RateLimit-Reset: 1708340400
+X-RateLimit-Limit: <requests allowed in this window>
+X-RateLimit-Remaining: <requests left>
+X-RateLimit-Reset: <unix timestamp>
 ```
 
 | Header | Description |
 |:-------|:------------|
-| `X-RateLimit-Limit` | Maximum requests per minute |
-| `X-RateLimit-Remaining` | Requests remaining in this window |
+| `X-RateLimit-Limit` | Requests allowed in the current window |
+| `X-RateLimit-Remaining` | Requests left in the current window |
 | `X-RateLimit-Reset` | Unix timestamp when the window resets |
+| `Retry-After` | Seconds to wait. Sent on a 429 only |
 
 ## When rate limited
 
-If you exceed the limit, you'll receive a `429 Too Many Requests` response:
+Go over the limit and you get a `429 Too Many Requests`:
 
 ```json
 {
-  "error": {
-    "code": "rate_limited",
-    "message": "Rate limit exceeded. Try again in 45 seconds.",
-    "retry_after": 45
-  }
+  "error": "too_many_requests",
+  "message": "Rate limit exceeded. Please try again later."
 }
 ```
 
+The response also carries `Retry-After`, and `X-RateLimit-Reset` tells you when the window turns over.
+
 ## Best practices
 
-- Check `X-RateLimit-Remaining` before making requests
-- Implement exponential backoff on 429 responses
-- Use batch publishing instead of individual requests
-- Cache results when possible
+- Wait for `Retry-After` on a 429, then retry with exponential backoff
+- Check `X-RateLimit-Remaining` before firing a burst of requests
+- Publish in batches instead of one request per post
+- Cache reads you make repeatedly
