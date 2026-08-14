@@ -7,7 +7,8 @@
     "dev": "next dev --turbo",
     "start": "next start",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "postinstall": "fumadocs-mdx"
+    "postinstall": "fumadocs-mdx",
+    "test": "vitest run"
   },
   "dependencies": {
     "fumadocs-core": "^16.4.0",
@@ -36,7 +37,8 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.50.1"
+    "typescript-eslint": "^8.50.1",
+    "vitest": "^3.2.7"
   },
   "overrides": {
     "@types/react": "19.2.7",
