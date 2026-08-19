@@ -1,7 +1,7 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { Globe, LayoutDashboard } from 'lucide-react';
 import Image from 'next/image';
-import logo from '@/public/logo.png';
+import { BRAND } from '@/lib/brand';
 
 /**
  * Shared layout configurations
@@ -15,13 +15,13 @@ export function baseOptions(): BaseLayoutProps {
       title: (
         <>
           <Image
-            src={logo}
-            alt="OwlStack Logo"
+            src={BRAND.logo}
+            alt={`${BRAND.name} Logo`}
             width={28}
             height={28}
             className="rounded-lg"
           />
-          OwlStack Docs
+          {BRAND.name} Docs
         </>
       ),
     },
@@ -31,7 +31,7 @@ export function baseOptions(): BaseLayoutProps {
         label: 'Website',
         text: 'Website',
         icon: <Globe size={16} />,
-        url: 'https://owlstack.app',
+        url: BRAND.websiteUrl,
         external: true,
       },
       {
@@ -39,7 +39,7 @@ export function baseOptions(): BaseLayoutProps {
         label: 'Dashboard',
         text: 'Dashboard',
         icon: <LayoutDashboard size={16} />,
-        url: 'https://app.owlstack.app',
+        url: BRAND.appUrl,
         external: true,
       },
     ],
