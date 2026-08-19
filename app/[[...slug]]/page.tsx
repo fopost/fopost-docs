@@ -8,6 +8,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import { getMDXComponents } from '@/mdx-components';
+import { BRAND } from '@/lib/brand';
 
 export default async function Page(props: PageProps<'/[[...slug]]'>) {
   const params = await props.params;
@@ -50,7 +51,7 @@ export async function generateMetadata(
     description: page.data.description,
     // page.url is the public path under /docs; root ('/') must not end with a slash
     alternates: {
-      canonical: `https://owlstack.app/docs${page.url === '/' ? '' : page.url}`,
+      canonical: `${BRAND.docsUrl}${page.url === '/' ? '' : page.url}`,
     },
   };
 }

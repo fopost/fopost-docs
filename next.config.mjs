@@ -2,6 +2,11 @@ import { createMDX } from 'fumadocs-mdx/next';
 
 const withMDX = createMDX();
 
+// The marketing site these redirects point at is per-brand. The /what-is-*
+// and /why-* rewrites above are legacy content slugs, not branding — they
+// name a page that exists, so they stay as written.
+const WEBSITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL?.trim() || 'https://owlstack.app';
+
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
@@ -29,8 +34,8 @@ const config = {
       { source: '/guide/plans', destination: '/guide/plans/overview', permanent: true },
       { source: '/guide/ai', destination: '/guide', permanent: true },
       { source: '/guide/pro', destination: '/guide', permanent: true },
-      { source: '/support', destination: 'https://owlstack.app/contact', permanent: true },
-      { source: '/changelog', destination: 'https://owlstack.app/roadmap', permanent: true },
+      { source: '/support', destination: `${WEBSITE_URL}/contact`, permanent: true },
+      { source: '/changelog', destination: `${WEBSITE_URL}/roadmap`, permanent: true },
     ];
   },
 };

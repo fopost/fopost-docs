@@ -6,14 +6,16 @@ import { source } from '@/lib/source';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import type { Metadata } from 'next';
+import { BRAND } from '@/lib/brand';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://owlstack.app/docs'),
+  metadataBase: new URL(BRAND.docsUrl),
   title: {
-    template: '%s - OwlStack Docs',
-    default: 'OwlStack Docs',
+    template: `%s - ${BRAND.name} Docs`,
+    default: `${BRAND.name} Docs`,
   },
   description: 'Unified Social Media Publishing SDK - Documentation',
+  icons: { icon: BRAND.favicon },
 };
 
 export default function Layout({ children }: LayoutProps<'/'>) {
