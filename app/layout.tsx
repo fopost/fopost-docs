@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     default: `${BRAND.name} Docs`,
   },
   description: 'Unified Social Media Publishing SDK - Documentation',
-  icons: { icon: BRAND.favicon },
+  icons: { icon: BRAND.favicon, ...(BRAND.appleTouchIcon ? { apple: BRAND.appleTouchIcon } : {}) },
 };
 
 export default function Layout({ children }: LayoutProps<'/'>) {

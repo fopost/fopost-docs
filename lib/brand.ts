@@ -18,6 +18,7 @@ export const BRAND = {
   domain: pick(process.env.NEXT_PUBLIC_BRAND_DOMAIN, 'owlstack.app'),
   logo: pick(process.env.NEXT_PUBLIC_BRAND_LOGO, '/brand/owlstack/logo.png'),
   favicon: pick(process.env.NEXT_PUBLIC_BRAND_FAVICON, '/brand/owlstack/favicon.ico'),
+  appleTouchIcon: pick(process.env.NEXT_PUBLIC_BRAND_APPLE_TOUCH_ICON, ''),
   websiteUrl: pick(process.env.NEXT_PUBLIC_WEBSITE_URL, 'https://owlstack.app'),
   appUrl: pick(process.env.NEXT_PUBLIC_APP_URL, 'https://app.owlstack.app'),
   apiUrl: pick(process.env.NEXT_PUBLIC_API_URL, 'https://api.owlstack.app'),
