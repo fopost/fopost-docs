@@ -5,7 +5,7 @@ const withMDX = createMDX();
 // The marketing site these redirects point at is per-brand. The /what-is-*
 // and /why-* rewrites above are legacy content slugs, not branding — they
 // name a page that exists, so they stay as written.
-const WEBSITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL?.trim() || 'https://owlstack.app';
+const WEBSITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL?.trim() || 'https://fopost.com';
 
 /** @type {import('next').NextConfig} */
 const config = {
