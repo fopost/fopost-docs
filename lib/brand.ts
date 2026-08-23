@@ -13,14 +13,14 @@
 const pick = (value: string | undefined, fallback: string) => value?.trim() || fallback;
 
 export const BRAND = {
-  name: pick(process.env.NEXT_PUBLIC_BRAND_NAME, 'OwlStack'),
-  slug: pick(process.env.NEXT_PUBLIC_BRAND_SLUG, 'owlstack'),
-  domain: pick(process.env.NEXT_PUBLIC_BRAND_DOMAIN, 'owlstack.app'),
-  logo: pick(process.env.NEXT_PUBLIC_BRAND_LOGO, '/brand/owlstack/logo.png'),
-  favicon: pick(process.env.NEXT_PUBLIC_BRAND_FAVICON, '/brand/owlstack/favicon.ico'),
-  appleTouchIcon: pick(process.env.NEXT_PUBLIC_BRAND_APPLE_TOUCH_ICON, ''),
-  websiteUrl: pick(process.env.NEXT_PUBLIC_WEBSITE_URL, 'https://owlstack.app'),
-  appUrl: pick(process.env.NEXT_PUBLIC_APP_URL, 'https://app.owlstack.app'),
-  apiUrl: pick(process.env.NEXT_PUBLIC_API_URL, 'https://api.owlstack.app'),
-  docsUrl: pick(process.env.NEXT_PUBLIC_DOCS_URL, 'https://owlstack.app/docs'),
+  name: pick(process.env.NEXT_PUBLIC_BRAND_NAME, 'FoPost'),
+  slug: pick(process.env.NEXT_PUBLIC_BRAND_SLUG, 'fopost'),
+  domain: pick(process.env.NEXT_PUBLIC_BRAND_DOMAIN, 'fopost.com'),
+  logo: pick(process.env.NEXT_PUBLIC_BRAND_LOGO, '/brand/fopost/mark.svg'),
+  favicon: pick(process.env.NEXT_PUBLIC_BRAND_FAVICON, '/brand/fopost/favicon.ico'),
+  appleTouchIcon: pick(process.env.NEXT_PUBLIC_BRAND_APPLE_TOUCH_ICON, '/brand/fopost/apple-touch-icon.png'),
+  websiteUrl: pick(process.env.NEXT_PUBLIC_WEBSITE_URL, 'https://fopost.com'),
+  appUrl: pick(process.env.NEXT_PUBLIC_APP_URL, 'https://app.fopost.com'),
+  apiUrl: pick(process.env.NEXT_PUBLIC_API_URL, 'https://api.fopost.com'),
+  docsUrl: pick(process.env.NEXT_PUBLIC_DOCS_URL, 'https://fopost.com/docs'),
 } as const;

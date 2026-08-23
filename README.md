@@ -1,8 +1,8 @@
-# OwlStack Documentation
+# FoPost Documentation
 
-The official documentation site for [OwlStack](https://owlstack.dev) - a unified social media publishing SDK for PHP.
+The official documentation site for [FoPost](https://fopost.com) - a unified social media publishing SDK for PHP.
 
-🌐 **Live site:** [docs.owlstack.dev](https://docs.owlstack.dev)
+🌐 **Live site:** [fopost.com/docs](https://fopost.com/docs)
 
 ## What's Inside
 
