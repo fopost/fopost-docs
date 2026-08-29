@@ -34,6 +34,13 @@ const config = {
       { source: '/guide/plans', destination: '/guide/plans/overview', permanent: true },
       { source: '/guide/ai', destination: '/guide', permanent: true },
       { source: '/guide/pro', destination: '/guide', permanent: true },
+      // Retired pages for SDKs that were never built. The overview says what
+      // exists and what does not, instead of a page per language promising one.
+      { source: '/sdks/nodejs', destination: '/sdks/typescript', permanent: true },
+      { source: '/sdks/python-sdk', destination: '/sdks/python', permanent: true },
+      { source: '/sdks/golang', destination: '/sdks/overview', permanent: true },
+      { source: '/sdks/ruby', destination: '/sdks/overview', permanent: true },
+      { source: '/sdks/rust', destination: '/sdks/overview', permanent: true },
       { source: '/support', destination: `${WEBSITE_URL}/contact`, permanent: true },
       { source: '/changelog', destination: `${WEBSITE_URL}/roadmap`, permanent: true },
     ];

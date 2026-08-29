@@ -1,19 +1,18 @@
 {
   "title": "SDKs",
-  "description": "Frameworks & languages",
+  "description": "Clients & integrations",
   "root": true,
   "icon": "Package",
   "pages": [
     "index",
     "overview",
-    "---Available---",
+    "---Cloud clients---",
+    "typescript",
+    "python",
+    "mcp",
+    "---Framework integrations---",
     "laravel",
     "wordpress",
-    "---Coming Soon---",
-    "nodejs",
-    "python",
-    "golang",
-    "ruby",
-    "rust"
+    "browser-extension"
   ]
 }

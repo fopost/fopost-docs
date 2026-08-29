@@ -1,47 +1,60 @@
 ---
-title: Frameworks & SDKs Overview
-description: OwlStack SDKs and integrations for every language and framework.
+title: SDKs Overview
+description: Every official OwlStack client, what it covers, and how to pick one.
 ---
 
-# Frameworks & SDKs
+# SDKs Overview
 
-OwlStack provides official SDKs and framework integrations so developers can integrate social media publishing into any application.
-
-## Available SDKs
-
-These SDKs are ready to use today:
-
-| Package | Language | Type | Status |
-|:--------|:---------|:-----|:-------|
-| [OwlStack Core (PHP)](/sdks/laravel/installation) | PHP | Core SDK | v1.0 — Available |
-| [OwlStack Laravel](/sdks/laravel/installation) | PHP / Laravel | Native Integration | v2.0 — Available |
-| [OwlStack WordPress](/sdks/wordpress/installation) | PHP / WordPress | Native Plugin | v1.0 — Available |
-
-## Coming Soon
-
-We're actively developing SDKs for more languages and frameworks:
-
-| Package | Language | Type | Status |
-|:--------|:---------|:-----|:-------|
-| [OwlStack Node.js](/sdks/nodejs) | JavaScript / TypeScript | Cloud SDK | Coming Soon |
-| [OwlStack Python](/sdks/python) | Python | Cloud SDK | Coming Soon |
-| [OwlStack Go](/sdks/golang) | Go | Cloud SDK | Coming Soon |
-| [OwlStack Ruby](/sdks/ruby) | Ruby | Cloud SDK | Coming Soon |
-| [OwlStack Rust](/sdks/rust) | Rust | Cloud SDK | Coming Soon |
-
-## How SDKs Work
-
-All OwlStack SDKs are thin API clients that communicate with the OwlStack cloud service. The heavy lifting — platform API calls, content formatting, rate limiting, retries, and AI — happens on OwlStack's servers.
+Every client here is a thin wrapper over the [REST API](/api/overview). The platform APIs, formatting, media handling, retries, and scheduling all run on our side, so an SDK stays small and gains new networks without you upgrading anything.
 
 ```
-Your App → OwlStack SDK → api.owlstack.app → Social Platforms
+Your app  →  SDK  →  api.owlstack.app  →  the networks
 ```
 
-This means:
-- **Lightweight** — SDKs are small and have minimal dependencies
-- **Consistent** — the same features work across all languages
-- **Always up to date** — new platforms and features are added server-side
+## Cloud clients
 
-## Want an SDK for Your Language?
+These talk to your OwlStack account with an API key.
 
-If you need an SDK for a language not listed here, [let us know](https://owlstack.app/contact) and we'll prioritize it based on community demand. You can also use the [REST API](/api/overview) directly from any language.
+| Package | Language | Install |
+|:--------|:---------|:--------|
+| [`@owlstackapp/sdk`](/sdks/typescript) | TypeScript, Node.js | `npm install @owlstackapp/sdk` |
+| [`owlstack`](/sdks/python) | Python 3.10+ | `pip install owlstack` |
+| [`@owlstackapp/mcp`](/sdks/mcp) | Any MCP client | `npx -y @owlstackapp/mcp` |
+
+All three are MIT licensed and open source. All are 0.x, so pin an exact version if a breaking minor would hurt.
+
+## Framework integrations
+
+| Integration | For | Docs |
+|:------------|:----|:-----|
+| [Laravel](/sdks/laravel/installation) | Laravel 10 to 12 | `composer require owlstack/owlstack-laravel` |
+| [WordPress](/sdks/wordpress/installation) | WordPress 6.4+ | Plugin install |
+| [Browser extension](/sdks/browser-extension) | Networks with no write API | Chrome Web Store |
+
+The Laravel package wraps the standalone PHP library documented under [Developers](/developers). That library is framework-free and can be used on its own.
+
+## Another language
+
+There is no Go, Ruby, or Rust client yet, and we would rather say so than ship a page pretending otherwise. Until then the REST API is plain JSON over HTTPS with one header, and works from any language:
+
+```bash
+curl -X POST https://api.owlstack.app/v1/posts \
+  -H "X-API-Key: $OWLSTACK_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "accounts": ["3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10"],
+    "content": [{ "text": "Hello from anywhere." }]
+  }'
+```
+
+The [OpenAPI spec](https://api.owlstack.app/v1/openapi.json) generates a usable client in most languages. If you want an official one for a language that is missing, [tell us which](https://owlstack.app/contact); demand is how the order gets decided.
+
+## Next
+
+<Cards>
+  <Card title="API Reference" href="/api/overview" />
+  <Card title="TypeScript SDK" href="/sdks/typescript" />
+  <Card title="Python SDK" href="/sdks/python" />
+  <Card title="MCP Server" href="/sdks/mcp" />
+</Cards>
