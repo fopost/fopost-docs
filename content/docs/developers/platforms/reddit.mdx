@@ -1,41 +1,45 @@
 ---
 title: Reddit
-description: Publishing self and link posts to subreddits.
+description: Self posts and link posts, with flair.
 ---
 
 # Reddit
 
-Post to subreddits with flair, NSFW, and spoiler support.
+Reddit needs a subreddit on every publish, and each subreddit has its own rules about what it will accept.
 
-## Connect
-
-Connect Reddit in the [OwlStack dashboard](https://app.owlstack.app):
-
-1. Go to **Project Settings > Platforms > Reddit**
-2. Click **Connect with Reddit**
-3. Authorize OwlStack via OAuth
-4. Your Reddit account appears as connected
-
-## Publishing
+## Credentials
 
 ```php
-use OwlStack\Enums\Platform;
+$credentials = new PlatformCredentials('reddit', [
+    'client_id' => '...',
+    'client_secret' => '...',
+    'access_token' => '...',
+    'username' => 'your_username',
+]);
+```
 
-$result = $client->publish($post, [Platform::Reddit]);
+## Getting access
+
+Create a script app at [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps). Self-service, no review.
+
+## Publish
+
+```php
+$result = $publisher->publish($post, 'reddit');
 ```
 
 ## Options
 
 | Option | Type | Description |
 |:-------|:-----|:------------|
-| `subreddit` | `string` | **Required.** Target subreddit (without `r/`) |
-| `kind` | `string` | `self` (text) or `link` |
-| `flair_id` | `string` | Post flair ID |
-| `nsfw` | `bool` | Mark as NSFW |
-| `spoiler` | `bool` | Mark as spoiler |
+| `subreddit` | `string` | **Required.** Where to post |
+| `kind` | `string` | `self` for a text post, `link` for a link post |
+| `flair_id` | `string` | Flair, required by many subreddits |
+| `nsfw` | `bool` | Mark not safe for work |
+| `spoiler` | `bool` | Mark as a spoiler |
 
 ```php
-$result = $client->publish($post, [Platform::Reddit], [
+$publisher->publish($post, 'reddit', [
     'subreddit' => 'php',
     'kind' => 'self',
     'flair_id' => '...',
@@ -47,6 +51,20 @@ $result = $client->publish($post, [Platform::Reddit], [
 | Constraint | Value |
 |:-----------|:------|
 | Max text length | 40,000 characters |
-| Max media | 1 |
-| Supported media types | JPEG, PNG, GIF |
-| Post types | Self (text) and Link |
+| Markup | Markdown |
+
+Read them at runtime with `$platform->constraints()` rather than hardcoding, since networks change them.
+
+## Subreddit rules are not the API's problem
+
+A publish can succeed and still be removed minutes later by a subreddit's automod: wrong flair, an account too new, a link the subreddit does not allow, or a rate limit on low-karma accounts. None of that comes back as an API error.
+
+Read the rules of any subreddit you post to programmatically, and treat a successful `PublishResult` as "accepted", not "will stay up".
+
+## Next
+
+<Cards>
+  <Card title="All Platforms" href="./overview" />
+  <Card title="Configure Credentials" href="/developers/getting-started/connect-platforms" />
+  <Card title="Error Handling" href="/developers/core-concepts/error-handling" />
+</Cards>

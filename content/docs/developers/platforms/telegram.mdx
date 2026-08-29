@@ -5,43 +5,43 @@ description: Publishing to Telegram channels and groups.
 
 # Telegram
 
-Telegram is one of the most feature-rich platforms in OwlStack, supporting text, media, media groups, inline keyboards, locations, contacts, and venues.
+Telegram is the fastest network to get working: a bot token takes about a minute and there is no app review.
 
-## Connect
-
-Connect Telegram in the [OwlStack dashboard](https://app.owlstack.app):
-
-1. Go to **Project Settings > Platforms > Telegram**
-2. Enter your Bot API token (from [@BotFather](https://t.me/BotFather))
-3. Select the target channel or group
-4. Click **Connect**
-
-<Callout type="info" title="Getting a Bot Token">
-1. Open Telegram and search for **@BotFather**
-2. Send `/newbot` and follow the prompts
-3. Copy the API token
-4. Add your bot as an **admin** to your channel/group
-</Callout>
-
-## Publishing
+## Credentials
 
 ```php
-use OwlStack\Enums\Platform;
+$credentials = new PlatformCredentials('telegram', [
+    'api_token' => 'your-bot-token',
+    'channel_username' => '@your-channel',
+]);
 
-$result = $client->publish($post, [Platform::Telegram]);
+$platform = new TelegramPlatform($credentials, new HttpClient(), new TelegramFormatter());
+```
+
+## Getting access
+
+1. Open Telegram and message [@BotFather](https://t.me/BotFather)
+2. Send `/newbot` and follow the prompts
+3. Copy the token
+4. Add the bot as an **admin** to your channel or group, or it cannot post
+
+## Publish
+
+```php
+$result = $publisher->publish($post, 'telegram');
 ```
 
 ## Options
 
 | Option | Type | Description |
 |:-------|:-----|:------------|
-| `chat_id` | `string` | Override target chat/channel |
+| `chat_id` | `string` | Override the target chat or channel |
 | `parse_mode` | `string` | `HTML` or `Markdown` |
 | `disable_notification` | `bool` | Send silently |
-| `inline_keyboard` | `array` | Inline keyboard buttons |
+| `inline_keyboard` | `array` | Buttons under the message |
 
 ```php
-$result = $client->publish($post, [Platform::Telegram], [
+$publisher->publish($post, 'telegram', [
     'chat_id' => '@specific-channel',
     'parse_mode' => 'HTML',
     'disable_notification' => true,
@@ -57,5 +57,27 @@ $result = $client->publish($post, [Platform::Telegram], [
 |:-----------|:------|
 | Max text length | 4,096 characters |
 | Max media per group | 10 |
-| Supported media types | JPEG, PNG, GIF, MP4, OGG |
-| Formatter markup | HTML |
+| Markup | HTML, or Markdown via `parse_mode` |
+
+Read them at runtime with `$platform->constraints()` rather than hardcoding, since networks change them.
+
+## Beyond posting
+
+The Telegram platform exposes methods the shared interface has no concept of:
+
+```php
+$platform->sendLocation($chatId, 40.7128, -74.0060);
+$platform->sendVenue($chatId, 40.7128, -74.0060, 'NYC Office', '123 Main St');
+$platform->sendContact($chatId, '+1234567890', 'John');
+$platform->pinMessage($chatId, $messageId);
+```
+
+Call them on the platform directly rather than through the `Publisher`, which means they throw on failure rather than returning a result.
+
+## Next
+
+<Cards>
+  <Card title="All Platforms" href="./overview" />
+  <Card title="Configure Credentials" href="/developers/getting-started/connect-platforms" />
+  <Card title="Error Handling" href="/developers/core-concepts/error-handling" />
+</Cards>

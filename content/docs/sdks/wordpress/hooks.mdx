@@ -1,91 +1,110 @@
 ---
 title: Hooks
-description: WordPress action and filter hooks provided by OwlStack.
+description: Every action and filter the plugin fires, with its real signature.
 ---
 
 # Hooks
 
-The OwlStack WordPress plugin provides action and filter hooks for customization.
+Seven hooks, all prefixed `owlstack_`.
 
 ## Actions
 
-### owlstack_post_published
+### `owlstack_before_publish`
 
-Fires after a post is successfully published to a platform.
+Fires before anything is sent.
 
 ```php
-add_action('owlstack_post_published', function ($result, $post_id) {
-    error_log("Post {$post_id} published to {$result->platform()->value}");
+add_action('owlstack_before_publish', function ($corePost, $platforms, $wpPost) {
+    error_log("Publishing '{$wpPost->post_title}' to " . implode(', ', $platforms));
+}, 10, 3);
+```
+
+| Argument | What |
+|:---------|:-----|
+| `$corePost` | The `Owlstack\Core\Content\Post` about to be published |
+| `$platforms` | Array of network names |
+| `$wpPost` | The `WP_Post` it came from |
+
+### `owlstack_after_publish`
+
+Fires once the whole run is done.
+
+```php
+add_action('owlstack_after_publish', function ($results, $wpPost) {
+    $failed = array_filter($results, fn($r) => $r->failed());
+    if ($failed) {
+        error_log(count($failed) . ' network(s) failed for post ' . $wpPost->ID);
+    }
 }, 10, 2);
 ```
 
-### owlstack_post_failed
+### `owlstack_post_published`
 
-Fires when publishing fails.
-
-```php
-add_action('owlstack_post_failed', function ($result, $post_id) {
-    error_log("Post {$post_id} failed on {$result->platform()->value}: {$result->error()}");
-}, 10, 2);
-```
-
-### owlstack_before_publish
-
-Fires before publishing starts. Return `false` to cancel.
+Fires per network, on success.
 
 ```php
-add_action('owlstack_before_publish', function ($post_id, $platforms) {
-    // Log or modify behavior
-}, 10, 2);
+add_action('owlstack_post_published', function ($result, $wpPost, $platform) {
+    update_post_meta($wpPost->ID, "_owlstack_{$platform}_url", $result->externalUrl);
+}, 10, 3);
 ```
+
+### `owlstack_post_failed`
+
+Fires per network, on failure. Same three arguments.
+
+```php
+add_action('owlstack_post_failed', function ($result, $wpPost, $platform) {
+    error_log("Failed on {$platform}: {$result->error}");
+}, 10, 3);
+```
+
+Both carry a `PublishResult`: `success`, `platformName`, `externalId`, `externalUrl`, `error`, `timestamp`.
+
+The plugin also bridges the library's own events onto actions of the same names, receiving a `PostPublished` or `PostFailed` event object instead. Read the arguments you are given rather than assuming a shape.
 
 ## Filters
 
-### owlstack_post_content
+### `owlstack_supported_post_types`
 
-Filter the content before it's sent to OwlStack.
+Which post types show the meta box. Defaults to `['post']`.
 
 ```php
-add_filter('owlstack_post_content', function ($content, $post_id) {
-    return $content . "\n\nRead more on our blog!";
+add_filter('owlstack_supported_post_types', function ($types) {
+    return ['post', 'page', 'product'];
+});
+```
+
+### `owlstack_post_data`
+
+The `Post` object, just before publishing. Your last chance to change what goes out.
+
+```php
+add_filter('owlstack_post_data', function ($post, $wpPost) {
+    return $post;
 }, 10, 2);
 ```
 
-### owlstack_post_platforms
+`Post` is readonly, so return a new one rather than mutating the argument.
 
-Filter the platforms for a specific post.
+### `owlstack_publish_options`
+
+Per-network options, before publishing. This is where a required field that WordPress has no concept of gets supplied.
 
 ```php
-add_filter('owlstack_post_platforms', function ($platforms, $post_id) {
-    // Don't publish drafts to LinkedIn
-    if (get_post_status($post_id) === 'draft') {
-        $platforms = array_filter($platforms, fn ($p) => $p !== Platform::LinkedIn);
-    }
-    return $platforms;
+add_filter('owlstack_publish_options', function ($options, $wpPost) {
+    $options['reddit']['subreddit'] = 'php';
+    return $options;
 }, 10, 2);
 ```
 
-### owlstack_post_hashtags
+## Argument counts
 
-Filter the hashtags before publishing.
+WordPress passes one argument unless you say otherwise. Every example above sets the fourth `add_action`/`add_filter` argument, and forgetting it is the usual reason a hook "does not fire" when it did.
 
-```php
-add_filter('owlstack_post_hashtags', function ($hashtags, $post_id) {
-    $hashtags[] = 'mybrand';
-    return $hashtags;
-}, 10, 2);
-```
+## Next
 
-### owlstack_auto_publish_enabled
-
-Control auto-publish per post.
-
-```php
-add_filter('owlstack_auto_publish_enabled', function ($enabled, $post_id) {
-    // Disable auto-publish for pages
-    if (get_post_type($post_id) === 'page') {
-        return false;
-    }
-    return $enabled;
-}, 10, 2);
-```
+<Cards>
+  <Card title="REST API" href="./rest-api" />
+  <Card title="Meta Boxes" href="./meta-boxes" />
+  <Card title="Event System" href="/developers/events/event-system" />
+</Cards>

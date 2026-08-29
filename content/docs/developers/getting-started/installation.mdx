@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: How to install OwlStack SDK packages via Composer.
+description: Install the PHP library, the Laravel package, or the WordPress plugin.
 ---
 
 # Installation
@@ -10,59 +10,52 @@ description: How to install OwlStack SDK packages via Composer.
 | Requirement | Version |
 |:------------|:--------|
 | PHP | 8.1 or higher |
-| ext-curl | * |
-| ext-json | * |
+| ext-curl | any |
+| ext-json | any |
 
-## PHP (standalone)
+No other extensions and no Composer dependencies.
+
+## Standalone PHP
 
 ```bash
-composer require owlstack/cloud
+composer require owlstack/owlstack-core
 ```
 
-This installs `owlstack/cloud` (the API client) and `owlstack/core` (interfaces, value objects) automatically.
+That is the whole library. Nothing to configure at install time, because credentials are passed to the platform objects you construct. See the [quick start](./quick-start).
 
 ## Laravel
 
 ```bash
-composer require owlstack/laravel
+composer require owlstack/owlstack-laravel
 ```
 
-This installs `owlstack/laravel`, `owlstack/cloud`, and `owlstack/core` automatically.
-
-Then publish the config file:
+The service provider is auto-discovered. Publish the config:
 
 ```bash
 php artisan vendor:publish --tag=owlstack-config
 ```
 
-Add your API key to `.env`:
-
-```ini
-OWLSTACK_API_KEY=your-api-key-here
-```
-
-See the [Laravel quick start](./quick-start-laravel) for setup details.
+Then put your platform credentials in `.env`. The Laravel package pulls in `owlstack/owlstack-core` for you. See the [Laravel quick start](./quick-start-laravel).
 
 ## WordPress
 
-Download the OwlStack plugin from the [OwlStack dashboard](https://app.owlstack.app) or install via Composer:
+Install the plugin, then set your credentials in **WP Admin → OwlStack → Settings**. See the [WordPress quick start](./quick-start-wordpress).
+
+If you installed from a source checkout rather than a packaged zip, run Composer inside the plugin directory first:
 
 ```bash
-cd wp-content/plugins/owlstack-wordpress
+cd wp-content/plugins/owlstack
 composer install
 ```
 
-Activate the plugin from **WP Admin > Plugins**, then enter your API key in **WP Admin > OwlStack > Settings**.
+## What you need next
 
-See the [WordPress quick start](./quick-start-wordpress) for setup details.
+Credentials for each network you want to publish to, obtained from that network. The library never brokers them.
 
-## Get your API key
+Telegram, Discord, and Slack take minutes. X, Reddit, and Tumblr are self-service registrations. Facebook, Instagram, LinkedIn, Pinterest, and WhatsApp need an app review before production, which takes as long as it takes. Plan around that rather than discovering it on launch day.
 
-1. Sign up at [app.owlstack.app](https://app.owlstack.app)
-2. Create a project
-3. Copy your API key from the project dashboard
-4. Connect your social media platforms via OAuth
+[Configure credentials](./connect-platforms) walks through the shape of each.
 
-<Callout type="info" title="Free trial available">
-All plans start with a free trial. The Starter plan is $19/mo. No credit card required to get started.
-</Callout>
+## Looking for the Cloud?
+
+If you wanted scheduling, analytics, a dashboard, and the rest of the networks, none of the above applies. That is the [Cloud API](/api/overview) and its [TypeScript](/sdks/typescript) and [Python](/sdks/python) clients.

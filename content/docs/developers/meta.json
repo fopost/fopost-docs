@@ -1,6 +1,6 @@
 {
-  "title": "Developers",
-  "description": "SDK & API integration",
+  "title": "PHP Library",
+  "description": "Self-hosted PHP publishing",
   "root": true,
   "icon": "Code",
   "pages": [
@@ -11,6 +11,7 @@
     "platforms",
     "formatting",
     "authentication",
-    "events"
+    "events",
+    "extending"
   ]
 }

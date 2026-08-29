@@ -1,45 +1,44 @@
 ---
 title: Pinterest
-description: Creating pins with board and section targeting.
+description: Creating pins on a board or a board section.
 ---
 
 # Pinterest
 
-Create pins with board and section targeting via the Pinterest API.
+Pinterest pins to a board. Production API access needs approval.
 
-## Connect
-
-Connect Pinterest in the [OwlStack dashboard](https://app.owlstack.app):
-
-1. Go to **Project Settings > Platforms > Pinterest**
-2. Click **Connect with Pinterest**
-3. Authorize OwlStack via OAuth
-4. Select your target board
-
-## Publishing
+## Credentials
 
 ```php
-use OwlStack\Enums\Platform;
+$credentials = new PlatformCredentials('pinterest', [
+    'access_token' => '...',
+    'board_id' => '...',
+]);
+```
 
-$result = $client->publish($post, [Platform::Pinterest]);
+## Getting access
+
+Register an app in the [Pinterest developer portal](https://developers.pinterest.com/) with a Business account. Apps start in trial mode against your own account; publishing for others needs production access, which is reviewed.
+
+## Publish
+
+```php
+$result = $publisher->publish($post, 'pinterest');
 ```
 
 ## Options
 
 | Option | Type | Description |
 |:-------|:-----|:------------|
-| `board_id` | `string` | Override target board |
-| `board_section_id` | `string` | Target section within the board |
-| `alt_text` | `string` | Alt text for accessibility |
+| `board_section_id` | `string` | Pin into a section of the board |
+| `image_url` | `string` | Publicly reachable image URL |
+| `alt_text` | `string` | Accessibility description |
+| `dominant_color` | `string` | Hex colour hint, for example `#FF5733` |
 
 ```php
-$post = Post::create('Beautiful sunset photo')
-    ->withMedia(Media::image('/path/to/sunset.jpg'))
-    ->withUrl('https://example.com/sunset');
-
-$result = $client->publish($post, [Platform::Pinterest], [
-    'board_section_id' => '...',
-    'alt_text' => 'Sunset over the ocean',
+$publisher->publish($post, 'pinterest', [
+    'image_url' => 'https://example.com/pin.jpg',
+    'alt_text' => 'A flat-lay of the product on a desk',
 ]);
 ```
 
@@ -47,5 +46,19 @@ $result = $client->publish($post, [Platform::Pinterest], [
 
 | Constraint | Value |
 |:-----------|:------|
-| Max text length | 800 characters |
-| Supported media types | JPEG, PNG, GIF, WebP, MP4 |
+| Max description length | 800 characters |
+| Markup | Plain text |
+
+Read them at runtime with `$platform->constraints()` rather than hardcoding, since networks change them.
+
+## Pins need an image
+
+A pin without an image is not a pin. Set `image_url` to something publicly reachable, and set `alt_text` while you are there: Pinterest is a search engine, and the description is how a pin gets found.
+
+## Next
+
+<Cards>
+  <Card title="All Platforms" href="./overview" />
+  <Card title="Configure Credentials" href="/developers/getting-started/connect-platforms" />
+  <Card title="Error Handling" href="/developers/core-concepts/error-handling" />
+</Cards>

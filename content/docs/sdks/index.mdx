@@ -1,43 +1,29 @@
 ---
 title: SDKs & Integrations
-description: Official OwlStack SDKs for every language and framework.
+description: Official OwlStack clients for TypeScript, Python, MCP, Laravel, and WordPress.
 icon: Package
 ---
 
 # SDKs & Integrations
 
-OwlStack provides official SDKs so you can integrate social media publishing into any application.
+Pick the client that matches where your code already lives. Every one of them is a wrapper over the same [REST API](/api/overview).
 
-## Available Now
+## Cloud clients
+
+<Cards>
+  <Card title="TypeScript" href="/sdks/typescript" />
+  <Card title="Python" href="/sdks/python" />
+  <Card title="MCP Server" href="/sdks/mcp" />
+</Cards>
+
+## Framework integrations
 
 <Cards>
   <Card title="Laravel" href="/sdks/laravel/installation" />
   <Card title="WordPress" href="/sdks/wordpress/installation" />
+  <Card title="Browser Extension" href="/sdks/browser-extension" />
 </Cards>
 
-## Coming Soon
+## No SDK for your language?
 
-<Cards>
-  <Card title="Node.js" href="/sdks/nodejs" />
-  <Card title="Python" href="/sdks/python" />
-  <Card title="Go" href="/sdks/golang" />
-  <Card title="Ruby" href="/sdks/ruby" />
-  <Card title="Rust" href="/sdks/rust" />
-</Cards>
-
-## How SDKs Work
-
-All OwlStack SDKs are thin API clients that communicate with the OwlStack cloud service:
-
-| Package | Language | Status |
-|:--------|:---------|:-------|
-| OwlStack Core (PHP) | PHP | v1.0 — Available |
-| OwlStack Laravel | PHP / Laravel | v2.0 — Available |
-| OwlStack WordPress | PHP / WordPress | v1.0 — Available |
-| OwlStack Node.js | JavaScript / TypeScript | Coming Soon |
-| OwlStack Python | Python | Coming Soon |
-| OwlStack Go | Go | Coming Soon |
-| OwlStack Ruby | Ruby | Coming Soon |
-| OwlStack Rust | Rust | Coming Soon |
-
-Don't see your language? You can use the [REST API](/api/overview) directly from any language.
+The API is plain JSON over HTTPS with one header. See the [overview](/sdks/overview) for a curl example and the OpenAPI spec.

@@ -1,164 +1,88 @@
 ---
 title: Architecture
-description: How OwlStack's SaaS-first architecture works.
+description: How the pieces fit together, from content to formatters to publisher.
 ---
 
 # Architecture
 
-OwlStack follows a **SaaS-first architecture** with open-source SDKs. Your application talks to OwlStack's cloud API, which handles all platform communication.
-
-## Overview
+The library is five layers, each behind an interface. Content goes in, a formatter shapes it for one network, a platform calls that network's API, and the publisher returns a result.
 
 ```mermaid
-graph TB
-    subgraph "Your Application"
-        APP[Your PHP / Laravel / WordPress App]
-        SDK["owlstack/cloud<br/>(thin API client)"]
-        CORE["owlstack/core<br/>(interfaces, value objects)"]
-    end
-
-    subgraph "OwlStack Cloud"
-        API["api.owlstack.app"]
-        FMT[Smart Formatters]
-        RATE[Rate Limiter]
-        RETRY[Retry Engine]
-        SCHED[Scheduler]
-        AI_ENGINE[AI Engine]
-        ANALYTICS[Analytics]
-    end
-
-    subgraph "Social Platforms"
-        TG[Telegram]
-        TW[Twitter/X]
-        FB[Facebook]
-        LI[LinkedIn]
-        DC[Discord]
-        MORE[+ 6 more]
-    end
-
-    APP --> SDK
-    SDK --> CORE
-    SDK -->|HTTPS| API
-    API --> FMT
-    API --> RATE
-    API --> RETRY
-    API --> SCHED
-    API --> AI_ENGINE
-    API --> ANALYTICS
-    API --> TG
-    API --> TW
-    API --> FB
-    API --> LI
-    API --> DC
-    API --> MORE
+flowchart LR
+    POST[Post + MediaCollection] --> PUB[Publisher]
+    PUB --> REG[PlatformRegistry]
+    REG --> PLAT[Platform]
+    PLAT --> FMT[Formatter]
+    FMT --> TEXT[Formatted text]
+    PLAT --> HTTP[HttpClient]
+    HTTP --> API[(Network API)]
+    PLAT --> RES[PublishResult]
+    PUB --> EV[EventDispatcher]
 ```
 
-## What runs where
+## The layers
 
-### In your application (SDK side)
+| Layer | Namespace | What it does |
+|:------|:----------|:-------------|
+| Content | `Owlstack\Core\Content` | `Post`, `Media`, `MediaCollection`, `CanonicalLink`. Immutable, platform-agnostic |
+| Config | `Owlstack\Core\Config` | `PlatformCredentials`, `OwlstackConfig`, `ConfigValidator` |
+| Formatting | `Owlstack\Core\Formatting` | One formatter per network, plus `CharacterTruncator` and `HashtagExtractor` |
+| Platforms | `Owlstack\Core\Platforms` | One class per network, plus `PlatformRegistry` |
+| Publishing | `Owlstack\Core\Publishing` | `Publisher` and `PublishResult` |
+| Auth | `Owlstack\Core\Auth` | `OAuthHandler`, `AccessToken`, and the token store contract |
+| Events | `Owlstack\Core\Events` | `PostPublished`, `PostFailed`, and the dispatcher contract |
+| Http | `Owlstack\Core\Http` | A cURL client with no dependencies |
+| Support | `Owlstack\Core\Support` | `Arr`, `Str`, and a freezable `Clock` |
 
-The SDK packages are **thin clients** with no platform logic:
+## Wiring it up
 
-| Component | Description |
-|:----------|:------------|
-| `Post` | Immutable value object for content |
-| `Media` | Immutable value object for attachments |
-| `Platform` | Enum of supported platforms |
-| `DeliveryResult` | Result object returned after publishing |
-| `OwlStackClient` | HTTP client that calls `api.owlstack.app` |
-| Events | `PostPublished`, `PostFailed` fired locally |
-
-### On OwlStack's cloud (api.owlstack.app)
-
-All business logic runs on our servers:
-
-| Component | Description |
-|:----------|:------------|
-| Platform integrations | All 11 platform API implementations |
-| Smart formatters | Character limits, hashtags, markup per platform |
-| OAuth management | Token storage, automatic refresh |
-| Rate limiting | Per-platform throttling |
-| Retry engine | Exponential backoff, circuit breaker |
-| Media processing | Resize, optimize, format conversion |
-| Scheduling | Delayed and recurring publishing |
-| AI engine | Content generation, optimization, hashtags |
-| Analytics | Tracking, insights, reports |
-
-## Publishing flow
-
-```mermaid
-sequenceDiagram
-    participant User as Your App
-    participant SDK as OwlStack SDK
-    participant Cloud as api.owlstack.app
-    participant Platform as Twitter / LinkedIn / etc.
-
-    User->>SDK: OwlStackClient(apiKey)
-    SDK->>Cloud: POST /publish (API key + post data)
-    Cloud->>Cloud: Validate API key and plan limits
-    Cloud->>Cloud: Format content per platform
-    Cloud->>Platform: Publish via platform API
-    Platform-->>Cloud: Success / Error
-    Cloud-->>SDK: DeliveryResult[]
-    SDK-->>User: Results with status, URLs, errors
-```
-
-## Packages
-
-| Package | Purpose | License |
-|:--------|:--------|:--------|
-| `owlstack/core` | Interfaces, value objects, enums | MIT |
-| `owlstack/cloud` | API client for `api.owlstack.app` | Proprietary |
-| `owlstack/laravel` | Laravel service provider + facade | MIT |
-| `owlstack/wordpress` | WordPress plugin with admin UI | MIT |
-
-## Platform credentials
-
-You have two options for managing platform credentials:
-
-### Option A: Managed OAuth (recommended)
-
-Connect platforms through the [OwlStack dashboard](https://app.owlstack.app). We store and refresh tokens automatically. You never handle platform API keys in your code.
-
-### Option B: Pass-per-request
-
-Send your own platform credentials with each API call. OwlStack uses them for that request only and never stores them.
+Each platform is constructed with its credentials, an HTTP client, and its formatter. That is three explicit arguments rather than a container, which is what lets the library work with no framework at all.
 
 ```php
-// Option A - tokens managed by OwlStack
-$client->publish($post, [Platform::Twitter]);
+$httpClient = new HttpClient();
 
-// Option B - you pass credentials per request
-$client->publish($post, [
-    Platform::Twitter->withCredentials([
-        'api_key' => env('TWITTER_API_KEY'),
-        'api_secret' => env('TWITTER_API_SECRET'),
-        'access_token' => env('TWITTER_ACCESS_TOKEN'),
-        'access_secret' => env('TWITTER_ACCESS_SECRET'),
-    ]),
-]);
+$telegram = new TelegramPlatform(
+    new PlatformCredentials('telegram', ['api_token' => '...']),
+    $httpClient,
+    new TelegramFormatter(),
+);
+
+$registry = new PlatformRegistry();
+$registry->register($telegram);
+
+$publisher = new Publisher($registry, $eventDispatcher);
 ```
 
-## Key design principles
+The [Laravel package](/sdks/laravel/installation) does this wiring for you from config, which is the only thing it adds.
 
-### Immutable value objects
+## What is an interface
 
-All data objects are readonly:
+Anything you might reasonably want to replace:
 
-```php
-$post = Post::create('Hello world');
-// $post->body = 'Changed'; // Cannot modify readonly property
-```
+| Contract | Replace it to |
+|:---------|:--------------|
+| `PlatformInterface` | Add a network the library does not cover |
+| `FormatterInterface` | Change how content is shaped for a network |
+| `TokenStoreInterface` | Keep OAuth tokens in your own database |
+| `EventDispatcherInterface` | Route events into your framework's dispatcher |
+| `OAuthProviderInterface` | Handle a non-standard OAuth flow |
 
-### Exception-safe publishing
+None of these require a fork. See [Extending](/developers/extending/custom-platforms).
 
-The client wraps all API calls and always returns a `DeliveryResult`:
+## Package layout
 
-```php
-$result = $client->publish($post, [Platform::Twitter]);
-// Never throws - always check $result->isSuccessful()
-```
+| Package | What it is | License |
+|:--------|:-----------|:--------|
+| `owlstack/owlstack-core` | The engine. Everything above | MIT |
+| `owlstack/owlstack-laravel` | Service provider, facade, config, queued events | MIT |
+| WordPress plugin | Admin panel, meta boxes, delivery logs, REST endpoints | MIT |
 
-### Open interfaces, cloud implementation
+The wrappers hold no platform logic. Anything about how a network behaves lives in core, so a fix reaches Laravel and WordPress at the same time.
 
-`owlstack/core` defines contracts like `PublisherInterface`, `FormatterInterface`, and `EventDispatcherInterface`. The cloud service implements all of them server-side. Your code depends only on the open-source interfaces.
+## Next
+
+<Cards>
+  <Card title="Publishing" href="/developers/core-concepts/publishing" />
+  <Card title="Custom Platforms" href="/developers/extending/custom-platforms" />
+  <Card title="Event System" href="/developers/events/event-system" />
+</Cards>

@@ -1,0 +1,42 @@
+---
+title: Browser Extension
+description: Publish to networks that have no write API, from your own logged-in session.
+---
+
+# Browser Extension
+
+Some networks have no write API. Substack is the clearest case: there is no supported way for a server to post on your behalf, and doing it anyway means driving a headless browser against their terms of service.
+
+The extension is the honest answer. Your scheduled item shows up in the toolbar, you click once, and the post is created from your own logged-in session in your own browser. Nothing is automated against a network that has not agreed to it.
+
+## Install
+
+Install **OwlStack Publisher** from the Chrome Web Store, then paste an API key with the `extension` scope, created at **Settings → API Keys**.
+
+A scoped key, not your password. The extension can read your queue and mark items delivered, and nothing else.
+
+## How it works
+
+1. Compose and schedule as normal. Extension-delivered networks appear alongside the rest
+2. When an item is due, the extension badge tells you
+3. Open it from the toolbar, click through to the network, and the content is ready to paste
+4. Mark it done and the delivery is recorded in OwlStack like any other
+
+Your calendar, analytics, and history stay complete: an extension delivery is a delivery.
+
+## What it cannot do
+
+It does not read the pages you browse and has no access to sites outside the flow above. It cannot publish without you clicking, by design, since the whole point is that a person is doing the posting.
+
+## Which networks
+
+Networks with a working write API publish server side and need no extension. Today Substack is the one that goes through it. Each [platform page](/introduction/platforms) says how that network is delivered.
+
+Source: [github.com/owlstacks/owlstack-extension](https://github.com/owlstacks/owlstack-extension). MIT licensed.
+
+## Next
+
+<Cards>
+  <Card title="Supported Platforms" href="/introduction/platforms" />
+  <Card title="Connecting Accounts" href="/guide/using-owlstack/connecting-accounts" />
+</Cards>

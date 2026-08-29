@@ -1,94 +1,113 @@
 ---
 title: Quick Start
-description: Get up and running with OwlStack in minutes.
+description: The fastest path, whichever way you are using OwlStack.
 icon: Rocket
 ---
 
 # Quick Start
 
-Get started with OwlStack in just a few minutes — whether you're using the dashboard or integrating via the API.
+Three starting points. Pick the one that matches what you are doing.
 
----
+## Using the dashboard
 
-## For Creators & Teams
-
-No coding required. Sign up, connect your accounts, and start publishing.
-
-### 1. Create an Account
-
-Sign up at [app.owlstack.app](https://app.owlstack.app) — it's free to get started.
-
-### 2. Connect Your Social Accounts
-
-Go to **Settings → Accounts** and connect the platforms you want to publish to:
-
-- Instagram, Twitter/X, Facebook, LinkedIn
-- Telegram, Discord, Pinterest, Reddit
-- Slack, Tumblr, WhatsApp
-
-### 3. Create Your First Post
-
-Click **New Post**, write your content, select your platforms, and hit **Publish** — or schedule it for later.
+1. Sign up at [app.owlstack.app](https://app.owlstack.app). Every plan starts with a trial
+2. **Accounts → Connect** and authorise one network
+3. **New Post**, write it, tick the account, check the preview
+4. **Publish**, or **Schedule** for later
 
 <Cards>
-  <Card title="Dashboard Overview" href="/guide/using-owlstack/dashboard" />
-  <Card title="Connect Accounts" href="/guide/using-owlstack/connecting-accounts" />
-  <Card title="AI Studio" href="/guide/using-owlstack/ai-studio" />
+  <Card title="Getting Started" href="/guide/using-owlstack/getting-started" />
+  <Card title="Connecting Accounts" href="/guide/using-owlstack/connecting-accounts" />
+  <Card title="Owl Agent" href="/guide/using-owlstack/owl-agent" />
 </Cards>
 
----
+## Using the API
 
-## For Developers (PHP)
+Create a key at **Settings → API Keys** with the `posts` and `accounts` scopes.
 
-Install the SDK and publish your first post in under 5 minutes.
+```bash
+# Find an account to post to
+curl https://api.owlstack.app/v1/accounts \
+  -H "X-API-Key: $OWLSTACK_API_KEY"
 
-### 1. Install the SDK
+# Create a post
+curl -X POST https://api.owlstack.app/v1/posts \
+  -H "X-API-Key: $OWLSTACK_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "accounts": ["3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10"],
+    "content": [{ "text": "Hello from the API." }]
+  }'
+
+# Publish it
+curl -X POST https://api.owlstack.app/v1/posts/$POST_ID/publish \
+  -H "X-API-Key: $OWLSTACK_API_KEY"
+```
+
+Or with a client:
+
+```ts
+import { OwlStack } from '@owlstackapp/sdk';
+
+const owl = new OwlStack({ apiKey: process.env.OWLSTACK_API_KEY! });
+const post = await owl.posts.create({ workspaceId, accounts, content: [{ text: 'Hello' }] });
+await owl.posts.publish(post.id);
+```
+
+```python
+from owlstack import Owlstack
+
+client = Owlstack()
+post = client.posts.create(workspace_id=ws, accounts=ids, content="Hello")
+client.posts.publish(post.id)
+```
+
+<Cards>
+  <Card title="API Reference" href="/api/overview" />
+  <Card title="TypeScript SDK" href="/sdks/typescript" />
+  <Card title="Python SDK" href="/sdks/python" />
+</Cards>
+
+## Using the PHP library
+
+No account needed. It publishes from your server with credentials you hold.
 
 ```bash
 composer require owlstack/owlstack-core
 ```
 
-### 2. Get Your API Key
-
-Go to [app.owlstack.app](https://app.owlstack.app) → **Settings → API Keys** and generate a new key.
-
-### 3. Publish a Post
-
 ```php
-use OwlStack\OwlStack;
+use Owlstack\Core\Config\PlatformCredentials;
+use Owlstack\Core\Content\Post;
+use Owlstack\Core\Http\HttpClient;
+use Owlstack\Core\Platforms\PlatformRegistry;
+use Owlstack\Core\Platforms\Telegram\TelegramFormatter;
+use Owlstack\Core\Platforms\Telegram\TelegramPlatform;
+use Owlstack\Core\Publishing\Publisher;
 
-$owlstack = new OwlStack('your-api-key');
-
-$owlstack->publish([
-    'content' => 'Hello from OwlStack! 🦉',
-    'platforms' => ['twitter', 'linkedin', 'telegram'],
+$credentials = new PlatformCredentials('telegram', [
+    'api_token' => getenv('TELEGRAM_BOT_TOKEN'),
+    'channel_username' => '@your-channel',
 ]);
+
+$registry = new PlatformRegistry();
+$registry->register(new TelegramPlatform($credentials, new HttpClient(), new TelegramFormatter()));
+
+$result = (new Publisher($registry))->publish(
+    new Post(title: 'Hello World', body: 'My first post via Owlstack.'),
+    'telegram',
+);
+
+echo $result->success ? $result->externalUrl : $result->error;
 ```
 
 <Cards>
-  <Card title="PHP Installation" href="/developers/getting-started/installation" />
+  <Card title="PHP Library" href="/developers" />
   <Card title="PHP Quick Start" href="/developers/getting-started/quick-start" />
-  <Card title="Laravel Quick Start" href="/developers/getting-started/quick-start-laravel" />
+  <Card title="Laravel" href="/developers/getting-started/quick-start-laravel" />
 </Cards>
 
----
+## Which one
 
-## For Developers (REST API)
-
-Use the API directly from any language.
-
-```bash
-curl -X POST https://api.owlstack.app/v1/posts \
-  -H "Authorization: Bearer your-api-key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "content": "Hello from OwlStack! 🦉",
-    "platforms": ["twitter", "linkedin", "telegram"]
-  }'
-```
-
-<Cards>
-  <Card title="API Reference" href="/api/overview" />
-  <Card title="Authentication" href="/api/authentication" />
-  <Card title="All SDKs" href="/sdks/overview" />
-</Cards>
+The library talks to eleven networks with your own credentials and is free. The Cloud talks to thirty, schedules, retries, measures, and gives you a dashboard. They are separate products, and [What is OwlStack?](/what-is-owlstack) has the comparison.

@@ -1,68 +1,167 @@
 ---
-title: Publishing API
-description: API endpoints for publishing posts.
+title: Publishing
+description: Create a post, target accounts, publish it, and read the per-account result.
 ---
 
-# Publishing API
+# Publishing
 
-## Publish a post
+Publishing in OwlStack is two steps: create a post, then publish it. They are separate because a post is a durable object with per-account deliveries, not a fire-and-forget request. Everything on this page needs the `posts` scope.
+
+## The model
+
+A **post** holds your content and the list of **accounts** it targets. An account is one connected profile, for example your LinkedIn company page. You target account ids, never platform names: a workspace can hold three X accounts, and the API will not guess which one you meant.
+
+Publishing produces one **delivery** per account. Deliveries succeed and fail independently, which is why a post can end up `partially_failed`.
+
+## Create a post
 
 ```http
-POST /v1/publish
+POST /v1/posts
 ```
 
-**Request body:**
+```bash
+curl -X POST https://api.owlstack.app/v1/posts \
+  -H "X-API-Key: $OWLSTACK_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "accounts": ["3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10"],
+    "content": [
+      { "text": "Shipping something new today." }
+    ],
+    "status": "draft"
+  }'
+```
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `workspace_id` | uuid | Yes | Workspace the post belongs to |
+| `accounts` | uuid[] | Yes | Connected accounts to target |
+| `content` | block[] | Yes | One block per item. More than one block makes a thread |
+| `content[].text` | string | No | The text of the block |
+| `content[].media` | media[] | No | Attachments for the block |
+| `content_type` | enum | No | `post`, `thread`, or `reel`. Default `post` |
+| `artifact_type` | enum | No | `text_post`, `thread`, `article`, `carousel`, `short_video`, `link_share` |
+| `status` | enum | No | `draft` or `scheduled`. Default `draft` |
+| `schedule_at` | datetime | No | When to publish. Required when `status` is `scheduled` |
+| `labels` | uuid[] | No | Labels to attach |
+| `title` | string | No | Title, for platforms that take one |
+| `summary` | string | No | Summary, for platforms that take one |
+| `auto_plug` | boolean | No | Post a follow-up comment after publishing |
+
+Media items take `type` (`image`, `video`, `gif`), `name`, and `url`, plus optional `alt` and `thumbnail`. Upload files first through the [media endpoints](/api/media) and pass what they return.
+
+The response is the created post, with `id` and `status`.
+
+## Publish it
+
+```http
+POST /v1/posts/{id}/publish
+```
+
+```bash
+curl -X POST https://api.owlstack.app/v1/posts/$POST_ID/publish \
+  -H "X-API-Key: $OWLSTACK_API_KEY"
+```
+
+This answers `202 Accepted` and queues delivery. It does not wait for the platforms, so a `202` means accepted, not live. Poll [deliveries](#read-the-result) or subscribe to [webhooks](/api/webhooks) for the outcome.
+
+Two options are worth knowing:
+
+- `accountIds` publishes to a subset of the post's accounts instead of all of them
+- `options.dryRun` validates and returns the accounts it would target without publishing, answering `200` instead of `202`
+
+Accounts whose credentials have expired or been revoked fail immediately. Accounts flagged degraded still publish, with a warning attached.
+
+## Check before you publish
+
+```http
+POST /v1/posts/{id}/preflight
+```
+
+Preflight returns two different things, and the difference matters:
+
+- `issues` are hard blockers, such as content over a platform's character limit or a media type the platform will not take
+- content quality signals are advisory. They never block publishing
+
+Run it when you are publishing on behalf of a user who cannot see the composer.
+
+## Read the result
+
+```http
+GET /v1/posts/{id}/deliveries
+```
+
+One record per account, newest first:
 
 ```json
 {
-  "body": "Hello from OwlStack!",
-  "platforms": ["twitter", "linkedin"],
-  "url": "https://example.com",
-  "hashtags": ["hello", "owlstack"],
-  "media": [
+  "data": [
     {
-      "type": "url",
-      "url": "https://example.com/image.jpg"
+      "id": "3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10",
+      "platform": "linkedin",
+      "username": "yourbrand",
+      "publish_status": "published",
+      "posted_at": "2026-08-29T14:30:12.000Z",
+      "external_url": "https://www.linkedin.com/feed/update/urn:li:share:6789",
+      "attempts": 1,
+      "max_attempts": 3
+    },
+    {
+      "id": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4",
+      "platform": "twitter",
+      "username": "yourbrand",
+      "publish_status": "failed",
+      "error_code": "media_too_large",
+      "error_message": "The attached video exceeds the size this platform accepts.",
+      "attempts": 3,
+      "max_attempts": 3
     }
   ]
 }
 ```
 
-**Response:**
+`publish_status` is one of `pending`, `queued`, `delayed`, `publishing`, `published`, `failed`, `cancelled`. The post's own `status` summarises them: `published` when every delivery landed, `partially_failed` when some did.
 
-```json
-{
-  "data": {
-    "id": "ps_abc123",
-    "results": [
-      {
-        "platform": "twitter",
-        "status": "published",
-        "external_id": "1234567890",
-        "external_url": "https://twitter.com/user/status/1234567890"
-      },
-      {
-        "platform": "linkedin",
-        "status": "published",
-        "external_id": "urn:li:share:6789",
-        "external_url": "https://www.linkedin.com/feed/update/urn:li:share:6789"
-      }
-    ]
-  }
-}
+## Retry a failure
+
+```http
+POST /v1/posts/{id}/retry
 ```
 
-## Request fields
+Re-queues the failed deliveries of a failed, partially failed, or published post. Deliveries that have already used their attempts come back in `exceeded` and are skipped rather than silently dropped. Resending to an account that already published requires `includePublished: true`, so you cannot double-post by accident.
 
-| Field | Type | Required | Description |
-|:------|:-----|:---------|:------------|
-| `body` | string | Yes | Post content |
-| `platforms` | string[] | Yes | Target platforms |
-| `url` | string | No | URL to include |
-| `hashtags` | string[] | No | Hashtags to append |
-| `media` | object[] | No | Media attachments |
-| `media[].type` | string | Yes | `url` or `base64` |
-| `media[].url` | string | — | URL of the media |
-| `media[].data` | string | — | Base64-encoded media |
-| `media[].mime_type` | string | — | MIME type (for base64) |
-| `credentials` | object | No | Pass-per-request credentials |
+Transient failures are already retried automatically with exponential backoff. Reach for this endpoint when the cause was on your side, for example a media URL that was not reachable yet.
+
+## Cancel
+
+```http
+POST /v1/posts/{id}/cancel
+```
+
+Cancels a scheduled post and its queued deliveries. Anything already published stays published.
+
+## Duplicate
+
+```http
+POST /v1/posts/{id}/duplicate
+```
+
+Copies a post, its content, and its account targeting into a new draft. Useful for a recurring format you do not want to rebuild each time.
+
+## Many at once
+
+`POST /v1/posts/bulk` applies one action to up to 200 posts in a single transaction: `shift` moves each `schedule_at` by `offset_minutes`, `label` adds, removes, or replaces labels, and `delete` soft-deletes them and cancels their queued deliveries.
+
+The whole batch is validated first. An id outside the workspace answers `404` and a post that is no longer a draft or scheduled answers `409`, in both cases without changing anything.
+
+For importing a spreadsheet of posts, see [Scheduling](/api/scheduling#bulk-import).
+
+## Next
+
+<Cards>
+  <Card title="Scheduling" href="/api/scheduling" />
+  <Card title="Accounts" href="/api/accounts" />
+  <Card title="Media" href="/api/media" />
+  <Card title="Webhooks" href="/api/webhooks" />
+</Cards>

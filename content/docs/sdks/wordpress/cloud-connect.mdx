@@ -5,7 +5,7 @@ description: Publish posts from the OwlStack dashboard to your WordPress site wi
 
 # Connect Your Site to OwlStack Cloud
 
-The OwlStack plugin can connect your self-hosted WordPress site to the [OwlStack Cloud dashboard](https://app.owlstack.app), so posts you compose there are pushed to your site — as drafts or published immediately, your choice.
+The OwlStack plugin can connect your self-hosted WordPress site to the [OwlStack Cloud dashboard](https://app.owlstack.app), so posts you compose there are pushed to your site, as drafts or published immediately, your choice.
 
 Unlike a WordPress username and Application Password, the plugin issues a **scoped site token**: it can only create posts, upload images, and remove posts it created. It never grants admin access, only a hash of it is stored on your site, and you can revoke it at any time.
 
@@ -18,7 +18,7 @@ Unlike a WordPress username and Application Password, the plugin issues a **scop
 
 1. In your WordPress admin, go to **Owlstack → Cloud**
 2. Click **Generate Token**
-3. Copy the token — it is shown only once
+3. Copy the token. It is shown only once
 
 ## Connect in the OwlStack Dashboard
 
@@ -45,8 +45,8 @@ Click **Revoke Token** on the **Owlstack → Cloud** page. OwlStack Cloud loses 
 
 ## Troubleshooting
 
-- **Validation fails when connecting** — a security plugin or firewall may be blocking your site's REST API (`/wp-json/owlstack/v1/cloud`). Allow that namespace and try again.
-- **Posts arrive as drafts unexpectedly** — check the **Post Status** setting; it overrides what the dashboard requests.
+- **Validation fails when connecting.** A security plugin or firewall may be blocking your site's REST API (`/wp-json/owlstack/v1/cloud`). Allow that namespace and try again.
+- **Posts arrive as drafts unexpectedly.** Check the **Post Status** setting; it overrides what the dashboard requests.
 
 ## Privacy
 

@@ -1,75 +1,98 @@
 ---
 title: Laravel Events
-description: Listening to OwlStack events in Laravel.
+description: Listening to publish results through Laravel's event system.
 ---
 
 # Laravel Events
 
-When publishing completes, OwlStack dispatches Laravel events that you can listen to.
+The package bridges the library's events onto Laravel's dispatcher, so `PostPublished` and `PostFailed` are ordinary Laravel events you subscribe to normally.
 
-## Available events
+## The events
 
-| Event | Fired When |
+| Event | Fired when |
 |:------|:-----------|
-| `PostPublished` | A post was published successfully |
-| `PostFailed` | A post failed to publish |
+| `Owlstack\Core\Events\PostPublished` | A network accepted the post |
+| `Owlstack\Core\Events\PostFailed` | A network rejected it, or the attempt errored |
 
-## Listening to events
+One per network. Publishing to five networks fires five events.
 
-### In EventServiceProvider
+Both carry the same two properties:
 
 ```php
-use OwlStack\Events\PostPublished;
-use OwlStack\Events\PostFailed;
-
-protected $listen = [
-    PostPublished::class => [
-        LogPublishedPost::class,
-        NotifySlack::class,
-    ],
-    PostFailed::class => [
-        LogFailedPost::class,
-        AlertOps::class,
-    ],
-];
+$event->post;                    // the Post
+$event->result;                  // the PublishResult
+$event->result->platformName;    // 'telegram'
+$event->result->externalId;      // '12345'
+$event->result->externalUrl;     // URL, or null
+$event->result->error;           // message, on failure
+$event->result->timestamp;       // DateTimeImmutable
 ```
 
-### With closures
+## Listening
+
+With a closure:
 
 ```php
-use OwlStack\Events\PostPublished;
-use OwlStack\Events\PostFailed;
+use Illuminate\Support\Facades\Event;
+use Owlstack\Core\Events\PostFailed;
+use Owlstack\Core\Events\PostPublished;
 
 Event::listen(PostPublished::class, function (PostPublished $event) {
-    Log::info("Published to {$event->result->platform()->value}", [
-        'external_id' => $event->result->externalId(),
-        'external_url' => $event->result->externalUrl(),
+    Log::info("Published to {$event->result->platformName}", [
+        'external_id' => $event->result->externalId,
+        'external_url' => $event->result->externalUrl,
     ]);
 });
 
 Event::listen(PostFailed::class, function (PostFailed $event) {
-    Log::error("Failed on {$event->result->platform()->value}", [
-        'error' => $event->result->error(),
-    ]);
+    Log::warning("Failed on {$event->result->platformName}: {$event->result->error}");
 });
 ```
 
-## Event properties
+Or with a listener class registered the way your Laravel version registers them.
 
-### PostPublished
+## Writing a delivery row
 
-```php
-$event->post;                    // Post object
-$event->result->platform();     // Platform enum
-$event->result->externalId();   // Platform's post ID
-$event->result->externalUrl();  // URL to view the post
-```
-
-### PostFailed
+The usual reason to listen: record what happened once, rather than at every call site.
 
 ```php
-$event->post;                   // Post object
-$event->result->platform();    // Platform enum
-$event->result->error();       // Error message
-$event->result->errorCode();   // Error code (if available)
+use Owlstack\Core\Delivery\DeliveryStatus;
+
+class RecordDelivery
+{
+    public function handle(PostPublished|PostFailed $event): void
+    {
+        Delivery::create([
+            'post_id'      => $event->post->getMeta('post_id'),
+            'platform'     => $event->result->platformName,
+            'status'       => $event->result->success
+                ? DeliveryStatus::Published->value
+                : DeliveryStatus::Failed->value,
+            'external_id'  => $event->result->externalId,
+            'external_url' => $event->result->externalUrl,
+            'error'        => $event->result->error,
+        ]);
+    }
+}
 ```
+
+`Post::$metadata` is never sent to a network and survives into the event, so put your own identifier there. Without it a listener sees content and a network name and has to guess which record produced it.
+
+## Queue slow listeners
+
+Events dispatch inline, so a listener that calls Slack or sends an email slows publishing. Implement `ShouldQueue` on anything that is not a local write.
+
+```php
+class NotifyTeam implements ShouldQueue
+{
+    public function handle(PostFailed $event): void { /* ... */ }
+}
+```
+
+## Next
+
+<Cards>
+  <Card title="Usage" href="./usage" />
+  <Card title="Event System" href="/developers/events/event-system" />
+  <Card title="Delivery Status" href="/developers/core-concepts/delivery-status" />
+</Cards>

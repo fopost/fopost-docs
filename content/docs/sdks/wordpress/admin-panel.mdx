@@ -1,39 +1,58 @@
 ---
 title: Admin Panel
-description: The OwlStack admin pages in WordPress.
+description: The Owlstack menu in WordPress and what each page does.
 ---
 
 # Admin Panel
 
-The OwlStack plugin adds an **OwlStack** top-level menu to the WordPress admin with the following pages:
-
-## Dashboard
-
-The main dashboard page shows:
-
-- **Connection status** - whether your API key is valid
-- **Connected platforms** - which social accounts are connected
-- **Recent activity** - last 10 published posts with status
+The plugin adds an **Owlstack** top-level menu with these pages.
 
 ## Settings
 
-Configure the plugin:
+The landing page. General options:
 
-| Setting | Description |
-|:--------|:------------|
-| API Key | Your OwlStack API key |
-| Post Types | Which post types show the OwlStack meta box |
-| Auto-publish | Automatically publish when a post is published in WordPress |
-| Default Platforms | Which platforms to publish to by default |
+| Setting | What it does |
+|:--------|:-------------|
+| Post types | Which post types show the publishing meta box. Posts only, by default |
+| Auto-publish | Publish to the selected networks when a post is published in WordPress |
+| Default platforms | Which networks are pre-ticked on a new post |
+| Proxy | Route outbound requests through a proxy, for servers that cannot reach a network directly |
 
-## Publishing Log
+## Cloud
 
-View a log of all publishing activity:
+Connects the site to an OwlStack Cloud account so posts composed in the dashboard are pushed into WordPress. Independent of publishing out to networks: use either, or both. See [Cloud Connect](./cloud-connect).
 
-- Post title and link
-- Platforms published to
-- Status (success / failed)
-- External URL (link to the social post)
-- Timestamp
+## One page per network
 
-Filter by status, platform, or date range.
+Each network gets its own submenu page: Telegram, X, Facebook, LinkedIn, Discord, Instagram, Pinterest, Reddit, Slack, Tumblr, WhatsApp.
+
+Enter that network's credentials there. What each one needs is on [Configure Credentials](/developers/getting-started/connect-platforms).
+
+Each page has a **connection test**, which calls the network and tells you whether the credentials work. Use it before you rely on a scheduled post: a wrong token is invisible until something tries to publish.
+
+Only networks with valid credentials appear in the editor meta box.
+
+## Delivery Logs
+
+Every publish attempt, with:
+
+- The post it came from
+- The network
+- Success or failure, and the error when it failed
+- A link to the published item
+- When it happened
+
+This is where to look when a post did not appear, rather than in the PHP error log. Entries can be bulk deleted once you no longer need them.
+
+## Permissions
+
+Every Owlstack admin page requires `manage_options`, so only administrators can see credentials or change what publishes.
+
+## Next
+
+<Cards>
+  <Card title="Meta Boxes" href="./meta-boxes" />
+  <Card title="Platforms" href="./platforms" />
+  <Card title="Hooks" href="./hooks" />
+  <Card title="Cloud Connect" href="./cloud-connect" />
+</Cards>

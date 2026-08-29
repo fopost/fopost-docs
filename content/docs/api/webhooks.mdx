@@ -1,61 +1,106 @@
 ---
-title: Webhooks API
-description: API endpoints for managing webhook subscriptions.
+title: Webhooks
+description: Subscribe to publishing events, verify the signature, and handle retries.
 ---
 
-# Webhooks API
+# Webhooks
 
-## List webhook endpoints
+Delivery is asynchronous, so a `202` from the publish endpoint tells you the post was accepted, not that it is live. Webhooks are how you find out what actually happened without polling. These endpoints need the `webhooks` scope.
 
-```http
-GET /v1/webhooks
-```
-
-## Create a webhook endpoint
+## Subscribe
 
 ```http
 POST /v1/webhooks
 ```
 
-**Request body:**
+```bash
+curl -X POST https://api.owlstack.app/v1/webhooks \
+  -H "X-API-Key: $OWLSTACK_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "url": "https://yourbrand.com/hooks/owlstack",
+    "events": ["post.published", "post.partially_failed", "delivery.failed"]
+  }'
+```
 
-```json
-{
-  "url": "https://example.com/webhooks/owlstack",
-  "events": ["post.published", "post.failed", "batch.completed"]
+`workspaceId`, `url`, and at least one event are required. The URL must be HTTPS and reachable from the public internet.
+
+The response carries the webhook's signing `secret`. It is returned **only** on creation, so store it then. It is what you verify the signature with below.
+
+## Events
+
+| Event | Fires when |
+|:------|:-----------|
+| `post.published` | Every account on the post published successfully |
+| `post.partially_failed` | Some accounts published, some did not |
+| `post.failed` | No account published |
+| `delivery.published` | One account published. Fires once per account |
+| `delivery.failed` | One account failed after its retries |
+| `delivery.delayed` | One delivery was held, usually waiting on a platform |
+| `account.health_changed` | A connected account's credentials degraded, expired, or recovered |
+
+Subscribe to `delivery.*` when you want per-account granularity, `post.*` when you only care about the overall outcome. Subscribing to both means two notifications for the same publish, which is fine as long as your handler expects it.
+
+`account.health_changed` is the one worth wiring even if you skip the rest. It is how you learn a token died before a scheduled post silently fails.
+
+## What arrives
+
+Every delivery is a `POST` with a JSON body and three headers:
+
+| Header | Contents |
+|:-------|:---------|
+| `X-OwlStack-Event` | The event name |
+| `X-OwlStack-Delivery` | Unique id for this delivery attempt |
+| `X-OwlStack-Signature` | `sha256=` followed by the signature |
+
+## Verify the signature
+
+The signature is an HMAC-SHA256 of the raw request body, keyed with your webhook's signing secret. Compute it over the bytes you received, before any JSON parsing, and compare with a timing-safe comparison.
+
+```javascript
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+function verify(rawBody, header, secret) {
+  const expected = 'sha256=' + createHmac('sha256', secret).update(rawBody).digest('hex');
+  const a = Buffer.from(header ?? '');
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 ```
 
-**Response:**
-
-```json
+```php
+function verify(string $rawBody, ?string $header, string $secret): bool
 {
-  "data": {
-    "id": "wh_abc123",
-    "url": "https://example.com/webhooks/owlstack",
-    "events": ["post.published", "post.failed", "batch.completed"],
-    "signing_secret": "whsec_a1b2c3d4...",
-    "active": true
-  }
+    $expected = 'sha256=' . hash_hmac('sha256', $rawBody, $secret);
+    return $header !== null && hash_equals($expected, $header);
 }
 ```
 
-## Update a webhook
+Reject anything that does not verify. An endpoint that skips this will publish whatever anyone who guesses the URL sends it.
 
-```http
-PATCH /v1/webhooks/{id}
-```
+## Responding
 
-## Delete a webhook
+Answer `2xx` within 10 seconds. Anything else, a timeout included, counts as a failure, and the delivery is retried up to 5 times with exponential backoff. Do the real work on a queue rather than inside the request, or a slow handler turns into a retry storm.
 
-```http
-DELETE /v1/webhooks/{id}
-```
+Deliveries can arrive more than once, and out of order. Deduplicate on `X-OwlStack-Delivery` and treat your handler as idempotent.
 
-## Test a webhook
+A webhook that keeps failing accumulates a `failureCount`, visible on the webhook record. After 10 consecutive failures it is deactivated rather than retried forever. A successful delivery resets the count, so a brief outage costs you nothing.
 
-```http
-POST /v1/webhooks/{id}/test
-```
+## Manage
 
-Sends a test payload to verify your endpoint is receiving and processing webhooks correctly.
+| Endpoint | What it does |
+|:---------|:-------------|
+| `GET /v1/webhooks` | List them, with `lastTriggeredAt` and `failureCount` |
+| `PUT /v1/webhooks/{id}` | Change the URL, the events, or `active` |
+| `POST /v1/webhooks/{id}/test` | Send a test event to the endpoint |
+| `DELETE /v1/webhooks/{id}` | Delete it |
+
+Send a test event first. It is the cheapest way to find out your handler is behind a firewall.
+
+## Next
+
+<Cards>
+  <Card title="Publishing" href="/api/publishing" />
+  <Card title="Automations" href="/api/automations" />
+</Cards>

@@ -1,93 +1,101 @@
 ---
 title: Quick Start (WordPress)
-description: Set up OwlStack in a WordPress site.
+description: Publish from the post editor or from theme and plugin code.
 ---
 
-# Quick Start - WordPress
+# Quick Start (WordPress)
 
-This guide gets OwlStack working in your WordPress site.
+The OwlStack plugin wraps the PHP library for WordPress: an admin settings page, a meta box in the editor, auto-publish on publish, delivery logs, and hooks. Credentials are yours and are entered in WordPress, not in a cloud dashboard.
+
+Requires PHP 8.1 or newer and WordPress 6.4 or newer.
 
 ## 1. Install
 
-Download the plugin from the [OwlStack dashboard](https://app.owlstack.app) and upload it, or install via Composer:
+Upload the plugin zip, or clone into `wp-content/plugins/owlstack`. From a source checkout, run Composer in the plugin directory first:
 
 ```bash
-cd wp-content/plugins/owlstack-wordpress
+cd wp-content/plugins/owlstack
 composer install
 ```
 
-## 2. Activate
+Activate it from **WP Admin → Plugins**.
 
-Go to **WP Admin > Plugins** and activate **OwlStack**.
+## 2. Configure
 
-## 3. Configure
+Go to **Owlstack → Settings** and enter credentials for the networks you want. Each network's required keys are listed under [Configure Credentials](./connect-platforms); the settings page has a connection test per network, which is the fastest way to catch a wrong token.
 
-Navigate to **WP Admin > OwlStack > Settings** and:
+Only networks with valid credentials appear in the editor.
 
-1. Enter your **OwlStack API key** (get one from [app.owlstack.app](https://app.owlstack.app))
-2. Your connected platforms will appear automatically based on what you've set up in the OwlStack dashboard
+## 3. Publish from the editor
 
-<Callout type="info" title="Platform connections">
-Platform connections (OAuth) are managed in the OwlStack dashboard, not in WordPress. The plugin reads your connected platforms via the API key.
-</Callout>
+Editing a post shows an **Owlstack** meta box. Tick the networks and publish. With auto-publish enabled, hitting Publish sends the post out at the same time.
 
-## 4. Publish from the editor
+By default the meta box appears on posts only. Add other post types with the `owlstack_supported_post_types` filter.
 
-When editing a post, you'll see the **OwlStack** meta box in the sidebar. Select your target platforms and hit **Publish** - the post will be automatically published to all selected platforms.
+## 4. Publish from code
 
-## 5. Publish from code
+The `owlstack()` helper is available anywhere in a theme or plugin:
 
 ```php
-// Publish to Telegram
-owlstack()->publish('Hello from WordPress!', ['telegram']);
+owlstack()->telegram('Hello from WordPress!');
+owlstack()->twitter('Hello from WordPress!');
+owlstack()->x('Hello from WordPress!');            // alias
 
-// Publish to multiple platforms
-owlstack()->publish('Hello from WordPress!', [
-    'telegram',
-    'twitter',
-    'linkedin',
+owlstack()->facebook('Check this out!', 'link', [
+    'link' => 'https://example.com',
 ]);
-
-// Publish a Post object
-$post = \OwlStack\Post::create('My Post')
-    ->withUrl('https://example.com/my-post')
-    ->withHashtags(['wordpress']);
-
-owlstack()->publishPost($post, ['telegram', 'twitter']);
 ```
 
-## 6. Hooks
-
-### Actions
+Build a `Post` for anything richer:
 
 ```php
-// After successful publishing
-add_action('owlstack_post_published', function ($result) {
-    error_log("Published to {$result->platform()->value}");
-});
+use Owlstack\Core\Content\Post;
 
-// After a failure
-add_action('owlstack_post_failed', function ($result) {
-    error_log("Failed: {$result->error()}");
-});
+$post = new Post(
+    title: 'My Post',
+    body: 'Hello world!',
+    url: 'https://example.com/my-post',
+    tags: ['wordpress'],
+);
+
+owlstack()->publish($post, 'linkedin');  // one network
+owlstack()->toAll($post);                // every configured network
 ```
 
-### Filters
+## 5. Hooks
 
 ```php
-// Control which post types show the meta box
-add_filter('owlstack_supported_post_types', function ($types) {
-    return ['post', 'page', 'product'];
+add_action('owlstack_post_published', function ($event) {
+    error_log("Published to {$event->result->platformName}");
 });
 
-// Modify the Post object before publishing
-add_filter('owlstack_post_data', function ($post) {
-    return $post;
+add_action('owlstack_post_failed', function ($event) {
+    error_log("Failed: {$event->result->error}");
 });
 ```
 
-## Next steps
+| Hook | Kind | Receives |
+|:-----|:-----|:---------|
+| `owlstack_before_publish` | action | The `WP_Post` and the target network names |
+| `owlstack_after_publish` | action | The `WP_Post` and the results |
+| `owlstack_post_published` | action | A `PostPublished` event |
+| `owlstack_post_failed` | action | A `PostFailed` event |
+| `owlstack_supported_post_types` | filter | The post types showing the meta box |
+| `owlstack_post_data` | filter | The `Post` before publishing |
+| `owlstack_publish_options` | filter | Per-network options before publishing |
 
-- [WordPress Admin Panel](/sdks/wordpress/admin-panel) - Settings page walkthrough
-- [WordPress Hooks](/sdks/wordpress/hooks) - Full hooks reference
-- [WordPress REST API](/sdks/wordpress/rest-api) - REST endpoints
+## Delivery logs
+
+Every attempt is recorded with its status, the error if it failed, and a link to the published item. That is where to look when a post did not appear, rather than in the PHP error log.
+
+## Notes
+
+The plugin uses the WordPress HTTP API rather than cURL directly, so it honours your site's HTTP configuration. OAuth tokens are stored encrypted in `wp_options`.
+
+## Next
+
+<Cards>
+  <Card title="Admin Panel" href="/sdks/wordpress/admin-panel" />
+  <Card title="Hooks Reference" href="/sdks/wordpress/hooks" />
+  <Card title="REST API" href="/sdks/wordpress/rest-api" />
+</Cards>

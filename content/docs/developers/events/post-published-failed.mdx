@@ -1,58 +1,67 @@
 ---
 title: PostPublished & PostFailed
-description: The two core publishing events and their properties.
+description: The two publishing events and what they carry.
 ---
 
 # PostPublished & PostFailed
 
+Both live in `Owlstack\Core\Events` and both carry the same two properties: the `Post` that was published and the `PublishResult` it produced.
+
 ## PostPublished
 
-Fired when a post is successfully published to a platform.
+Emitted after a network accepts the post.
 
 ```php
-use OwlStack\Events\PostPublished;
+use Owlstack\Core\Events\PostPublished;
 
-$event->post;    // The Post object that was published
-$event->result;  // The DeliveryResult (platform, externalId, externalUrl)
+$event->post;                    // the Post
+$event->result;                  // the PublishResult
+$event->result->platformName;    // 'telegram'
+$event->result->externalId;      // '12345'
+$event->result->externalUrl;     // 'https://t.me/channel/12345', or null
+$event->result->timestamp;       // DateTimeImmutable
 ```
 
 ## PostFailed
 
-Fired when publishing fails.
+Emitted after a network rejects it, or the attempt errored.
 
 ```php
-use OwlStack\Events\PostFailed;
+use Owlstack\Core\Events\PostFailed;
 
-$event->post;    // The Post object that failed
-$event->result;  // The DeliveryResult (platform, error message, error code)
+$event->post;                    // the Post
+$event->result;                  // the PublishResult
+$event->result->platformName;    // 'twitter'
+$event->result->error;           // 'Rate limit exceeded'
+$event->result->timestamp;       // DateTimeImmutable
 ```
 
-## Laravel example
+`error` is a string. It is enough to log and show, not enough to branch on. When you need to distinguish a rate limit from a bad token programmatically, call the platform directly and catch the typed exception instead. See [Error Handling](/developers/core-concepts/error-handling).
+
+## Correlating back to your data
+
+`Post::$metadata` is never sent to a network and survives into the event, which makes it the right place to stash your own identifier:
 
 ```php
-use OwlStack\Events\PostPublished;
-use OwlStack\Events\PostFailed;
+$post = new Post(
+    title: 'Release notes',
+    body: 'Version 2.0 is out.',
+    metadata: ['article_id' => 42],
+);
 
-Event::listen(PostPublished::class, function (PostPublished $event) {
-    Log::info("Published to {$event->result->platform()->value}", [
-        'external_id' => $event->result->externalId(),
-        'url' => $event->result->externalUrl(),
-    ]);
-});
-
-Event::listen(PostFailed::class, function (PostFailed $event) {
-    Log::error("Failed on {$event->result->platform()->value}: {$event->result->error()}");
-});
+// in the listener
+$articleId = $event->post->getMeta('article_id');
 ```
 
-## WordPress example
+Without it, a listener sees content and a network name, and has to guess which of your records produced it.
 
-```php
-add_action('owlstack_post_published', function ($result) {
-    error_log("Published to {$result->platform()->value}");
-});
+## One per network
 
-add_action('owlstack_post_failed', function ($result) {
-    error_log("Failed: {$result->error()}");
-});
-```
+Publishing to five networks emits five events, each with its own result. There is no combined "all done" event; if you need one, count them in your dispatcher.
+
+## Next
+
+<Cards>
+  <Card title="Event System" href="./event-system" />
+  <Card title="Delivery Status" href="/developers/core-concepts/delivery-status" />
+</Cards>

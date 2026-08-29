@@ -1,11 +1,11 @@
 ---
 title: API Overview
-description: Overview of the OwlStack REST API.
+description: Base URL, envelopes, pagination, and errors for the OwlStack REST API.
 ---
 
 # API Overview
 
-The OwlStack API is a REST API at `https://api.owlstack.app/v1`. All requests require authentication and return JSON.
+The OwlStack REST API is what the dashboard itself runs on. Anything you can do in the app you can do from your own code: create posts, schedule them, attach media, read analytics, drive automations, and receive webhooks.
 
 ## Base URL
 
@@ -13,62 +13,90 @@ The OwlStack API is a REST API at `https://api.owlstack.app/v1`. All requests re
 https://api.owlstack.app/v1
 ```
 
+Every path in this reference is relative to that base. The machine-readable spec is served at [`/v1/openapi.json`](https://api.owlstack.app/v1/openapi.json) and is the source this reference is written from.
+
 ## Authentication
 
-Include your API key in the `Authorization` header:
+Send your API key in the `X-API-Key` header:
 
-```http
-Authorization: Bearer your-api-key-here
+```bash
+curl https://api.owlstack.app/v1/posts \
+  -H "X-API-Key: $OWLSTACK_API_KEY"
 ```
 
-## Response format
+Keys carry scopes, and a key may be bound to a single workspace. See [Authentication](/api/authentication).
 
-All responses follow this structure:
+## Response envelope
+
+A single resource is returned bare:
 
 ```json
 {
-  "data": { ... },
-  "meta": {
-    "request_id": "req_abc123",
-    "timestamp": "2026-02-14T10:00:00Z"
-  }
+  "id": "0f1c4a1e-8f3c-4c62-9f6a-2a4b1a9e77d1",
+  "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+  "status": "scheduled"
 }
 ```
 
-Error responses:
+A collection is wrapped in `data` with a `meta` block:
 
 ```json
 {
-  "error": {
-    "code": "validation_error",
-    "message": "The platforms field is required.",
-    "details": { ... }
-  },
-  "meta": {
-    "request_id": "req_abc123"
-  }
+  "data": [ { "id": "0f1c4a1e-...", "status": "published" } ],
+  "meta": { "page": 1, "per_page": 30, "total": 214, "total_pages": 8 }
 }
 ```
 
-## HTTP status codes
+## Pagination
 
-| Code | Description |
-|:-----|:------------|
+List endpoints take `page` (default `1`) and `per_page` (default `30`, maximum `100`). Read `meta.total_pages` rather than paging until you get an empty array.
+
+```bash
+curl "https://api.owlstack.app/v1/posts?page=2&per_page=50" \
+  -H "X-API-Key: $OWLSTACK_API_KEY"
+```
+
+## Identifiers and timestamps
+
+Resource ids are UUIDs. Timestamps are ISO 8601 in UTC (`2026-08-29T14:30:00.000Z`), and any time you send is interpreted the same way, so convert local times before sending them.
+
+## Errors
+
+Errors use one envelope on every endpoint:
+
+```json
+{
+  "error": "validation_error",
+  "message": "accounts must contain at least one account id"
+}
+```
+
+`error` is the stable machine-readable code, `message` is for humans and may change. Some errors add context fields, such as `retry_after` on a 429.
+
+| Status | Meaning |
+|:-------|:--------|
 | 200 | Success |
 | 201 | Created |
-| 400 | Bad request (validation error) |
-| 401 | Unauthorized (invalid API key) |
-| 403 | Forbidden (insufficient plan) |
-| 404 | Not found |
-| 422 | Unprocessable entity |
-| 429 | Rate limited |
-| 500 | Server error |
+| 400 | Malformed request or a bad identifier |
+| 401 | Missing or invalid API key |
+| 402 | Out of AI credits, or no active subscription |
+| 403 | Key lacks the required scope, or the resource is in another workspace |
+| 404 | No such resource |
+| 422 | Validation failed |
+| 429 | Rate limited, see [Rate Limits](/api/rate-limits) |
+| 500 | Something broke on our side |
 
-## SDKs
+A 403 is also what you get for a workspace you do not belong to. The API never distinguishes "not yours" from "does not exist" in a way that would let you probe for other tenants' data.
 
-While you can call the API directly, we recommend using an SDK:
+## Versioning
 
-- **PHP SDK** — `owlstack/core`
-- **Laravel** — `owlstack/laravel`
-- **WordPress** — `owlstack/wordpress`
-- **Node.js** — `@owlstack/node` (coming soon)
+The version lives in the path. `/v1` will not change shape under you: new fields and new endpoints are added, existing fields are not removed or repurposed. Treat unknown fields in a response as forward compatible and ignore them.
+
+## Where to go next
+
+<Cards>
+  <Card title="Authentication" href="/api/authentication" />
+  <Card title="Publishing" href="/api/publishing" />
+  <Card title="Scheduling" href="/api/scheduling" />
+  <Card title="Webhooks" href="/api/webhooks" />
+</Cards>

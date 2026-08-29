@@ -1,58 +1,63 @@
 ---
 title: Team Collaboration
-description: Invite team members and collaborate on social media content.
+description: Invite people, set roles, and require approval before anything ships.
 ---
 
 # Team Collaboration
 
-OwlStack lets you invite team members to collaborate on content creation and publishing.
+## Inviting someone
 
-## Inviting Team Members
+1. **Settings → Team**
+2. **Invite Member**
+3. Their email, their role, and which workspaces they get
+4. Send
 
-1. Go to **Settings → Team**
-2. Click **Invite Member**
-3. Enter their email address
-4. Choose their role
-5. Click **Send Invite**
-
-They'll receive an email invitation to join your workspace.
+They get an email invitation. Access begins when they accept, not when you send it.
 
 ## Roles
 
-| Role | What They Can Do |
-|:-----|:----------------|
-| **Owner** | Full access, billing, delete workspace |
-| **Admin** | Manage team, connect accounts, all post actions |
-| **Editor** | Create, edit, schedule, and publish posts |
-| **Viewer** | View posts, analytics, and calendar (read-only) |
+| Role | Can |
+|:-----|:----|
+| **Owner** | Everything, including billing and deleting the workspace |
+| **Admin** | Manage the team, connect accounts, publish, approve |
+| **Editor** | Create, edit, and schedule. Posts go for approval when the workspace requires it |
+| **Viewer** | Read posts, the calendar, and analytics. Change nothing |
 
-## Workspaces
+Roles are per workspace, so the same person can be an admin on one client and a viewer on another. That is what makes a single account workable for an agency with contractors.
 
-Workspaces let you organize different brands, clients, or projects separately. Each workspace has its own:
+## Approvals
 
-- Social media accounts
-- Posts and drafts
-- Analytics
-- Team members
+A workspace can require approval before scheduled posts from editors go out. Turn it on in the workspace settings.
 
-| Plan | Workspaces |
-|:-----|:-----------|
-| **Starter** | 1 |
-| **Pro** | 1 |
-| **Pro Plus** | 3 |
+With it on: an editor writes and schedules, the post is held, an admin approves or sends it back. Nothing an editor writes reaches an audience unreviewed.
 
-## Team Features
+Leave it off for a team where everyone publishes. Turn it on the first time someone new joins.
 
-All plans include **unlimited team members**. You can invite as many people as you need at no extra cost.
+The agent's drafts go through the same queue, so an AI-written post is reviewed exactly like a human-written one.
 
-### Approval Workflows
+## Seats
 
-Set up approval workflows so posts must be reviewed before publishing:
+| Plan | Seats |
+|:-----|:------|
+| Starter | 1 |
+| Pro | 3 |
+| Business | 10 |
 
-1. An **Editor** creates a post
-2. An **Admin** reviews and approves (or requests changes)
-3. Once approved, the post can be published or scheduled
+Extra seats are $8/mo each on Pro and Business. Starter's single seat is a hard cap: to add anyone, move to Pro.
 
-<Callout type="info" title="Coming Soon">
-Team collaboration features are being developed. This guide will be updated with screenshots and more detailed instructions once available.
-</Callout>
+## Workspaces are the stronger boundary
+
+A role limits what someone can do. A [workspace](./workspaces) limits what they can see. For an agency, put each client in its own workspace and grant membership per client, rather than relying on people to be careful in a shared one.
+
+## Removing someone
+
+Remove them from **Settings → Team**. Access ends immediately. Their posts and history stay: the work belongs to the workspace, not the person.
+
+Revoke any [API keys](/api/authentication) they created separately. Removing a member does not revoke a key.
+
+## Next
+
+<Cards>
+  <Card title="Workspaces" href="./workspaces" />
+  <Card title="Plans" href="/guide/plans/overview" />
+</Cards>

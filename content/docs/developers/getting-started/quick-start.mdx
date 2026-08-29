@@ -1,88 +1,130 @@
 ---
-title: Quick Start (Standalone PHP)
-description: Publish your first post with OwlStack in minutes.
+title: Quick Start
+description: Publish your first post from standalone PHP.
 ---
 
-# Quick Start - Standalone PHP
+# Quick Start
 
-This guide gets you publishing to social media in under 5 minutes.
+Publishing to Telegram, end to end. Telegram first because a bot token takes about a minute to get from [@BotFather](https://t.me/BotFather), with no app review in the way.
 
 ## 1. Install
 
 ```bash
-composer require owlstack/cloud
+composer require owlstack/owlstack-core
 ```
 
-## 2. Get your API key
-
-1. Sign up at [app.owlstack.app](https://app.owlstack.app)
-2. Create a project
-3. Connect at least one social media platform via OAuth
-4. Copy your API key from the project settings
-
-## 3. Publish your first post
+## 2. Publish
 
 ```php
 <?php
 
 require __DIR__ . '/vendor/autoload.php';
 
-use OwlStack\Cloud\OwlStackClient;
-use OwlStack\Post;
-use OwlStack\Enums\Platform;
+use Owlstack\Core\Config\PlatformCredentials;
+use Owlstack\Core\Content\Post;
+use Owlstack\Core\Http\HttpClient;
+use Owlstack\Core\Platforms\PlatformRegistry;
+use Owlstack\Core\Platforms\Telegram\TelegramFormatter;
+use Owlstack\Core\Platforms\Telegram\TelegramPlatform;
+use Owlstack\Core\Publishing\Publisher;
 
-$client = new OwlStackClient(
-    apiKey: getenv('OWLSTACK_API_KEY'),
-);
-
-$post = Post::create('Hello world! My first post via OwlStack.')
-    ->withHashtags(['opensource', 'php']);
-
-$result = $client->publish($post, [Platform::Telegram]);
-
-if ($result->isSuccessful()) {
-    echo "Published! URL: {$result->externalUrl()}\n";
-} else {
-    echo "Failed: {$result->error()}\n";
-}
-```
-
-## 4. Multi-platform publishing
-
-Publish to multiple platforms in a single call:
-
-```php
-$results = $client->publish($post, [
-    Platform::Telegram,
-    Platform::Twitter,
-    Platform::LinkedIn,
+// Credentials you obtained from the network itself
+$credentials = new PlatformCredentials('telegram', [
+    'api_token' => getenv('TELEGRAM_BOT_TOKEN'),
+    'channel_username' => '@your-channel',
 ]);
 
-foreach ($results as $result) {
-    echo $result->isSuccessful()
-        ? "{$result->platform()->value}: {$result->externalUrl()}\n"
-        : "{$result->platform()->value}: {$result->error()}\n";
+// A platform is credentials + an HTTP client + a formatter
+$platform = new TelegramPlatform($credentials, new HttpClient(), new TelegramFormatter());
+
+$registry = new PlatformRegistry();
+$registry->register($platform);
+
+$publisher = new Publisher($registry);
+
+$post = new Post(
+    title: 'Hello World',
+    body: 'My first post via Owlstack.',
+    url: 'https://example.com/hello-world',
+    tags: ['opensource', 'php'],
+);
+
+$result = $publisher->publish($post, 'telegram');
+
+if ($result->success) {
+    echo "Published: {$result->externalUrl}\n";
+} else {
+    echo "Failed: {$result->error}\n";
 }
 ```
 
-OwlStack formats your content for each platform automatically - character limits, markup syntax, hashtag placement, and media constraints are all handled server-side.
+`publish()` never throws. A bad token, an unreachable network, or content over the limit all come back as a `PublishResult` with `success` false and an `error` you can log.
 
-## 5. Add media
+## 3. Add media
 
 ```php
-use OwlStack\Media;
+use Owlstack\Core\Content\Media;
+use Owlstack\Core\Content\MediaCollection;
 
-$post = Post::create('Check out this photo!')
-    ->withMedia(Media::image('/path/to/photo.jpg'))
-    ->withHashtags(['photography']);
+$media = (new MediaCollection())
+    ->add(new Media(
+        path: '/path/to/photo.jpg',
+        mimeType: 'image/jpeg',
+        altText: 'A sunset over the ocean',
+    ));
 
-$client->publish($post, [Platform::Instagram, Platform::Twitter]);
+$post = new Post(
+    title: 'Sunset',
+    body: 'Taken from the office window.',
+    media: $media,
+    tags: ['photography'],
+);
 ```
 
-OwlStack uploads and processes media on the server, resizing and converting as needed for each platform.
+`MediaCollection` is immutable: `add()` returns a new collection rather than mutating the old one, so assign the result.
 
-## Next steps
+## 4. Publish to several networks
 
-- [Connect Platforms](./connect-platforms) - Set up social media accounts
-- [Core Concepts](/developers/core-concepts/posts-and-content) - Learn about Posts, Media, and the content model
-- [Platforms](/developers/platforms/overview) - See all 11 supported platforms
+Register each platform, then loop:
+
+```php
+$registry->register($telegramPlatform);
+$registry->register($twitterPlatform);
+$registry->register($discordPlatform);
+
+foreach ($registry->names() as $name) {
+    $result = $publisher->publish($post, $name);
+    echo $result->success
+        ? "{$name}: {$result->externalUrl}\n"
+        : "{$name}: {$result->error}\n";
+}
+```
+
+Each network is published independently, so one failure does not stop the others.
+
+## 5. Per-network options
+
+The third argument to `publish()` is passed through to that network:
+
+```php
+$publisher->publish($post, 'telegram', [
+    'chat_id' => '@another-channel',
+    'disable_notification' => true,
+]);
+
+$publisher->publish($post, 'reddit', [
+    'subreddit' => 'php',
+    'kind' => 'self',
+]);
+```
+
+Every option is on the [platform pages](/developers/platforms/overview).
+
+## Next
+
+<Cards>
+  <Card title="Configure Credentials" href="./connect-platforms" />
+  <Card title="Posts & Content" href="/developers/core-concepts/posts-and-content" />
+  <Card title="Error Handling" href="/developers/core-concepts/error-handling" />
+  <Card title="Platforms" href="/developers/platforms/overview" />
+</Cards>

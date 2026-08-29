@@ -1,47 +1,60 @@
 ---
 title: Analytics
-description: Track your social media performance with OwlStack analytics.
+description: Engagement, followers, top posts, best times, and audience.
 ---
 
 # Analytics
 
-OwlStack gives you insights into how your posts are performing across all your connected platforms.
+Numbers from every connected account in one place, collected in the background on a schedule.
 
-## Overview Dashboard
+## Cross-network leaderboard
 
-The analytics dashboard shows:
+Every account side by side: engagement, followers, posts, and the change over the period. The question analytics should answer first is "which of these is actually working", and a leaderboard answers it faster than five dashboards.
 
-- **Total posts published** across all platforms
-- **Engagement metrics** — likes, comments, shares, clicks
-- **Platform breakdown** — how each platform is performing
-- **Trending content** — your best-performing posts
+## Top posts
 
-## Metrics
+Ranked by engagement, over whatever range you pick. It includes posts published natively on the network, not only ones sent through OwlStack, so the ranking reflects the account rather than the tool.
 
-| Metric | What It Measures |
-|:-------|:-----------------|
-| **Impressions** | How many times your post was seen |
-| **Engagement** | Total interactions (likes, comments, shares) |
-| **Clicks** | How many times people clicked your links |
-| **Engagement Rate** | Engagement divided by impressions |
-| **Reach** | Unique accounts that saw your post |
+## Audience growth
 
-## Filtering
+Follower counts over time, per network. Networks vary in how often they report and how far back, so expect a stepped line on some rather than a smooth one.
 
-You can filter analytics by:
+## Who your audience is
 
-- **Date range** — last 7 days, 30 days, 90 days, or custom
-- **Platform** — see performance for a specific platform
-- **Post type** — images, videos, text-only
+Demographic breakdowns for the networks that report them, and only above their own minimum audience sizes. Gaps here are the network declining to say, not a collection failure.
 
-## Reports
+## Best times
 
-Export your analytics data as CSV or PDF to share with your team or clients.
+Worked out from your own engagement history per account, and offered when you schedule. It needs a few weeks of history before it means anything, and it is a suggestion rather than a rule.
 
-## Platform-Specific Insights
+## Posting streak
 
-Each platform provides different engagement data. OwlStack normalizes this data so you can compare performance across platforms in a single view.
+A year of posting activity, one square per day. Consistency is most of what compounds on social, and this is the view that makes an honest four-day gap visible.
 
-<Callout type="info" title="Coming Soon">
-The analytics dashboard is being developed. This guide will be updated with screenshots and more detailed instructions once available.
-</Callout>
+## Campaign roll-up
+
+[Labels](./labels) aggregate. Label posts by campaign or client and you get performance for the campaign rather than for individual posts spread across accounts.
+
+Label at publish time. There is no way to reconstruct it later.
+
+## Competitors
+
+Track public accounts and see their numbers next to yours: posting frequency, engagement, growth. Useful for calibration, since "engagement is down" means something different if it is down across your whole category.
+
+## Refresh and export
+
+Metrics collect on a schedule. Collect now after publishing something you want to measure immediately; it is throttled, so it is not a substitute for waiting.
+
+Export to CSV for anything you would rather do in a spreadsheet, or read the same figures through the [analytics API](/api/analytics).
+
+## Basic and advanced
+
+Starter gets engagement and follower counts. [Pro](/guide/plans/pro) and above add trends, cross-network comparison, demographics, best times, and the label roll-up.
+
+## Next
+
+<Cards>
+  <Card title="Recycling" href="./recycling" />
+  <Card title="Labels" href="./labels" />
+  <Card title="Analytics API" href="/api/analytics" />
+</Cards>

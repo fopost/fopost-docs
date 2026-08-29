@@ -1,88 +1,107 @@
 ---
 title: Publishing
-description: How OwlStack's cloud publishing works.
+description: The Publisher, the registry, and the PublishResult it always returns.
 ---
 
 # Publishing
 
-## OwlStackClient
+## Publisher
 
-The main entry point. It sends your content to the OwlStack cloud API, which handles formatting, platform API calls, and delivery.
+The orchestrator. It resolves the network from the registry, publishes, dispatches events, and returns a result. It **never throws**.
 
 ```php
-use OwlStack\Cloud\OwlStackClient;
-use OwlStack\Post;
-use OwlStack\Enums\Platform;
+use Owlstack\Core\Publishing\Publisher;
 
-$client = new OwlStackClient(apiKey: env('OWLSTACK_API_KEY'));
+$publisher = new Publisher($registry, $eventDispatcher);  // dispatcher optional
 
-$post = Post::create('Hello world!')
-    ->withHashtags(['php', 'opensource']);
-
-$result = $client->publish($post, [Platform::Telegram]);
+$result = $publisher->publish($post, 'telegram', ['chat_id' => '@channel']);
 ```
 
-## DeliveryResult
+| Argument | Description |
+|:---------|:------------|
+| `$post` | The `Post` to publish |
+| `$platformName` | Which registered network, by name |
+| `$options` | Per-network options, passed straight through |
 
-An immutable result object returned after every publish call.
+## PlatformRegistry
+
+Register the networks you have credentials for. Nothing else is publishable.
 
 ```php
-$result->isSuccessful();  // bool
-$result->isFailed();      // bool
-$result->platform();      // Platform enum
-$result->externalId();    // '12345' or null
-$result->externalUrl();   // 'https://t.me/channel/12345' or null
-$result->error();         // 'Rate limit exceeded' or null
-$result->timestamp();     // DateTimeImmutable
+use Owlstack\Core\Platforms\PlatformRegistry;
+
+$registry = new PlatformRegistry();
+$registry->register($telegramPlatform);
+$registry->register($twitterPlatform);
+
+$registry->names();  // ['telegram', 'twitter']
 ```
 
-### Handling results
+Publishing to a name that is not registered comes back as a failed result, not an exception.
+
+## PublishResult
+
+Immutable, returned from every call:
 
 ```php
-$results = $client->publish($post, [
-    Platform::Twitter,
-    Platform::LinkedIn,
-    Platform::Telegram,
-]);
+$result->success;       // bool
+$result->failed();      // bool, the inverse
+$result->platformName;  // 'telegram'
+$result->externalId;    // '12345', or null
+$result->externalUrl;   // 'https://t.me/channel/12345', or null
+$result->error;         // 'Rate limit exceeded', or null
+$result->timestamp;     // DateTimeImmutable
+```
 
-foreach ($results as $result) {
-    if ($result->isSuccessful()) {
-        echo "{$result->platform()->value}: {$result->externalUrl()}\n";
-    } else {
-        echo "{$result->platform()->value}: {$result->error()}\n";
-    }
+Branch on `success`, and store `externalId` if you ever want to delete the item later.
+
+Not every network returns a URL. Some return only an id, and some return neither in a form that can be turned into a link, so treat `externalUrl` as optional rather than assuming it is there.
+
+## Why it does not throw
+
+Publishing crosses a network to a service you do not control. A timeout, an expired token, or a rate limit is an ordinary Tuesday, not an exceptional condition.
+
+Returning a result instead of throwing means one failing network cannot abort the loop that is publishing to four others, and a user hitting Save gets a partial success they can act on rather than a 500.
+
+```php
+foreach ($registry->names() as $name) {
+    $result = $publisher->publish($post, $name);
+
+    $result->success
+        ? $this->recordSuccess($name, $result->externalId)
+        : $this->recordFailure($name, $result->error);
 }
 ```
 
-## Publishing options
+If you want the exceptions, call the platform directly rather than through the publisher. See [Error Handling](./error-handling).
 
-Pass platform-specific options as the third parameter:
+## Per-network options
+
+The third argument goes to that network untouched:
 
 ```php
-// Telegram: specify chat ID
-$client->publish($post, [Platform::Telegram], [
-    'chat_id' => '@my_channel',
+$publisher->publish($post, 'reddit', [
+    'subreddit' => 'php',
+    'kind' => 'self',
+    'flair_id' => '...',
 ]);
 
-// Twitter: create a thread
-$client->publish($post, [Platform::Twitter], [
-    'thread' => true,
+$publisher->publish($post, 'discord', [
+    'embed' => true,
+    'color' => 0x5865F2,
 ]);
 ```
 
-See each platform's documentation for available options.
+Some are required. Reddit needs a `subreddit`, WhatsApp needs a `to`. The [platform pages](/developers/platforms/overview) list them.
 
-## What happens on the server
+## Events
 
-When you call `publish()`, the OwlStack cloud:
+Pass a dispatcher and the publisher emits `PostPublished` or `PostFailed` after every attempt. That is the right place for logging, metrics, or writing delivery rows, rather than doing it at the call site. See [Event System](/developers/events/event-system).
 
-1. **Validates** your API key and checks plan limits
-2. **Formats** content for each target platform (character limits, markup, hashtags)
-3. **Validates** media against platform constraints
-4. **Publishes** to each platform's API using stored OAuth credentials
-5. **Retries** automatically on transient failures
-6. **Returns** results with delivery status, external IDs, and URLs
+## Next
 
-<Callout type="info" title="Pro Feature">
-With the **Pro plan**, you can use batch publishing, scheduled publishing, and delivery logging. See [Batch Publishing](/guide/pro/batch-publishing) and [Scheduling](/guide/pro/scheduling).
-</Callout>
+<Cards>
+  <Card title="Delivery Status" href="./delivery-status" />
+  <Card title="Error Handling" href="./error-handling" />
+  <Card title="Event System" href="/developers/events/event-system" />
+</Cards>

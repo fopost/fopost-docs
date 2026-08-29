@@ -1,39 +1,41 @@
 ---
 title: Tumblr
-description: Publishing to Tumblr blogs.
+description: Text, image, video, link, and audio posts.
 ---
 
 # Tumblr
 
-Publish to Tumblr blogs using NPF (Neue Post Format) content blocks with support for draft, queue, and private states.
+Tumblr posts to one blog, identified by its hostname, and supports drafts and a queue.
 
-## Connect
-
-Connect Tumblr in the [OwlStack dashboard](https://app.owlstack.app):
-
-1. Go to **Project Settings > Platforms > Tumblr**
-2. Click **Connect with Tumblr**
-3. Authorize OwlStack via OAuth
-4. Select the target blog
-
-## Publishing
+## Credentials
 
 ```php
-use OwlStack\Enums\Platform;
+$credentials = new PlatformCredentials('tumblr', [
+    'access_token' => '...',
+    'blog_identifier' => 'myblog.tumblr.com',
+]);
+```
 
-$result = $client->publish($post, [Platform::Tumblr]);
+## Getting access
+
+Register an app at [tumblr.com/oauth/apps](https://www.tumblr.com/oauth/apps). Self-service, no review.
+
+## Publish
+
+```php
+$result = $publisher->publish($post, 'tumblr');
 ```
 
 ## Options
 
 | Option | Type | Description |
 |:-------|:-----|:------------|
-| `post_type` | `string` | `text`, `image`, `video`, `link`, `audio` |
-| `state` | `string` | `published`, `draft`, `queue`, `private` |
+| `post_type` | `string` | `text`, `image`, `video`, `link`, or `audio` |
+| `state` | `string` | `published`, `draft`, `queue`, or `private` |
 | `slug` | `string` | URL slug for the post |
 
 ```php
-$result = $client->publish($post, [Platform::Tumblr], [
+$publisher->publish($post, 'tumblr', [
     'post_type' => 'text',
     'state' => 'published',
     'slug' => 'my-post-slug',
@@ -45,4 +47,18 @@ $result = $client->publish($post, [Platform::Tumblr], [
 | Constraint | Value |
 |:-----------|:------|
 | Max text length | 4,096 characters |
-| Content format | NPF content blocks |
+| Markup | Content blocks |
+
+Read them at runtime with `$platform->constraints()` rather than hardcoding, since networks change them.
+
+## Drafts and the queue
+
+`state` is worth knowing about. `draft` creates the post without publishing it, which is a good way to test a formatter against a real blog without posting anything. `queue` hands it to Tumblr's own queue, which spaces posts out on a schedule you set in the blog's settings.
+
+## Next
+
+<Cards>
+  <Card title="All Platforms" href="./overview" />
+  <Card title="Configure Credentials" href="/developers/getting-started/connect-platforms" />
+  <Card title="Error Handling" href="/developers/core-concepts/error-handling" />
+</Cards>

@@ -1,48 +1,52 @@
 ---
 title: Discord
-description: Publishing to Discord channels via bot or webhook.
+description: Publishing via a bot or a webhook, with rich embeds.
 ---
 
 # Discord
 
-Discord supports two modes - **bot** and **webhook** - with rich embed support.
+Discord takes either a bot token or a webhook URL. A webhook is faster to set up; a bot can do more.
 
-## Connect
-
-Connect Discord in the [OwlStack dashboard](https://app.owlstack.app):
-
-**Bot mode:**
-1. Go to **Project Settings > Platforms > Discord**
-2. Enter your bot token and target channel ID
-3. Click **Connect**
-
-**Webhook mode:**
-1. In your Discord server, go to **Channel Settings > Integrations > Webhooks**
-2. Create a webhook and copy the URL
-3. Paste the webhook URL in the OwlStack dashboard
-
-## Publishing
+## Credentials
 
 ```php
-use OwlStack\Enums\Platform;
+// Bot
+$credentials = new PlatformCredentials('discord', [
+    'bot_token' => '...',
+    'channel_id' => '...',
+]);
 
-$result = $client->publish($post, [Platform::Discord]);
+// Or webhook
+$credentials = new PlatformCredentials('discord', [
+    'webhook_url' => 'https://discord.com/api/webhooks/...',
+]);
+```
+
+## Getting access
+
+For a webhook: server settings, Integrations, New Webhook, copy the URL. That is the whole process, and it needs no app.
+
+For a bot: create an application in the [Discord developer portal](https://discord.com/developers), add a bot, invite it to your server with permission to send messages, and copy the token and the channel id.
+
+## Publish
+
+```php
+$result = $publisher->publish($post, 'discord');
 ```
 
 ## Options
 
 | Option | Type | Description |
 |:-------|:-----|:------------|
-| `embed` | `bool` | Use rich embed format |
-| `color` | `int` | Embed color (hex) |
-| `thread_id` | `string` | Send to a thread |
-| `tts` | `bool` | Text-to-speech |
+| `embed` | `bool` | Send as a rich embed rather than plain text |
+| `color` | `int` | Embed colour, for example `0x5865F2` |
+| `thread_id` | `string` | Post into a thread |
+| `tts` | `bool` | Text to speech |
 
 ```php
-$result = $client->publish($post, [Platform::Discord], [
+$publisher->publish($post, 'discord', [
     'embed' => true,
     'color' => 0x5865F2,
-    'thread_id' => '...',
 ]);
 ```
 
@@ -51,6 +55,20 @@ $result = $client->publish($post, [Platform::Discord], [
 | Constraint | Value |
 |:-----------|:------|
 | Max text length | 2,000 characters |
-| Max media | 10 |
-| Supported media types | JPEG, PNG, GIF, WebP, MP4 |
-| Formatter markup | Markdown |
+| Markup | Markdown |
+
+Read them at runtime with `$platform->constraints()` rather than hardcoding, since networks change them.
+
+## Webhook or bot
+
+A webhook posts under the webhook's own name and avatar, cannot read anything, and is revoked by deleting it. That containment is usually a feature.
+
+A bot posts under its own identity, can be given permissions per channel, and can act beyond posting. Use one when a webhook is genuinely not enough.
+
+## Next
+
+<Cards>
+  <Card title="All Platforms" href="./overview" />
+  <Card title="Configure Credentials" href="/developers/getting-started/connect-platforms" />
+  <Card title="Error Handling" href="/developers/core-concepts/error-handling" />
+</Cards>

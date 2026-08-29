@@ -1,27 +1,36 @@
 ---
 title: LinkedIn
-description: Publishing to LinkedIn personal profiles and company pages.
+description: Publishing to a personal profile or a company page.
 ---
 
 # LinkedIn
 
-Publish to personal profiles or company pages on LinkedIn.
+LinkedIn posts as a person or as an organisation, decided by which id you supply.
 
-## Connect
-
-Connect LinkedIn in the [OwlStack dashboard](https://app.owlstack.app):
-
-1. Go to **Project Settings > Platforms > LinkedIn**
-2. Click **Connect with LinkedIn**
-3. Authorize OwlStack via OAuth
-4. Select personal profile or company page
-
-## Publishing
+## Credentials
 
 ```php
-use OwlStack\Enums\Platform;
+// Personal profile
+$credentials = new PlatformCredentials('linkedin', [
+    'access_token' => '...',
+    'person_id' => 'abc123',
+]);
 
-$result = $client->publish($post, [Platform::LinkedIn]);
+// Or a company page
+$credentials = new PlatformCredentials('linkedin', [
+    'access_token' => '...',
+    'organization_id' => 'org456',
+]);
+```
+
+## Getting access
+
+Create an app in the [LinkedIn developer portal](https://learn.microsoft.com/en-us/linkedin/marketing/). Posting to a company page needs Community Management API access, which is an application with a real review behind it. Budget time for it.
+
+## Publish
+
+```php
+$result = $publisher->publish($post, 'linkedin');
 ```
 
 ## Options
@@ -29,12 +38,10 @@ $result = $client->publish($post, [Platform::LinkedIn]);
 | Option | Type | Description |
 |:-------|:-----|:------------|
 | `visibility` | `string` | `PUBLIC` or `CONNECTIONS` |
-| `target` | `string` | `personal` or `company` (if both connected) |
 
 ```php
-$result = $client->publish($post, [Platform::LinkedIn], [
+$publisher->publish($post, 'linkedin', [
     'visibility' => 'PUBLIC',
-    'target' => 'company',
 ]);
 ```
 
@@ -43,5 +50,18 @@ $result = $client->publish($post, [Platform::LinkedIn], [
 | Constraint | Value |
 |:-----------|:------|
 | Max text length | 3,000 characters |
-| Max media | 1 |
-| Supported media types | JPEG, PNG, GIF |
+| Markup | Plain text |
+
+Read them at runtime with `$platform->constraints()` rather than hardcoding, since networks change them.
+
+## Person or organisation
+
+Supply `person_id` and the post is authored by that person; supply `organization_id` and it is authored by the page. Supplying both is ambiguous, so pick one per credential set. To post to both, register two platform instances with different names.
+
+## Next
+
+<Cards>
+  <Card title="All Platforms" href="./overview" />
+  <Card title="Configure Credentials" href="/developers/getting-started/connect-platforms" />
+  <Card title="Error Handling" href="/developers/core-concepts/error-handling" />
+</Cards>

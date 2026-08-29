@@ -1,44 +1,47 @@
 ---
 title: Slack
-description: Publishing messages to Slack channels.
+description: Posting via a bot token or an incoming webhook.
 ---
 
 # Slack
 
-Slack supports two modes - **bot token** and **webhook** - with Block Kit layout support.
+Slack takes either a bot token with a channel, or an incoming webhook URL.
 
-## Connect
-
-Connect Slack in the [OwlStack dashboard](https://app.owlstack.app):
-
-**Bot token mode:**
-1. Go to **Project Settings > Platforms > Slack**
-2. Click **Connect with Slack**
-3. Authorize OwlStack and select a workspace
-4. Choose the target channel
-
-**Webhook mode:**
-1. In your Slack workspace, create an incoming webhook
-2. Paste the webhook URL in the OwlStack dashboard
-
-## Publishing
+## Credentials
 
 ```php
-use OwlStack\Enums\Platform;
+// Bot
+$credentials = new PlatformCredentials('slack', [
+    'bot_token' => 'xoxb-...',
+    'channel' => '#general',
+]);
 
-$result = $client->publish($post, [Platform::Slack]);
+// Or webhook
+$credentials = new PlatformCredentials('slack', [
+    'webhook_url' => 'https://hooks.slack.com/services/...',
+]);
+```
+
+## Getting access
+
+Create an app at [api.slack.com/apps](https://api.slack.com/apps). For a bot, add the `chat:write` scope and install it to the workspace. For a webhook, enable Incoming Webhooks and pick a channel.
+
+## Publish
+
+```php
+$result = $publisher->publish($post, 'slack');
 ```
 
 ## Options
 
 | Option | Type | Description |
 |:-------|:-----|:------------|
-| `blocks` | `bool` | Use Block Kit layout |
-| `thread_ts` | `string` | Reply in thread |
-| `unfurl_links` | `bool` | Unfurl URLs |
+| `blocks` | `bool` | Send as Block Kit rather than plain text |
+| `thread_ts` | `string` | Reply inside a thread |
+| `unfurl_links` | `bool` | Expand link previews |
 
 ```php
-$result = $client->publish($post, [Platform::Slack], [
+$publisher->publish($post, 'slack', [
     'blocks' => true,
     'unfurl_links' => true,
 ]);
@@ -49,4 +52,20 @@ $result = $client->publish($post, [Platform::Slack], [
 | Constraint | Value |
 |:-----------|:------|
 | Max text length | 40,000 characters |
-| Formatter markup | mrkdwn |
+| Markup | mrkdwn, or Block Kit |
+
+Read them at runtime with `$platform->constraints()` rather than hardcoding, since networks change them.
+
+## Webhook or bot
+
+A webhook is pinned to one channel and cannot read anything, which makes it the safer default for notifications. A bot can post anywhere it is invited and reply in threads.
+
+With `blocks: true` the formatter emits Block Kit, which renders headings, dividers, and links properly. Without it you get mrkdwn, which is fine for one line.
+
+## Next
+
+<Cards>
+  <Card title="All Platforms" href="./overview" />
+  <Card title="Configure Credentials" href="/developers/getting-started/connect-platforms" />
+  <Card title="Error Handling" href="/developers/core-concepts/error-handling" />
+</Cards>

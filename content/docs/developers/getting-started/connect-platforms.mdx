@@ -1,50 +1,104 @@
 ---
-title: Connect Platforms
-description: How to connect social media accounts to OwlStack via OAuth.
+title: Configure Credentials
+description: What each network needs, and where to get it.
 ---
 
-# Connect Platforms
+# Configure Credentials
 
-OwlStack manages all platform connections through the dashboard at [app.owlstack.app](https://app.owlstack.app). You authenticate via OAuth, and OwlStack stores and refreshes tokens automatically.
+The library publishes with credentials you hold. There is no OAuth dashboard in the middle: you register an app with each network, and pass what it gives you to a `PlatformCredentials` object.
 
-## How to connect a platform
+```php
+use Owlstack\Core\Config\PlatformCredentials;
 
-1. Log in to the [OwlStack dashboard](https://app.owlstack.app)
-2. Go to **Project Settings > Platforms**
-3. Click **Connect** next to the platform you want
-4. Authorize OwlStack in the platform's OAuth flow
-5. The platform appears as "Connected" in your dashboard
+$creds = new PlatformCredentials('twitter', [
+    'consumer_key' => '...',
+    'consumer_secret' => '...',
+    'access_token' => '...',
+    'access_token_secret' => '...',
+]);
 
-Once connected, you can start publishing to that platform from your code immediately.
+$creds->get('consumer_key');      // value, or null
+$creds->has('consumer_key');      // bool
+$creds->require('consumer_key');  // value, or throws
+$creds->all();                    // the whole array
+```
 
-## Supported platforms
+## What each network needs
 
-| Platform | OAuth Type | What you need |
-|:---------|:-----------|:--------------|
-| Telegram | Bot Token | BotFather token + channel admin access |
-| Twitter/X | OAuth 2.0 PKCE | Twitter Developer account |
-| Facebook | OAuth 2.0 | Facebook App + Page admin access |
-| LinkedIn | OAuth 2.0 | LinkedIn Developer app |
-| Discord | Webhook URL | Server admin to create webhook |
-| Instagram | OAuth 2.0 | Facebook Business account |
-| Pinterest | OAuth 2.0 | Pinterest Business account |
-| Reddit | OAuth 2.0 | Reddit app (script type) |
-| Slack | OAuth 2.0 | Slack workspace admin |
-| Tumblr | OAuth 2.0 | Tumblr app |
-| WhatsApp | Business API | WhatsApp Business account |
+| Network | Required keys |
+|:--------|:--------------|
+| Telegram | `api_token` |
+| X (Twitter) | `consumer_key`, `consumer_secret`, `access_token`, `access_token_secret` |
+| Facebook | `app_id`, `app_secret`, `page_access_token`, `page_id` |
+| LinkedIn | `access_token`, and `person_id` or `organization_id` |
+| Discord | `bot_token` + `channel_id`, or `webhook_url` |
+| Instagram | `access_token`, `instagram_account_id` |
+| Pinterest | `access_token`, `board_id` |
+| Reddit | `client_id`, `client_secret`, `access_token`, `username` |
+| Slack | `bot_token` + `channel`, or `webhook_url` |
+| Tumblr | `access_token`, `blog_identifier` |
+| WhatsApp | `access_token`, `phone_number_id` |
 
-## Platform Limits by Plan
+## Getting access
 
-| Plan | Social Accounts |
-|:-----|:----------------|
-| Starter ($19/mo) | 10 |
-| Pro ($49/mo) | 10 |
-| Pro Plus ($99/mo) | 30 |
+How long this takes varies enormously, and it is worth knowing before you promise a launch date.
 
-## Disconnecting a platform
+**Minutes, no review.** Telegram, via [@BotFather](https://t.me/BotFather). Discord and Slack, via a webhook URL or bot token you create in your own server or workspace.
 
-Go to **Project Settings > Platforms** and click **Disconnect** next to the platform. This removes the stored tokens. You can reconnect at any time.
+**Self-service registration.** X at [developer.x.com](https://developer.x.com), Reddit at [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps), Tumblr at [tumblr.com/oauth/apps](https://www.tumblr.com/oauth/apps).
 
-## Using your own credentials (pass-per-request)
+**App review required before production.** Facebook and Instagram through [Meta App Review](https://developers.facebook.com/docs/app-review), LinkedIn through the Community Management API, Pinterest through production API access, WhatsApp through Meta Business verification plus the WhatsApp Business Platform.
 
-If you prefer to manage credentials yourself, you can pass them with each publish request instead of using managed OAuth. See [Platform Credentials](/developers/authentication/platform-credentials) for details.
+Facebook, Instagram, and WhatsApp all go through the same Meta portal, so apply for them in one cycle rather than three.
+
+## Several networks at once
+
+`OwlstackConfig` holds credentials for many networks in one object:
+
+```php
+use Owlstack\Core\Config\OwlstackConfig;
+
+$config = new OwlstackConfig(
+    platforms: [
+        'telegram' => ['api_token' => '...'],
+        'twitter'  => ['consumer_key' => '...', /* ... */],
+    ],
+    options: [
+        'default_hashtag_count' => 5,
+    ],
+);
+
+$config->hasPlatform('telegram');          // true
+$config->credentials('telegram');          // PlatformCredentials
+$config->configuredPlatforms();            // ['telegram', 'twitter']
+$config->option('default_hashtag_count');  // 5
+```
+
+## Check before you publish
+
+`ConfigValidator` tells you which required keys are missing, which is a better place to find out than a failed publish:
+
+```php
+use Owlstack\Core\Config\ConfigValidator;
+
+$validator = new ConfigValidator();
+
+$missing = $validator->validate($credentials);  // ['access_token_secret']
+$validator->validateConfig($config);            // throws on the first failure
+```
+
+Run it at boot. A typo in an env var otherwise surfaces as an authentication error hours later.
+
+## Keeping them safe
+
+Credentials are as good as the accounts they open. Read them from environment variables or a secrets manager, never from source control, and give each environment its own set so rotating production does not break staging.
+
+For OAuth flows where tokens expire and refresh, see [OAuth](/developers/authentication/oauth-flow).
+
+## Next
+
+<Cards>
+  <Card title="Quick Start" href="./quick-start" />
+  <Card title="Platforms" href="/developers/platforms/overview" />
+  <Card title="OAuth" href="/developers/authentication/oauth-flow" />
+</Cards>

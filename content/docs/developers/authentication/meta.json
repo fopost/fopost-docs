@@ -1,9 +1,8 @@
 {
   "title": "Authentication",
-  "icon": "KeyRound",
+  "icon": "Key",
   "pages": [
-    "oauth-flow",
-    "api-keys",
-    "platform-credentials"
+    "platform-credentials",
+    "oauth-flow"
   ]
 }

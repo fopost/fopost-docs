@@ -1,72 +1,120 @@
 ---
 title: Laravel Configuration
-description: Configure the OwlStack Laravel package.
+description: config/owlstack.php, the environment variables, and the proxy.
 ---
 
 # Laravel Configuration
 
-After publishing the config file, you'll have `config/owlstack.php` with these options:
+`php artisan vendor:publish --tag=owlstack-config` writes `config/owlstack.php`. It has two sections: platform credentials, and an optional proxy.
+
+## Platforms
+
+Every network reads its credentials from the environment:
 
 ```php
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | API Key
-    |--------------------------------------------------------------------------
-    | Your OwlStack API key. Get one at https://app.owlstack.app
-    */
-    'api_key' => env('OWLSTACK_API_KEY'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Default Platforms
-    |--------------------------------------------------------------------------
-    | Platforms to publish to when none are specified.
-    */
-    'default_platforms' => [
-        // Platform::Twitter,
-        // Platform::LinkedIn,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Queue
-    |--------------------------------------------------------------------------
-    | Whether to dispatch publishing jobs to the queue.
-    */
-    'queue' => [
-        'enabled' => false,
-        'connection' => env('OWLSTACK_QUEUE_CONNECTION', 'default'),
-        'queue' => env('OWLSTACK_QUEUE', 'default'),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Events
-    |--------------------------------------------------------------------------
-    | Whether to dispatch Laravel events for publishing results.
-    */
-    'events' => [
-        'enabled' => true,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Logging
-    |--------------------------------------------------------------------------
-    | Log channel for OwlStack operations.
-    */
-    'logging' => [
-        'channel' => env('OWLSTACK_LOG_CHANNEL', 'stack'),
+    'platforms' => [
+        'telegram' => [
+            'api_token' => env('TELEGRAM_BOT_TOKEN', ''),
+            'channel_username' => env('TELEGRAM_CHANNEL_USERNAME', ''),
+            'parse_mode' => env('TELEGRAM_PARSE_MODE', 'HTML'),
+        ],
+        'twitter' => [
+            'consumer_key' => env('TWITTER_CONSUMER_KEY', ''),
+            // ...
+        ],
     ],
 ];
 ```
 
+**Only networks with credentials are registered.** Leave a network blank and it is simply not available, rather than failing when something tries to publish to it. That is what makes a partially configured `.env` behave sensibly in staging.
+
 ## Environment variables
 
-| Variable | Description | Default |
-|:---------|:------------|:--------|
-| `OWLSTACK_API_KEY` | Your API key | — |
-| `OWLSTACK_QUEUE_CONNECTION` | Queue connection name | `default` |
-| `OWLSTACK_QUEUE` | Queue name | `default` |
-| `OWLSTACK_LOG_CHANNEL` | Log channel | `stack` |
+```dotenv
+# Telegram
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_BOT_USERNAME=
+TELEGRAM_CHANNEL_USERNAME=@your_channel
+TELEGRAM_CHANNEL_SIGNATURE=
+TELEGRAM_PARSE_MODE=HTML
+
+# X (Twitter)
+TWITTER_CONSUMER_KEY=
+TWITTER_CONSUMER_SECRET=
+TWITTER_ACCESS_TOKEN=
+TWITTER_ACCESS_TOKEN_SECRET=
+
+# Facebook
+FACEBOOK_APP_ID=
+FACEBOOK_APP_SECRET=
+FACEBOOK_PAGE_ACCESS_TOKEN=
+FACEBOOK_PAGE_ID=
+FACEBOOK_GRAPH_VERSION=v21.0
+
+# LinkedIn
+LINKEDIN_ACCESS_TOKEN=
+LINKEDIN_PERSON_ID=
+LINKEDIN_ORGANIZATION_ID=
+
+# Reddit
+REDDIT_CLIENT_ID=
+REDDIT_CLIENT_SECRET=
+REDDIT_ACCESS_TOKEN=
+REDDIT_USERNAME=
+
+# Discord
+DISCORD_BOT_TOKEN=
+DISCORD_CHANNEL_ID=
+DISCORD_WEBHOOK_URL=
+
+# Slack
+SLACK_BOT_TOKEN=
+SLACK_CHANNEL=#your-channel
+
+# Instagram
+INSTAGRAM_ACCESS_TOKEN=
+INSTAGRAM_ACCOUNT_ID=
+
+# Pinterest
+PINTEREST_ACCESS_TOKEN=
+PINTEREST_BOARD_ID=
+
+# WhatsApp
+WHATSAPP_ACCESS_TOKEN=
+WHATSAPP_PHONE_NUMBER_ID=
+
+# Tumblr
+TUMBLR_ACCESS_TOKEN=
+TUMBLR_BLOG_IDENTIFIER=your-blog.tumblr.com
+```
+
+LinkedIn takes `LINKEDIN_PERSON_ID` for personal posts or `LINKEDIN_ORGANIZATION_ID` for a company page. Discord and Slack take either a bot token with a channel, or a webhook URL.
+
+What each network needs, and how to get it, is on [Configure Credentials](/developers/getting-started/connect-platforms).
+
+## Proxy
+
+For servers that cannot reach a network directly:
+
+```dotenv
+OWLSTACK_PROXY_TYPE=7          # 7 is SOCKS5
+OWLSTACK_PROXY_HOST=localhost
+OWLSTACK_PROXY_PORT=9050
+OWLSTACK_PROXY_USERNAME=
+OWLSTACK_PROXY_PASSWORD=
+```
+
+Applies to every network.
+
+## No API key
+
+There is no `OWLSTACK_API_KEY`. The package publishes with your own platform credentials and never calls our API. An API key is for the [Cloud](/api/authentication), which is a separate product.
+
+## Next
+
+<Cards>
+  <Card title="Usage" href="./usage" />
+  <Card title="Events" href="./events" />
+  <Card title="Configure Credentials" href="/developers/getting-started/connect-platforms" />
+</Cards>
