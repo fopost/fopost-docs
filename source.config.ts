@@ -14,6 +14,10 @@ const branded = z.string().transform(brandText);
 
 export const docs = defineDocs({
   docs: {
+    /* Keeps a plain-Markdown rendering of every page alongside the compiled
+       component, so /llms.txt and the per-page .md route serve the same text a
+       reader sees. It runs after remark, so the brand is already applied. */
+    postprocess: { includeProcessedMarkdown: true },
     schema: frontmatterSchema.extend({
       order: z.number().optional(),
       title: branded,
