@@ -1,65 +1,52 @@
 ---
-title: Scheduling Posts
-description: Schedule your social media posts to publish at the perfect time.
+title: Scheduling
+description: Schedule a post, repeat it, and see what happened.
 ---
 
-# Scheduling Posts
+# Scheduling
 
-Schedule your posts in advance so your content goes live at the best times — even when you're away.
+Write now, publish later. Scheduled posts go out from our servers, so nothing depends on your browser being open.
 
-## How to Schedule a Post
+## Schedule one
 
-1. Create a new post (or edit a draft)
-2. Instead of clicking **Publish Now**, click **Schedule**
-3. Pick a date and time
-4. Select your time zone
-5. Click **Confirm Schedule**
+In the composer, click **Schedule** instead of Publish and pick a date and time. Times are in the workspace timezone, set in **Settings**, so a team spread across timezones agrees on what 9am means.
 
-Your post will be published automatically at the scheduled time.
+## Best times
 
-## Content Calendar
+Analytics works out when your audience actually engages, per account, from your own history rather than an industry average. Those slots are suggested when you pick a time. Ignore them freely: they are a starting point, not a rule, and they need a few weeks of history before they say anything useful.
 
-The **Calendar** view gives you a visual overview of:
+## Repeat a post
 
-- **Scheduled posts** — upcoming posts waiting to be published
-- **Published posts** — past posts that have gone live
-- **Drafts** — unfinished posts you can schedule later
+A post can go out on a cadence without you scheduling each occurrence: set how many times and how far apart, in hours, days, weeks, or months. The post shows how many runs are left.
 
-You can drag and drop posts on the calendar to reschedule them.
+For resurfacing your best evergreen posts with a fresh variant each time rather than the same text repeatedly, use [recycling](./recycling) instead.
 
-## Best Practices
+## Change your mind
 
-### When to Post
+Drag a post to a new slot on the [calendar](./calendar), or open it and change the time. To move many at once, select them and shift the whole set by an offset.
 
-The best posting times depend on your audience, but here are general guidelines:
+**Cancel** pulls a scheduled post out of the queue. Anything already published stays published.
 
-| Platform | Best Times (Your Audience's Time Zone) |
-|:---------|:--------------------------------------|
-| Instagram | 11 AM – 1 PM, 7 PM – 9 PM |
-| Twitter / X | 8 AM – 10 AM, 12 PM – 1 PM |
-| LinkedIn | 7 AM – 8 AM, 12 PM, 5 PM – 6 PM |
-| Facebook | 1 PM – 4 PM |
-| Pinterest | 8 PM – 11 PM |
+## What happens at the time
 
-### Consistency
+The post is queued, then each account is delivered independently. A network that is slow or briefly down is retried automatically with a growing gap between attempts.
 
-Regular posting keeps your audience engaged. Use the calendar to plan a consistent schedule — for example, 3 posts per week spread across different days.
+The post's status summarises it: **published** when every account landed, **partially failed** when some did not. Open it to see which, and why.
 
-### Bulk Scheduling
+## When something fails
 
-Need to schedule many posts at once? Use the **Bulk Schedule** feature to upload multiple posts and set their publishing times all at once.
+The reason is on the post in plain language. Retry sends only the accounts that failed.
 
-## Editing Scheduled Posts
+Some failures are worth retrying and some are not. A rate limit or a network blip is transient. An expired token, content over the limit, or a rejected media type will fail identically every time, so fix the cause first. An expired token usually means [reconnecting the account](./connecting-accounts).
 
-1. Go to the **Calendar** or **Posts** section
-2. Click on a scheduled post
-3. Edit the content, platforms, or schedule time
-4. Save your changes
+## Many at once
 
-## Canceling a Scheduled Post
+To schedule a month of content from a spreadsheet, see [Bulk Scheduling](./bulk-scheduling).
 
-Click on the scheduled post and select **Cancel Schedule**. The post will be moved back to drafts.
+## Next
 
-<Callout type="info" title="Coming Soon">
-The scheduling and calendar features are being developed. This guide will be updated with screenshots and more detailed instructions once available.
-</Callout>
+<Cards>
+  <Card title="The Calendar" href="./calendar" />
+  <Card title="Bulk Scheduling" href="./bulk-scheduling" />
+  <Card title="Recycling" href="./recycling" />
+</Cards>

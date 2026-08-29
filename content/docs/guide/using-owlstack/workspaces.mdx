@@ -1,0 +1,59 @@
+---
+title: Workspaces
+description: A hard boundary per brand or client, with its own team and keys.
+---
+
+# Workspaces
+
+A workspace holds accounts, posts, media, sources, brands, analytics, and members. Nothing crosses between them.
+
+## Real isolation
+
+This is not a filter or a folder. Every request is checked against the workspace it names, and a workspace you do not belong to answers with a refusal whether you ask from the dashboard, an API key, or the agent. There is no privileged path that sees everything.
+
+For an agency, that is the difference between "we are careful" and "it cannot happen".
+
+## What is per workspace
+
+- Connected accounts
+- Posts, drafts, and the calendar
+- Media library and sources
+- Brands
+- Labels
+- Analytics
+- Team members and their roles
+- API keys, when bound
+
+## Team and roles
+
+Invite people per workspace. Someone on a client workspace sees that client and nothing else, so a contractor can be given exactly one account's worth of access.
+
+## Bound API keys
+
+An [API key can be bound](/api/authentication#workspace-bound-keys) to a single workspace. It then physically cannot reach another: naming one is refused, and listings return only its own.
+
+That is the right shape for an integration built for one client. A bug in your code becomes a refusal rather than a post on the wrong account.
+
+## Switching
+
+The switcher is at the top of the sidebar, and everything follows it: the calendar, the media picker, the inbox, analytics.
+
+## How many
+
+One on Starter, three on Pro, ten on Business. Extras are $19/mo each if you need one more without changing plan.
+
+## When to use one
+
+**A workspace per client**, for an agency. Complete separation, its own team, its own key.
+
+**A workspace per brand**, for a company running distinct brands that should not share a media library or a voice.
+
+**One workspace**, for everyone else. Do not split what does not need separating.
+
+## Next
+
+<Cards>
+  <Card title="Team Collaboration" href="./team-collaboration" />
+  <Card title="Labels" href="./labels" />
+  <Card title="Workspaces API" href="/api/workspaces" />
+</Cards>

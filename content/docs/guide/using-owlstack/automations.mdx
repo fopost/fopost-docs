@@ -1,0 +1,63 @@
+---
+title: Automations
+description: Rules that publish for you, with a run log and a circuit breaker.
+---
+
+# Automations
+
+An automation is a trigger and a pipeline. Something new appears, the pipeline shapes it for each network and sends it, spacing the sends out if you want.
+
+## Triggers
+
+| Trigger | Fires when |
+|:--------|:-----------|
+| **RSS or blog feed** | A new item appears in the feed |
+| **Webhook** | Something you control calls the automation's URL |
+| **Cross-post** | A post publishes to one account, so it can fan out to others |
+| **Schedule** | A time you set comes around |
+
+The webhook trigger is the general case. Anything that can make an HTTP request can start an automation, which covers a CMS, a CI job, or a form.
+
+## Steps
+
+Up to twenty, run in order:
+
+- **Transform** shapes the item for one network
+- **Publish** sends it to specific accounts
+- **Delay** waits before the next step
+
+The usual shape is transform, publish to LinkedIn, delay two hours, publish to X. Everything does not have to land at once, and a feed that fires all networks simultaneously reads like a bot.
+
+## Building one
+
+**Automations → New**. Pick a trigger, configure it, add the steps, save. It runs from the next trigger onward and does not backfill the feed's history.
+
+Toggle it off to pause without deleting, which is what you want when a client is on holiday.
+
+## The run log
+
+Every firing is recorded: what came in, what each step did, what came out. When an automation posts something you did not expect, this is where you find out why, rather than guessing.
+
+## Guard rails
+
+An automation that starts failing trips its own circuit breaker and stops, rather than retrying into a rate limit until the network throttles the account.
+
+A rule that would publish faster than the cadence you set is held instead of firing. A feed that republishes forty old items at once does not become forty posts.
+
+Both are recorded in the run log, so a paused automation is never a mystery.
+
+## What it is not
+
+An automation reacts to something. To schedule content you already have, use the [calendar](./calendar) or [bulk scheduling](./bulk-scheduling). To resurface posts that already did well, use [recycling](./recycling).
+
+## From code
+
+The [API](/api/automations) creates, updates, toggles, and triggers automations, and reads the run history.
+
+## Next
+
+<Cards>
+  <Card title="Recycling" href="./recycling" />
+  <Card title="Bulk Scheduling" href="./bulk-scheduling" />
+  <Card title="Automations API" href="/api/automations" />
+</Cards>

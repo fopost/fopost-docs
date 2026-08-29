@@ -32,6 +32,26 @@ const config = {
       // Section indexes with no page of their own (GSC 404s)
       { source: '/api', destination: '/api/overview', permanent: true },
       { source: '/guide/plans', destination: '/guide/plans/overview', permanent: true },
+      // Retired plan tiers. Pro Plus and Pro AI became Business; there is no
+      // enterprise plan.
+      { source: '/guide/plans/pro-plus', destination: '/guide/plans/business', permanent: true },
+      { source: '/guide/plans/pro-ai', destination: '/guide/plans/business', permanent: true },
+      { source: '/guide/plans/enterprise', destination: '/guide/plans/overview', permanent: true },
+      // AI Studio was replaced by the Owl Agent.
+      { source: '/guide/using-owlstack/ai-studio', destination: '/guide/using-owlstack/owl-agent', permanent: true },
+      // The guide/ai and guide/pro families folded into using-owlstack.
+      { source: '/guide/ai/content-generation', destination: '/guide/using-owlstack/ai-content', permanent: true },
+      { source: '/guide/ai/post-optimization', destination: '/guide/using-owlstack/ai-content', permanent: true },
+      { source: '/guide/ai/auto-hashtags', destination: '/guide/using-owlstack/ai-content', permanent: true },
+      { source: '/guide/ai/content-calendar', destination: '/guide/using-owlstack/calendar', permanent: true },
+      { source: '/guide/ai/ab-testing', destination: '/guide/using-owlstack/analytics', permanent: true },
+      { source: '/guide/pro/analytics', destination: '/guide/using-owlstack/analytics', permanent: true },
+      { source: '/guide/pro/scheduling', destination: '/guide/using-owlstack/scheduling', permanent: true },
+      { source: '/guide/pro/batch-publishing', destination: '/guide/using-owlstack/bulk-scheduling', permanent: true },
+      { source: '/guide/pro/delivery-logging', destination: '/guide/using-owlstack/scheduling', permanent: true },
+      { source: '/guide/pro/templates', destination: '/guide/using-owlstack/creating-posts', permanent: true },
+      { source: '/guide/ai/:path*', destination: '/guide', permanent: true },
+      { source: '/guide/pro/:path*', destination: '/guide', permanent: true },
       { source: '/guide/ai', destination: '/guide', permanent: true },
       { source: '/guide/pro', destination: '/guide', permanent: true },
       // Retired pages for SDKs that were never built. The overview says what

@@ -6,76 +6,68 @@ icon: Home
 
 # Welcome to OwlStack
 
-**OwlStack** is a social media management platform that lets you publish, schedule, and manage content across 11+ social media platforms — all from one place.
+**OwlStack** publishes, schedules, and manages content across 30 social networks, from one place.
 
-Whether you're a content creator, a business owner, or a developer building an integration, OwlStack has you covered.
+Use the dashboard if you are a creator or a team. Use the API if you are building something.
 
----
+## For creators and teams
 
-## For Creators & Teams
+No code. The [dashboard](/guide/using-owlstack/dashboard) does all of it.
 
-No coding required. Use the OwlStack dashboard to manage your social media presence.
-
-- **Publish to all your platforms at once** — write once, share everywhere
-- **Schedule posts** — plan your content calendar in advance
-- **AI-powered content** — generate captions, optimize posts, and get hashtag suggestions
-- **Track performance** — see how your posts are doing with built-in analytics
-- **Collaborate** — invite your team with unlimited team members on all plans
+- **Publish everywhere at once.** Write once, with a native version per network and a live preview of each
+- **Schedule ahead.** A calendar you can drag, bulk import from a spreadsheet, and best times worked out from your own data
+- **The [Owl Agent](/guide/using-owlstack/owl-agent).** Ask for a campaign in plain language, review the drafts, approve what ships
+- **Automate the repetitive parts.** Feeds, webhooks, and recycling your evergreen winners
+- **Measure it.** Engagement, followers, top posts, and campaign roll-ups by label
+- **Work as a team.** Workspaces with real isolation, roles, and approvals
 
 <Cards>
   <Card title="Get Started" href="/guide/using-owlstack/getting-started" />
   <Card title="Dashboard Overview" href="/guide/using-owlstack/dashboard" />
   <Card title="Connect Your Accounts" href="/guide/using-owlstack/connecting-accounts" />
-  <Card title="AI Studio" href="/guide/using-owlstack/ai-studio" />
+  <Card title="Owl Agent" href="/guide/using-owlstack/owl-agent" />
 </Cards>
 
----
+## For developers
 
-## For Developers
+Two different things, and it is worth knowing which you want.
 
-Integrate social media publishing into your website, app, or workflow using our SDKs and REST API.
+**The [Cloud API](/api/overview)** is the product behind the dashboard. One REST API for every network, with scheduling, media, analytics, automations, and webhooks. Official clients for [TypeScript](/sdks/typescript), [Python](/sdks/python), and [MCP](/sdks/mcp).
 
-- **One API, 11+ platforms** — publish to Twitter, Instagram, LinkedIn, Telegram, and more with a single call
-- **Official SDKs** — PHP, Laravel, and WordPress available now; Node.js, Python, Go, Ruby, and Rust coming soon
-- **Cloud-powered** — OwlStack handles all platform APIs, formatting, rate limits, and retries
-- **Webhooks & events** — get notified when posts are published or fail
+**The [PHP library](/developers)** is a free, MIT-licensed package that publishes straight to eleven networks from your own server, with credentials you hold. No account, no API key, nothing through us. There are [Laravel](/sdks/laravel/installation) and [WordPress](/sdks/wordpress/installation) wrappers.
 
 <Cards>
-  <Card title="Installation" href="/developers/getting-started/installation" />
-  <Card title="Quick Start (PHP)" href="/developers/getting-started/quick-start" />
-  <Card title="Quick Start (Laravel)" href="/developers/getting-started/quick-start-laravel" />
-  <Card title="REST API Reference" href="/api/overview" />
+  <Card title="API Reference" href="/api/overview" />
+  <Card title="TypeScript SDK" href="/sdks/typescript" />
+  <Card title="MCP Server" href="/sdks/mcp" />
+  <Card title="PHP Library" href="/developers" />
 </Cards>
 
----
+## Networks
 
-## Supported Platforms
+Thirty, on every plan. X, Instagram, Facebook, LinkedIn, TikTok, YouTube, Threads, Bluesky, Mastodon, Pinterest, Reddit, Discord, Telegram, Slack, Medium, DEV.to, Substack, WordPress, and more.
 
-| Platform | Features |
-|:---------|:---------|
-| Instagram | Carousels, Reels, Stories |
-| Twitter / X | Threads, polls, quote tweets |
-| Facebook | Pages, scheduled publishing |
-| LinkedIn | Personal profiles, company pages |
-| Telegram | Channels, groups, media groups |
-| Discord | Rich embeds, file attachments |
-| Pinterest | Board and section targeting |
-| Reddit | Self posts, link posts, flair |
-| Slack | Block Kit messages |
-| Tumblr | NPF content blocks |
-| WhatsApp | Template messages, documents |
+[The full list](/introduction/platforms), with how each one is delivered.
 
-## SDKs & Integrations
+## Clients
 
-| SDK | Status |
-|:----|:-------|
-| PHP (Core) | Available |
-| Laravel | Available |
-| WordPress | Available |
-| Node.js | Coming Soon |
-| Python | Coming Soon |
-| Go | Coming Soon |
-| Ruby | Coming Soon |
-| Rust | Coming Soon |
+| Client | Status |
+|:-------|:-------|
+| [TypeScript / Node.js](/sdks/typescript) | Available, `@owlstackapp/sdk` |
+| [Python](/sdks/python) | Available, `owlstack` |
+| [MCP server](/sdks/mcp) | Available, `@owlstackapp/mcp` |
+| [PHP library](/developers) | Available, `owlstack/owlstack-core` |
+| [Laravel](/sdks/laravel/installation) | Available, `owlstack/owlstack-laravel` |
+| [WordPress](/sdks/wordpress/installation) | Available, plugin |
+| [Browser extension](/sdks/browser-extension) | Available |
 
-[View all frameworks & SDKs →](/sdks/overview)
+No Go, Ruby, or Rust client yet. The [REST API](/api/overview) works from any language in the meantime.
+
+## Next
+
+<Cards>
+  <Card title="What is OwlStack?" href="/what-is-owlstack" />
+  <Card title="How It Works" href="/how-it-works" />
+  <Card title="Quick Start" href="/quick-start" />
+  <Card title="Plans" href="/guide/plans/overview" />
+</Cards>

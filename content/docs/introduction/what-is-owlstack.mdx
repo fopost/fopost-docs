@@ -1,80 +1,77 @@
 ---
 title: What is OwlStack?
-description: Learn what OwlStack is, how it works, and who it's built for.
+description: What OwlStack does, who it is for, and how the pieces relate.
 icon: BookOpen
 ---
 
 # What is OwlStack?
 
-**OwlStack** is a social media management platform that lets you publish, schedule, and manage content across 11+ social media platforms — all from one place.
+**OwlStack** publishes, schedules, and manages content across 30 social networks. One dashboard, one API, one calendar.
 
----
+## The problem
 
-## The Problem
+Managing more than two networks is mostly friction:
 
-Managing social media across multiple platforms is painful:
+- Every network has its own format, limit, and quirks
+- Posting the same thing everywhere means logging into five dashboards and retyping it four times
+- Scheduling, analytics, and approvals live in separate tools, or nowhere
+- Building even one network's API integration takes a week, and it breaks when they change it
 
-- Each platform has its own API, format, and rules
-- Posting the same content everywhere means logging into 5+ dashboards
-- Scheduling, analytics, and collaboration require separate tools
-- Developers spend weeks integrating even one platform's API
+## What OwlStack does
 
-## The Solution
+**Write once, publish natively.** One draft, a native version per network, a live preview of each. Not the same text pasted five times.
 
-OwlStack gives you **one unified interface** — whether you're a creator using the dashboard or a developer using the API.
+**Schedule and forget.** Posts go out from our servers. A calendar you can drag, bulk import, and repeat rules.
 
-- **Write once, publish everywhere** — one post goes to Instagram, Twitter, LinkedIn, Telegram, and more
-- **No per-platform headaches** — OwlStack handles formatting, rate limits, media processing, and retries
-- **Built for teams** — invite collaborators, review content, and manage approvals
-- **Developer-first API** — official SDKs for PHP, Laravel, WordPress, and more coming soon
+**Automate.** Feeds, webhooks, and recycling that resurfaces your evergreen winners with fresh variants.
 
----
+**Measure.** Engagement, followers, top posts, demographics, best times, and campaign roll-ups.
 
-## Who is OwlStack for?
+**Collaborate.** Workspaces with real isolation, roles, and an approval step.
 
-### Creators & Teams
+**Build on it.** The same REST API the dashboard uses, plus SDKs, an MCP server, and webhooks.
 
-Use the OwlStack dashboard to manage your social media — no coding required.
+## Who it is for
 
-- Schedule posts across all your platforms
-- Use AI to generate captions and optimize content
-- Track performance with built-in analytics
-- Collaborate with unlimited team members
+**Creators**, publishing their own work to several networks and wanting the calendar and the AI to do the retyping.
 
-### Developers
+**Teams**, needing approvals before something goes public and one place to see what is scheduled.
 
-Integrate social media publishing into your app, website, or workflow.
+**Agencies**, running many clients where a post landing on the wrong account is a serious incident. A workspace per client is a hard boundary, not a filter.
 
-- One API call to publish to 11+ platforms
-- Official SDKs: PHP, Laravel, WordPress (Node.js, Python, Go coming soon)
-- Webhooks for real-time event notifications
-- Cloud-powered — OwlStack handles all the complexity
+**Developers**, integrating publishing into their own product without maintaining thirty API integrations.
 
----
+## The two products
 
-## Supported Platforms
+They share a name and are not the same thing.
 
-| Platform | Features |
-|:---------|:---------|
-| Instagram | Carousels, Reels, Stories |
-| Twitter / X | Threads, polls, quote tweets |
-| Facebook | Pages, scheduled publishing |
-| LinkedIn | Personal profiles, company pages |
-| Telegram | Channels, groups, media groups |
-| Discord | Rich embeds, file attachments |
-| Pinterest | Board and section targeting |
-| Reddit | Self posts, link posts, flair |
-| Slack | Block Kit messages |
-| Tumblr | NPF content blocks |
-| WhatsApp | Template messages, documents |
+| | Cloud | PHP library |
+|:--|:--|:--|
+| What it is | The dashboard and the [API](/api/overview) | An MIT package, [`owlstack/owlstack-core`](/developers) |
+| Publishing runs on | Our servers | Yours |
+| Credentials | Connected once via OAuth | Yours, per network |
+| Networks | 30 | 11 |
+| Scheduling, analytics, teams | Included | You build it |
+| Account | Required | Not required |
+| Cost | A plan | Free |
 
----
+Most people want the Cloud. The library is for someone already in PHP who wants to own the whole pipeline and is happy registering apps with each network.
 
-## Next Steps
+## AI
+
+AI runs through the [Owl Agent](/guide/using-owlstack/owl-agent) and the composer: captions, per-network rewriting, hashtags, blog to social, voice notes, and image and video generation.
+
+Two rules it follows. Nothing publishes without an explicit approval. And you pick an outcome, never a model.
+
+## What it is not
+
+Not an analytics suite, not a social listening tool, not a CRM, and not an ad manager. It publishes, schedules, and reports on what it publishes.
+
+## Next
 
 <Cards>
-  <Card title="Comparisons" href="/comparisons" />
-  <Card title="Get Started (Dashboard)" href="/guide/using-owlstack/getting-started" />
-  <Card title="Get Started (Developer)" href="/developers/getting-started/installation" />
-  <Card title="View Plans" href="/guide/plans" />
+  <Card title="How It Works" href="/how-it-works" />
+  <Card title="Supported Platforms" href="/introduction/platforms" />
+  <Card title="Quick Start" href="/quick-start" />
+  <Card title="Plans" href="/guide/plans/overview" />
 </Cards>

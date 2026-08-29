@@ -1,108 +1,63 @@
 ---
 title: Why OwlStack?
-description: Why teams and developers choose OwlStack over other social media tools.
+description: What is different, stated as things you can check.
 icon: Crown
 ---
 
 # Why OwlStack?
 
-There are plenty of social media management tools out there. Here's why OwlStack is different.
+## Thirty networks, on every plan
 
----
+Not six, and not "more on the higher tier". Every plan reaches every network, including the writing platforms most tools ignore: Medium, DEV.to, Hashnode, Substack, WordPress.
 
-## Built for Developers & Teams
+[The full list](/introduction/platforms).
 
-Most social media tools are built for marketers. OwlStack is built for **developers and teams** who need both a powerful dashboard and a real API.
+## Native per network, not one post copied
 
-- **Full REST API** on every plan — not locked behind enterprise pricing
-- **Official SDKs** for PHP, Laravel, and WordPress — with Node.js, Python, Go, Ruby, and Rust coming soon
-- **Webhooks** for real-time event notifications
-- **Self-hostable** — deploy on your own infrastructure if you need full control
+One draft becomes a version shaped for each network, with a live preview of each and overrides on the same screen. The alternative, which most tools ship, is posting the same 280 characters to LinkedIn and hoping.
 
----
+## A real API, not an enterprise upsell
 
-## One API, 11+ Platforms
+The [REST API](/api/overview) is the same one the dashboard runs on, available from [Pro](/guide/plans/pro) or as a $5/mo add-on. Official [TypeScript](/sdks/typescript) and [Python](/sdks/python) clients, an [MCP server](/sdks/mcp) so an AI assistant can drive it, and [webhooks](/api/webhooks) for every publishing event.
 
-Write one integration. Publish everywhere.
+Scoped API keys, and a key can be bound to a single workspace so it physically cannot reach another.
 
-Instead of building and maintaining separate integrations for Twitter, Instagram, LinkedIn, Telegram, Discord, and more — OwlStack gives you a single, consistent API that handles all of them.
+## Workspace isolation that is actually enforced
 
-| What OwlStack handles for you |
-|:------------------------------|
-| Platform-specific formatting and character limits |
-| Media processing and optimization |
-| Rate limiting and queue management |
-| Retry logic with exponential backoff |
-| Thread splitting (Twitter), carousels (Instagram), embeds (Discord) |
+Every request is checked against the workspace it names. A workspace you do not belong to is refused, from the dashboard, an API key, or the agent alike. There is no privileged path that sees everything.
 
----
+For an agency, that is the difference between a careful process and a guarantee.
 
-## Unlimited Team Members
+## AI with a person in the loop
 
-Every OwlStack plan includes **unlimited team members** — no per-seat pricing. Invite your entire team without worrying about costs scaling with headcount.
+The [agent](/guide/using-owlstack/owl-agent) drafts campaigns from your real material, in your [brand voice](/guide/using-owlstack/brand-voices), native per network. Nothing it produces publishes without an approval, which is a rule rather than a setting.
 
----
+You pick a quality tier, never a model.
 
-## AI-Powered Content
+## Open source where it counts
 
-AI is built into every plan, not sold as an add-on:
+The [PHP library](/developers), the [TypeScript SDK](/sdks/typescript), the [Python SDK](/sdks/python), the [MCP server](/sdks/mcp), and the [browser extension](/sdks/browser-extension) are all MIT and on GitHub.
 
-- **Generate captions** — AI writes engaging post copy for any platform
-- **Optimize content** — Get suggestions to improve reach and engagement
-- **Hashtag recommendations** — AI-powered hashtag suggestions based on your content
-- **Multi-platform adaptation** — AI adjusts tone and format for each platform
+The PHP library needs no account at all: it publishes to eleven networks from your own server with your own credentials, free.
 
----
+## Honest about the networks that cannot be automated
 
-## Transparent Pricing
+Some networks have no write API. Tools that claim to post to them anyway are driving a headless browser against the network's terms, and the account that pays for that is yours.
 
-No hidden fees. No per-seat charges. No surprise enterprise pricing.
+OwlStack stages the post and a [browser extension](/sdks/browser-extension) publishes it from your own session, in one click. Slower, and it does not get anyone banned.
 
-- Every plan includes API access
-- Every plan includes unlimited team members
-- Every plan includes AI features
-- Upgrade or downgrade anytime
+## What we do not claim
 
----
+- **No free plan.** Every plan is a trial then a subscription
+- **No self-hosting of the Cloud.** The PHP library runs on your infrastructure; the Cloud is ours
+- **Team members are not unlimited.** One, three, or ten seats by plan, with extras at $8/mo
+- **Analytics is publishing analytics.** It reports on your accounts and posts. It is not a listening or ad platform
 
-## Open Ecosystem
-
-OwlStack isn't a walled garden:
-
-- **Open-source SDKs** — all SDKs are open-source on GitHub
-- **WordPress plugin** — official plugin for WordPress publishers
-- **Laravel package** — first-class Laravel integration
-- **Webhooks** — integrate with any system
-- **REST API** — build anything you need
-
----
-
-## Self-Hosting Option
-
-Need full control over your data? OwlStack can be deployed on your own servers. Run the entire platform on your infrastructure with Docker.
-
----
-
-## Summary
-
-| Feature | OwlStack | Most Competitors |
-|:--------|:---------|:-----------------|
-| API access | Every plan | Enterprise only |
-| Official SDKs | Yes | None |
-| Team members | Unlimited | Per-seat pricing |
-| AI features | Built-in | Paid add-on |
-| Self-hosting | Yes | No |
-| Platforms | 11+ | 6–9 |
-| Webhooks | Yes | Rare |
-| Open-source SDKs | Yes | No |
-
----
-
-## Next Steps
+## Compare directly
 
 <Cards>
-  <Card title="How It Works" href="/how-it-works" />
-  <Card title="Quick Start" href="/quick-start" />
   <Card title="Comparisons" href="/comparisons" />
-  <Card title="View Plans" href="/guide/plans" />
+  <Card title="Plans" href="/guide/plans/overview" />
+  <Card title="Supported Platforms" href="/introduction/platforms" />
+  <Card title="Quick Start" href="/quick-start" />
 </Cards>
