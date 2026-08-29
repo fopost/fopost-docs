@@ -1,111 +1,65 @@
-# FoPost Documentation
+# OwlStack Documentation
 
-The official documentation site for [FoPost](https://fopost.com) - a unified social media publishing SDK for PHP.
+The documentation site for [OwlStack](https://owlstack.app). Next.js and [Fumadocs](https://fumadocs.dev), MDX content under `content/`.
 
-🌐 **Live site:** [fopost.com/docs](https://fopost.com/docs)
+Live at [owlstack.app/docs](https://owlstack.app/docs).
 
-## What's Inside
+## Sections
 
-- **Getting Started** - Installation, quick start guides for Core, Laravel, and WordPress
-- **Core Concepts** - Posts, media, platform config, publishing, delivery status, error handling
-- **Platforms** - Guides for all 11 supported platforms (Telegram, Twitter/X, Facebook, LinkedIn, Discord, Instagram, Pinterest, Reddit, Slack, Tumblr, WhatsApp)
-- **Formatting** - Platform formatters, character limits, hashtag extraction
-- **Authentication** - OAuth flows, access tokens, token storage
-- **Events** - Event system, dispatchers, listeners
-- **Frameworks** - Laravel and WordPress integration guides
-- **Pro Features** - Batch publishing, scheduling, queues, delivery logging, templates, automation, AI, analytics
-- **Extending** - Custom platforms, formatters, and HTTP clients
-- **Blog** - Announcements and migration guides
+| Section | Covers |
+|---|---|
+| `content/docs/introduction/` | What OwlStack is, how it works, supported platforms, quick start |
+| `content/docs/guide/` | The dashboard, for creators and teams. Plans and pricing |
+| `content/docs/api/` | The Cloud REST API, written against `apps/api/openapi.json` in the `owlstack` repo |
+| `content/docs/sdks/` | TypeScript, Python, MCP, Laravel, WordPress, browser extension |
+| `content/docs/developers/` | The standalone PHP library, `owlstack/owlstack-core` |
 
-## Setup
-
-```bash
-npm install
-```
+**The Cloud and the PHP library are two different products.** The Cloud publishes to 30 networks from our servers with an API key. The library publishes to 11 networks from yours with credentials the caller holds, and never touches our infrastructure. Keep that distinction visible in any page you write: conflating them is what made an earlier version of these docs describe a package that does not exist.
 
 ## Development
 
 ```bash
-npm start
-```
-
-Starts a local dev server at `http://localhost:3000`. Changes are hot-reloaded.
-
-### Locale-specific previews
-
-```bash
-npm run start:fa   # Farsi (RTL)
-npm run start:zh   # Chinese
-npm run start:ja   # Japanese
-```
-
-## Build
-
-```bash
+npm install
+npm run dev      # http://localhost:3000/docs
 npm run build
+npm test
 ```
 
-Generates static files into the `build` directory for all locales (en, fa, zh, ja).
+The site is served under a `/docs` basePath. Anything that is not a Next route (a `next/image` src it passes through unoptimised, a `metadata.icons` href) needs the basePath applied by hand. `lib/brand.ts` does that for brand assets; do the same for anything new.
 
-## Versioning
+## Writing
 
-Docs are versioned. The current stable version is **1.0**. To create a new version snapshot:
-
-```bash
-npx docusaurus docs:version X.Y
-```
-
-## Project Structure
-
-```
-docs/              # Current (next) version documentation
-versioned_docs/    # Snapshotted version docs (e.g. version-1.0/)
-blog/              # Blog posts
-src/               # React components, pages, CSS
-  components/      # ProBadge, ProFeature, PlatformTable
-  css/             # Custom styles
-  pages/           # Homepage
-static/img/        # Logos and images
-i18n/              # Translation files (fa, zh, ja)
-```
-
-## Contributing
-
-1. Fork the repo
-2. Create a branch (`git checkout -b docs/my-change`)
-3. Make your changes
-4. Run `npm run build` to verify no broken links
-5. Submit a pull request
-
-## License
-
-This documentation is part of the [OwlStack](https://github.com/owlstacks) project.
+- **No em-dashes or en-dashes.** House style, enforced by review
+- **Verify before you write.** Every factual claim on these pages should be checked against the source: the OpenAPI spec, `packages/shared` for plans and platform counts, the SDK repos for method names, the registries for what is actually published
+- **Do not document something that does not ship.** A page for an unbuilt feature is a promise, and it will be read as one
+- **Adding a page** means adding it to the section's `meta.json`. **Removing one** means adding a redirect in `next.config.mjs`, since these URLs are indexed
 
 ## Branding
 
-The docs site is built once per brand. Prose under `content/**` keeps naming
-the product "OwlStack"; `lib/remark-brand.mjs` applies the deployment's brand
-during the build, and `lib/brand.ts` covers everything written in TypeScript.
+The site is built once per brand. Content under `content/**` is written naming OwlStack and the `owlstack.app` hosts; `lib/remark-brand.mjs` swaps both for the deployment's brand as the MDX compiles, and `lib/brand.ts` covers everything written in TypeScript.
+
+Those source tokens are what the swap matches on. Writing `fopost.com` into a page defeats it.
 
 | Variable | Effect |
 |---|---|
 | `NEXT_PUBLIC_BRAND_NAME` | Product name in prose, page titles, and the sidebar |
 | `NEXT_PUBLIC_BRAND_SLUG` | Lowercase identifier |
 | `NEXT_PUBLIC_BRAND_DOMAIN` | Bare apex domain |
-| `NEXT_PUBLIC_BRAND_LOGO` | Nav mark, e.g. `/brand/fopost/logo.png` |
-| `NEXT_PUBLIC_BRAND_FAVICON` | Browser tab icon |
+| `NEXT_PUBLIC_BRAND_LOGO` / `_LOGO_DARK` | Nav mark, light and dark |
+| `NEXT_PUBLIC_BRAND_FAVICON` / `_APPLE_TOUCH_ICON` | Tab and touch icons |
 | `NEXT_PUBLIC_WEBSITE_URL` / `_APP_URL` / `_API_URL` / `_DOCS_URL` | Service hosts, rewritten in prose and in code samples |
-
-Unset means OwlStack: the build is byte-for-byte what it was before.
 
 Two things are deliberately **not** rewritten:
 
-- **Names inside code fences.** Most are SDK symbols (`OwlStack::Client`,
-  `from owlstack import OwlStack`) that name a real published package, so
-  rewriting them would hand the reader code that does not run. Hostnames in
-  code *are* rewritten, so a copied `curl` still hits the right API.
-- **URL slugs** such as `/introduction/what-is-owlstack`. They are routes with
-  existing inbound links, not branding.
+- **Package names inside code fences.** `@owlstackapp/sdk`, `owlstack/owlstack-core`, `from owlstack import Owlstack` name real published packages. Rewriting them would hand the reader code that does not run. Hostnames in code *are* rewritten, so a copied `curl` hits the right API
+- **URL slugs** such as `/introduction/what-is-owlstack`. They are routes with inbound links, not branding
 
-Add a brand by dropping `logo.png` and `favicon.ico` into
-`public/brand/<slug>/` and pointing the variables at them.
+Add a brand by dropping `mark.svg`, `mark-dark.svg`, `favicon.ico`, and `apple-touch-icon.png` into `public/brand/<slug>/` and pointing the variables at them.
+
+## Deployment
+
+Built as a Docker image from this repo by `owlstack-deploy`. `NEXT_PUBLIC_*` values are baked at build time, so changing one needs a rebuild.
+
+## License
+
+Part of the [OwlStack](https://github.com/owlstacks) project.
