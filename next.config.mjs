@@ -15,6 +15,10 @@ const config = {
   async rewrites() {
     return {
       beforeFiles: [
+        // Any page, as Markdown, by appending .md — the convention AI clients
+        // and crawlers look for. `/index.md` is the site root, which has no
+        // slug of its own. Kept ahead of the page rewrites so it wins.
+        { source: '/:slug(.*)\\.md', destination: '/md/:slug' },
         { source: '/', destination: '/introduction' },
         { source: '/what-is-fopost', destination: '/introduction/what-is-fopost' },
         { source: '/why-fopost', destination: '/introduction/why-fopost' },

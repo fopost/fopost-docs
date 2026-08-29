@@ -1,9 +1,8 @@
 ---
 title: Webhooks
 description: Subscribe to publishing events, verify the signature, and handle retries.
+icon: webhook
 ---
-
-# Webhooks
 
 Delivery is asynchronous, so a `202` from the publish endpoint tells you the post was accepted, not that it is live. Webhooks are how you find out what actually happened without polling. These endpoints need the `webhooks` scope.
 

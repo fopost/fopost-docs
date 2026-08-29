@@ -2,7 +2,7 @@
   "title": "Introduction",
   "description": "Overview & getting started",
   "root": true,
-  "icon": "Home",
+  "icon": "home",
   "pages": [
     "index",
     "what-is-fopost",

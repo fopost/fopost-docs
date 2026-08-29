@@ -1,30 +1,6 @@
 import { docs } from '../.source/server';
 import { loader } from 'fumadocs-core/source';
-import {
-  Globe,
-  Home,
-  Server,
-  ArrowRightLeft,
-  FileText,
-  Settings,
-  Package,
-  Database,
-  Mail,
-  BookOpen,
-  Rocket,
-  Network,
-  Hash,
-  KeyRound,
-  Zap,
-  Code,
-  LayoutDashboard,
-  CreditCard,
-  Crown,
-  Brain,
-  Cpu,
-  Send,
-  MessageSquare,
-} from 'lucide-react';
+import { Icon } from '@/components/icons/registry';
 
 // See https://fumadocs.vercel.app/docs/headless/source-api for more info
 export const source = loader({
@@ -39,56 +15,7 @@ export const source = loader({
     }
     return '/' + slugs.join('/');
   },
-  icon: (icon) => {
-    switch (icon) {
-      case 'Globe':
-        return <Globe size={16} />;
-      case 'Home':
-        return <Home size={16} />;
-      case 'Server':
-        return <Server size={16} />;
-      case 'ArrowRightLeft':
-        return <ArrowRightLeft size={16} />;
-      case 'FileText':
-        return <FileText size={16} />;
-      case 'Settings':
-        return <Settings size={16} />;
-      case 'Package':
-        return <Package size={16} />;
-      case 'Database':
-        return <Database size={16} />;
-      case 'Mail':
-        return <Mail size={16} />;
-      case 'BookOpen':
-        return <BookOpen size={16} />;
-      case 'Rocket':
-        return <Rocket size={16} />;
-      case 'Network':
-        return <Network size={16} />;
-      case 'Hash':
-        return <Hash size={16} />;
-      case 'KeyRound':
-        return <KeyRound size={16} />;
-      case 'Zap':
-        return <Zap size={16} />;
-      case 'Code':
-        return <Code size={16} />;
-      case 'LayoutDashboard':
-        return <LayoutDashboard size={16} />;
-      case 'CreditCard':
-        return <CreditCard size={16} />;
-      case 'Crown':
-        return <Crown size={16} />;
-      case 'Brain':
-        return <Brain size={16} />;
-      case 'Cpu':
-        return <Cpu size={16} />;
-      case 'Send':
-        return <Send size={16} />;
-      case 'MessageSquare':
-        return <MessageSquare size={16} />;
-      default:
-        return null;
-    }
-  },
+  // meta.json and frontmatter name a Geist icon by its slug ('rocket'), the
+  // same names apps/web uses in its data files. The registry is server-only.
+  icon: (icon) => (icon ? <Icon name={icon} className="text-[15px]" /> : undefined),
 });
