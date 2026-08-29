@@ -131,7 +131,9 @@ samp {
 }
 
 /* ─── Navigation ───
-   Sidebar and TOC are dense, quiet, and mark the current page in blue.
+   Sidebar and TOC are dense and quiet, and mark the current page in ink on a
+   neutral tint, the same active state the dashboard sidebar uses. Blue is
+   reserved for links, which go somewhere; the current page does not.
    Targeted on data attributes, which fumadocs owns as API, not on utility
    classes, which it rewrites between releases. */
 #nd-sidebar {
@@ -140,12 +142,13 @@ samp {
 
 #nd-sidebar a[data-active='true'],
 #nd-sidebar button[data-active='true'] {
-  color: var(--ds-blue-700);
-  background-color: var(--ds-blue-100);
+  color: var(--ds-gray-1000);
+  background-color: var(--ds-gray-alpha-200);
+  font-weight: 500;
 }
 
 #nd-sidebar a[data-active='true'] svg {
-  color: var(--ds-blue-700);
+  color: var(--ds-gray-1000);
 }
 
 #nd-toc {
@@ -153,6 +156,6 @@ samp {
 }
 
 #nd-toc a[data-active='true'] {
-  color: var(--ds-blue-700);
+  color: var(--ds-gray-1000);
   font-weight: 500;
 }
