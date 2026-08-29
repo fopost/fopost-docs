@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: The fastest path, whichever way you are using OwlStack.
+description: The fastest path, whichever way you are using FoPost.
 icon: Rocket
 ---
 
@@ -10,15 +10,15 @@ Three starting points. Pick the one that matches what you are doing.
 
 ## Using the dashboard
 
-1. Sign up at [app.owlstack.app](https://app.owlstack.app). Every plan starts with a trial
+1. Sign up at [app.fopost.com](https://app.fopost.com). Every plan starts with a trial
 2. **Accounts → Connect** and authorise one network
 3. **New Post**, write it, tick the account, check the preview
 4. **Publish**, or **Schedule** for later
 
 <Cards>
-  <Card title="Getting Started" href="/guide/using-owlstack/getting-started" />
-  <Card title="Connecting Accounts" href="/guide/using-owlstack/connecting-accounts" />
-  <Card title="Owl Agent" href="/guide/using-owlstack/owl-agent" />
+  <Card title="Getting Started" href="/guide/using-fopost/getting-started" />
+  <Card title="Connecting Accounts" href="/guide/using-fopost/connecting-accounts" />
+  <Card title="FoPost Agent" href="/guide/using-fopost/agent" />
 </Cards>
 
 ## Using the API
@@ -27,12 +27,12 @@ Create a key at **Settings → API Keys** with the `posts` and `accounts` scopes
 
 ```bash
 # Find an account to post to
-curl https://api.owlstack.app/v1/accounts \
-  -H "X-API-Key: $OWLSTACK_API_KEY"
+curl https://api.fopost.com/v1/accounts \
+  -H "X-API-Key: $FOPOST_API_KEY"
 
 # Create a post
-curl -X POST https://api.owlstack.app/v1/posts \
-  -H "X-API-Key: $OWLSTACK_API_KEY" \
+curl -X POST https://api.fopost.com/v1/posts \
+  -H "X-API-Key: $FOPOST_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
@@ -41,24 +41,24 @@ curl -X POST https://api.owlstack.app/v1/posts \
   }'
 
 # Publish it
-curl -X POST https://api.owlstack.app/v1/posts/$POST_ID/publish \
-  -H "X-API-Key: $OWLSTACK_API_KEY"
+curl -X POST https://api.fopost.com/v1/posts/$POST_ID/publish \
+  -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
 Or with a client:
 
 ```ts
-import { OwlStack } from '@owlstackapp/sdk';
+import { FoPost } from '@fopost/sdk';
 
-const owl = new OwlStack({ apiKey: process.env.OWLSTACK_API_KEY! });
+const owl = new FoPost({ apiKey: process.env.FOPOST_API_KEY! });
 const post = await owl.posts.create({ workspaceId, accounts, content: [{ text: 'Hello' }] });
 await owl.posts.publish(post.id);
 ```
 
 ```python
-from owlstack import Owlstack
+from fopost import Fopost
 
-client = Owlstack()
+client = Fopost()
 post = client.posts.create(workspace_id=ws, accounts=ids, content="Hello")
 client.posts.publish(post.id)
 ```
@@ -74,17 +74,17 @@ client.posts.publish(post.id)
 No account needed. It publishes from your server with credentials you hold.
 
 ```bash
-composer require owlstack/owlstack-core
+composer require fopost/fopost-social-core
 ```
 
 ```php
-use Owlstack\Core\Config\PlatformCredentials;
-use Owlstack\Core\Content\Post;
-use Owlstack\Core\Http\HttpClient;
-use Owlstack\Core\Platforms\PlatformRegistry;
-use Owlstack\Core\Platforms\Telegram\TelegramFormatter;
-use Owlstack\Core\Platforms\Telegram\TelegramPlatform;
-use Owlstack\Core\Publishing\Publisher;
+use Fopost\Core\Config\PlatformCredentials;
+use Fopost\Core\Content\Post;
+use Fopost\Core\Http\HttpClient;
+use Fopost\Core\Platforms\PlatformRegistry;
+use Fopost\Core\Platforms\Telegram\TelegramFormatter;
+use Fopost\Core\Platforms\Telegram\TelegramPlatform;
+use Fopost\Core\Publishing\Publisher;
 
 $credentials = new PlatformCredentials('telegram', [
     'api_token' => getenv('TELEGRAM_BOT_TOKEN'),
@@ -95,7 +95,7 @@ $registry = new PlatformRegistry();
 $registry->register(new TelegramPlatform($credentials, new HttpClient(), new TelegramFormatter()));
 
 $result = (new Publisher($registry))->publish(
-    new Post(title: 'Hello World', body: 'My first post via Owlstack.'),
+    new Post(title: 'Hello World', body: 'My first post via Fopost.'),
     'telegram',
 );
 
@@ -110,4 +110,4 @@ echo $result->success ? $result->externalUrl : $result->error;
 
 ## Which one
 
-The library talks to eleven networks with your own credentials and is free. The Cloud talks to thirty, schedules, retries, measures, and gives you a dashboard. They are separate products, and [What is OwlStack?](/what-is-owlstack) has the comparison.
+The library talks to eleven networks with your own credentials and is free. The Cloud talks to thirty, schedules, retries, measures, and gives you a dashboard. They are separate products, and [What is FoPost?](/what-is-fopost) has the comparison.

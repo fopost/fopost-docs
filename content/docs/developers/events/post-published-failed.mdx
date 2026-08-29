@@ -5,14 +5,14 @@ description: The two publishing events and what they carry.
 
 # PostPublished & PostFailed
 
-Both live in `Owlstack\Core\Events` and both carry the same two properties: the `Post` that was published and the `PublishResult` it produced.
+Both live in `Fopost\Core\Events` and both carry the same two properties: the `Post` that was published and the `PublishResult` it produced.
 
 ## PostPublished
 
 Emitted after a network accepts the post.
 
 ```php
-use Owlstack\Core\Events\PostPublished;
+use Fopost\Core\Events\PostPublished;
 
 $event->post;                    // the Post
 $event->result;                  // the PublishResult
@@ -27,7 +27,7 @@ $event->result->timestamp;       // DateTimeImmutable
 Emitted after a network rejects it, or the attempt errored.
 
 ```php
-use Owlstack\Core\Events\PostFailed;
+use Fopost\Core\Events\PostFailed;
 
 $event->post;                    // the Post
 $event->result;                  // the PublishResult

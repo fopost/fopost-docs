@@ -5,7 +5,7 @@
   "icon": "LayoutDashboard",
   "pages": [
     "index",
-    "using-owlstack",
+    "using-fopost",
     "---Plans---",
     "plans"
   ]

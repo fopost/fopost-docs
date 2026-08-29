@@ -23,7 +23,7 @@ function offenders(files: string[], pattern: RegExp, label: string): string[] {
 }
 
 /**
- * OwlStack's own per-minute ceiling is an abuse control we reserve the right to
+ * FoPost's own per-minute ceiling is an abuse control we reserve the right to
  * move, so it is never stated publicly. Third-party platform limits (Reddit,
  * Tumblr) are legitimately documented, so only our own API docs are scanned.
  */

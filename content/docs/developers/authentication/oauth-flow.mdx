@@ -10,7 +10,7 @@ Networks that use OAuth hand you a token that expires. The auth layer handles th
 ## OAuthHandler
 
 ```php
-use Owlstack\Core\Auth\OAuthHandler;
+use Fopost\Core\Auth\OAuthHandler;
 
 $handler = new OAuthHandler($provider, $tokenStore, 'twitter');
 
@@ -63,7 +63,7 @@ sequenceDiagram
 ## AccessToken
 
 ```php
-use Owlstack\Core\Auth\AccessToken;
+use Fopost\Core\Auth\AccessToken;
 
 $token = new AccessToken(
     token: 'abc123',
@@ -84,7 +84,7 @@ $token->isRefreshable();  // true
 The library defines `TokenStoreInterface` and no implementation, deliberately. Where a credential lives is your decision, not a library's:
 
 ```php
-use Owlstack\Core\Auth\Contracts\TokenStoreInterface;
+use Fopost\Core\Auth\Contracts\TokenStoreInterface;
 
 class DatabaseTokenStore implements TokenStoreInterface
 {

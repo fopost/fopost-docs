@@ -12,7 +12,7 @@ Content is platform-agnostic and immutable. You build a `Post` once, and each ne
 Every property is readonly, set through the constructor:
 
 ```php
-use Owlstack\Core\Content\Post;
+use Fopost\Core\Content\Post;
 
 $post = new Post(
     title: 'My Article Title',
@@ -63,7 +63,7 @@ You do not choose the markup dialect. Telegram gets HTML, Discord and Reddit get
 `CanonicalLink` is the piece that appends a link without blowing the limit:
 
 ```php
-use Owlstack\Core\Content\CanonicalLink;
+use Fopost\Core\Content\CanonicalLink;
 
 $link = new CanonicalLink("\n\nRead more: {url}");
 $text = $link->inject($content, 'https://example.com', maxLength: 280);

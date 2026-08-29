@@ -1,5 +1,5 @@
 {
-  "title": "Using OwlStack",
+  "title": "Using FoPost",
   "icon": "LayoutDashboard",
   "pages": [
     "getting-started",
@@ -13,7 +13,7 @@
     "recycling",
     "automations",
     "---AI---",
-    "owl-agent",
+    "agent",
     "ai-content",
     "---Library---",
     "media-library",

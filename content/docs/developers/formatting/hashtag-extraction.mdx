@@ -8,7 +8,7 @@ description: Turning tags into hashtags that fit.
 A `Post` carries `tags`, which are plain words. `HashtagExtractor` turns them into hashtags each network will accept.
 
 ```php
-use Owlstack\Core\Formatting\HashtagExtractor;
+use Fopost\Core\Formatting\HashtagExtractor;
 
 $extractor = new HashtagExtractor();
 
@@ -34,7 +34,7 @@ Hashtags are appended within whatever character budget is left after the body an
 
 ## How many
 
-Conventions differ sharply. Instagram tolerates many, LinkedIn expects a handful, X reads more than two or three as spam. Formatters cap per network, and `default_hashtag_count` in `OwlstackConfig` sets your own ceiling.
+Conventions differ sharply. Instagram tolerates many, LinkedIn expects a handful, X reads more than two or three as spam. Formatters cap per network, and `default_hashtag_count` in `FopostConfig` sets your own ceiling.
 
 Order matters when they get cut: put the ones you care about first.
 

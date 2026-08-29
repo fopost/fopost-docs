@@ -1,11 +1,11 @@
 ---
 title: Telegram
-description: Configure Telegram in the OwlStack WordPress plugin.
+description: Configure Telegram in the FoPost WordPress plugin.
 ---
 
 # Telegram
 
-Configure the OwlStack WordPress plugin to publish posts to your Telegram channels and groups.
+Configure the FoPost WordPress plugin to publish posts to your Telegram channels and groups.
 
 ## Prerequisites
 
@@ -24,7 +24,7 @@ Your bot **must** be an admin of the target channel/group to send messages. If u
 
 ## Settings
 
-Navigate to **OwlStack > Telegram** in the WordPress admin.
+Navigate to **FoPost > Telegram** in the WordPress admin.
 
 | Field | Description |
 |:------|:------------|
@@ -36,7 +36,7 @@ Navigate to **OwlStack > Telegram** in the WordPress admin.
 
 ### Step-by-step
 
-1. Go to **OwlStack > Telegram** in your WordPress admin
+1. Go to **FoPost > Telegram** in your WordPress admin
 2. Paste your **Bot API Token** from @BotFather
 3. Enter the **Bot Username** (e.g., `@MyOwlBot`)
 4. Enter the **Channel Username** (e.g., `@my_channel`)
@@ -54,7 +54,7 @@ After saving your settings, use the built-in testing tools:
 
 ## Publishing
 
-Once configured, Telegram appears as a toggle in the OwlStack meta box on post edit screens.
+Once configured, Telegram appears as a toggle in the FoPost meta box on post edit screens.
 
 ### Auto-publish
 
@@ -62,27 +62,27 @@ When auto-publish is enabled, new posts are automatically sent to Telegram when 
 
 ### Manual publish
 
-Use the **Publish Now** button in the OwlStack meta box to send a post to Telegram on demand.
+Use the **Publish Now** button in the FoPost meta box to send a post to Telegram on demand.
 
 ### Programmatic publishing
 
 ```php
 // Simple text message
-owlstack()->telegram('Hello from WordPress!');
+fopost()->telegram('Hello from WordPress!');
 
 // With an image attachment
-owlstack()->telegram('Check out this photo!', [
+fopost()->telegram('Check out this photo!', [
     'type' => 'photo',
     'url'  => 'https://example.com/image.jpg',
 ]);
 
 // With inline keyboard buttons
-owlstack()->telegram('Visit our site', null, [
+fopost()->telegram('Visit our site', null, [
     [['text' => 'Open Website', 'url' => 'https://example.com']],
 ]);
 
 // Override the target channel
-owlstack()->telegram('Hello!', null, null, [
+fopost()->telegram('Hello!', null, null, [
     'chat_id' => '@another_channel',
 ]);
 ```

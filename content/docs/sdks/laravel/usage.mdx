@@ -5,12 +5,12 @@ description: SendTo, the facade, per-network options, and queueing.
 
 # Laravel Usage
 
-Two entry points, doing the same thing: inject `SendTo`, or call the `Owlstack` facade.
+Two entry points, doing the same thing: inject `SendTo`, or call the `Fopost` facade.
 
 ## Dependency injection
 
 ```php
-use Owlstack\Laravel\SendTo;
+use Fopost\Laravel\SendTo;
 
 class PostController extends Controller
 {
@@ -28,11 +28,11 @@ class PostController extends Controller
 ## The facade
 
 ```php
-use Owlstack\Laravel\Facades\Owlstack;
+use Fopost\Laravel\Facades\Fopost;
 
-Owlstack::telegram('Hello from the facade!');
-Owlstack::twitter('Posting from the facade.');
-Owlstack::linkedin('And LinkedIn too.');
+Fopost::telegram('Hello from the facade!');
+Fopost::twitter('Posting from the facade.');
+Fopost::linkedin('And LinkedIn too.');
 ```
 
 ## One method per network
@@ -75,7 +75,7 @@ $sendTo->facebook('Check this out!', 'link', [
 For the same content going to several networks, build a `Post`:
 
 ```php
-use Owlstack\Core\Content\Post;
+use Fopost\Core\Content\Post;
 
 $post = new Post(
     title: 'Release notes',
@@ -93,8 +93,8 @@ $results = $sendTo->toAll($post);                // every configured network
 ## Media
 
 ```php
-use Owlstack\Core\Content\Media;
-use Owlstack\Core\Content\MediaCollection;
+use Fopost\Core\Content\Media;
+use Fopost\Core\Content\MediaCollection;
 
 $media = (new MediaCollection())->add(new Media(
     path: storage_path('app/photo.jpg'),
@@ -129,7 +129,7 @@ Publishing calls a third-party API over the network, which does not belong insid
 
 ```php
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Owlstack\Laravel\SendTo;
+use Fopost\Laravel\SendTo;
 
 class PublishToSocial implements ShouldQueue
 {

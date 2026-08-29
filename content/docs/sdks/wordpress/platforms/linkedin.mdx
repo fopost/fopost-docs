@@ -1,11 +1,11 @@
 ---
 title: LinkedIn
-description: Configure LinkedIn in the OwlStack WordPress plugin.
+description: Configure LinkedIn in the FoPost WordPress plugin.
 ---
 
 # LinkedIn
 
-Configure the OwlStack WordPress plugin to publish posts to your LinkedIn personal profile or company page.
+Configure the FoPost WordPress plugin to publish posts to your LinkedIn personal profile or company page.
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ LinkedIn access tokens expire after 60 days. You'll need to refresh the token pe
 
 ## Settings
 
-Navigate to **OwlStack > LinkedIn** in the WordPress admin.
+Navigate to **FoPost > LinkedIn** in the WordPress admin.
 
 | Field | Description |
 |:------|:------------|
@@ -39,7 +39,7 @@ Provide either a **Person ID** or an **Organization ID**, depending on whether y
 
 ### Step-by-step
 
-1. Go to **OwlStack > LinkedIn** in your WordPress admin
+1. Go to **FoPost > LinkedIn** in your WordPress admin
 2. Paste your **Access Token**
 3. Enter your **Person ID** (for personal profile) or **Organization ID** (for company page)
 4. Click **Save Settings**
@@ -54,16 +54,16 @@ After saving your settings:
 
 ## Publishing
 
-Once configured, LinkedIn appears as a toggle in the OwlStack meta box on post edit screens.
+Once configured, LinkedIn appears as a toggle in the FoPost meta box on post edit screens.
 
 ### Programmatic publishing
 
 ```php
 // Simple LinkedIn post
-owlstack()->linkedin('Hello from WordPress!');
+fopost()->linkedin('Hello from WordPress!');
 
 // Post with a link
-owlstack()->linkedin('Check out our latest article: https://example.com/post');
+fopost()->linkedin('Check out our latest article: https://example.com/post');
 ```
 
 ## Constraints

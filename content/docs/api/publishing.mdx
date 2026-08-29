@@ -5,7 +5,7 @@ description: Create a post, target accounts, publish it, and read the per-accoun
 
 # Publishing
 
-Publishing in OwlStack is two steps: create a post, then publish it. They are separate because a post is a durable object with per-account deliveries, not a fire-and-forget request. Everything on this page needs the `posts` scope.
+Publishing in FoPost is two steps: create a post, then publish it. They are separate because a post is a durable object with per-account deliveries, not a fire-and-forget request. Everything on this page needs the `posts` scope.
 
 ## The model
 
@@ -20,8 +20,8 @@ POST /v1/posts
 ```
 
 ```bash
-curl -X POST https://api.owlstack.app/v1/posts \
-  -H "X-API-Key: $OWLSTACK_API_KEY" \
+curl -X POST https://api.fopost.com/v1/posts \
+  -H "X-API-Key: $FOPOST_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
@@ -60,8 +60,8 @@ POST /v1/posts/{id}/publish
 ```
 
 ```bash
-curl -X POST https://api.owlstack.app/v1/posts/$POST_ID/publish \
-  -H "X-API-Key: $OWLSTACK_API_KEY"
+curl -X POST https://api.fopost.com/v1/posts/$POST_ID/publish \
+  -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
 This answers `202 Accepted` and queues delivery. It does not wait for the platforms, so a `202` means accepted, not live. Poll [deliveries](#read-the-result) or subscribe to [webhooks](/api/webhooks) for the outcome.

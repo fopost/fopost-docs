@@ -1,18 +1,18 @@
-# OwlStack Documentation
+# FoPost Documentation
 
-The documentation site for [OwlStack](https://owlstack.app). Next.js and [Fumadocs](https://fumadocs.dev), MDX content under `content/`.
+The documentation site for [FoPost](https://fopost.com). Next.js and [Fumadocs](https://fumadocs.dev), MDX content under `content/`.
 
-Live at [owlstack.app/docs](https://owlstack.app/docs).
+Live at [fopost.com/docs](https://fopost.com/docs).
 
 ## Sections
 
 | Section | Covers |
 |---|---|
-| `content/docs/introduction/` | What OwlStack is, how it works, supported platforms, quick start |
+| `content/docs/introduction/` | What FoPost is, how it works, supported platforms, quick start |
 | `content/docs/guide/` | The dashboard, for creators and teams. Plans and pricing |
-| `content/docs/api/` | The Cloud REST API, written against `apps/api/openapi.json` in the `owlstack` repo |
+| `content/docs/api/` | The Cloud REST API, written against `apps/api/openapi.json` in the `fopost` repo |
 | `content/docs/sdks/` | TypeScript, Python, MCP, Laravel, WordPress, browser extension |
-| `content/docs/developers/` | The standalone PHP library, `owlstack/owlstack-core` |
+| `content/docs/developers/` | The standalone PHP library, `fopost/fopost-social-core` |
 
 **The Cloud and the PHP library are two different products.** The Cloud publishes to 30 networks from our servers with an API key. The library publishes to 11 networks from yours with credentials the caller holds, and never touches our infrastructure. Keep that distinction visible in any page you write: conflating them is what made an earlier version of these docs describe a package that does not exist.
 
@@ -36,7 +36,7 @@ The site is served under a `/docs` basePath. Anything that is not a Next route (
 
 ## Branding
 
-The site is built once per brand. Content under `content/**` is written naming OwlStack and the `owlstack.app` hosts; `lib/remark-brand.mjs` swaps both for the deployment's brand as the MDX compiles, and `lib/brand.ts` covers everything written in TypeScript.
+The site is built once per brand. Content under `content/**` is written naming FoPost and the `fopost.com` hosts; `lib/remark-brand.mjs` swaps both for the deployment's brand as the MDX compiles, and `lib/brand.ts` covers everything written in TypeScript.
 
 Those source tokens are what the swap matches on. Writing `fopost.com` into a page defeats it.
 
@@ -51,15 +51,15 @@ Those source tokens are what the swap matches on. Writing `fopost.com` into a pa
 
 Two things are deliberately **not** rewritten:
 
-- **Package names inside code fences.** `@owlstackapp/sdk`, `owlstack/owlstack-core`, `from owlstack import Owlstack` name real published packages. Rewriting them would hand the reader code that does not run. Hostnames in code *are* rewritten, so a copied `curl` hits the right API
-- **URL slugs** such as `/introduction/what-is-owlstack`. They are routes with inbound links, not branding
+- **Package names inside code fences.** `@fopost/sdk`, `fopost/fopost-social-core`, `from fopost import Fopost` name real published packages. Rewriting them would hand the reader code that does not run. Hostnames in code *are* rewritten, so a copied `curl` hits the right API
+- **URL slugs** such as `/introduction/what-is-fopost`. They are routes with inbound links, not branding
 
 Add a brand by dropping `mark.svg`, `mark-dark.svg`, `favicon.ico`, and `apple-touch-icon.png` into `public/brand/<slug>/` and pointing the variables at them.
 
 ## Deployment
 
-Built as a Docker image from this repo by `owlstack-deploy`. `NEXT_PUBLIC_*` values are baked at build time, so changing one needs a rebuild.
+Built as a Docker image from this repo by `fopost-deploy`. `NEXT_PUBLIC_*` values are baked at build time, so changing one needs a rebuild.
 
 ## License
 
-Part of the [OwlStack](https://github.com/owlstacks) project.
+Part of the [FoPost](https://github.com/foposts) project.

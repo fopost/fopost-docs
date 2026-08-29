@@ -2,7 +2,7 @@
  * Brand identity for this docs deployment.
  *
  * The docs site is built once per brand, so the name, domain, and logo are
- * build-time configuration. Prose in `content/**` keeps writing "OwlStack";
+ * build-time configuration. Prose in `content/**` keeps writing "FoPost";
  * the remark plugin in `lib/remark-brand.mjs` rewrites it during the build.
  * Anything in TypeScript reads from here instead.
  *

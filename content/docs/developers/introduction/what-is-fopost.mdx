@@ -5,17 +5,17 @@ description: A zero-dependency PHP engine for publishing to 11 social networks.
 
 # What the library is
 
-`owlstack/owlstack-core` gives you one PHP API for eleven social networks. You build a `Post`, register the platforms you have credentials for, and publish. The library handles each network's API, its character limit, its markup dialect, and its media rules.
+`fopost/fopost-social-core` gives you one PHP API for eleven social networks. You build a `Post`, register the platforms you have credentials for, and publish. The library handles each network's API, its character limit, its markup dialect, and its media rules.
 
 ```php
-use Owlstack\Core\Content\Post;
-use Owlstack\Core\Publishing\Publisher;
+use Fopost\Core\Content\Post;
+use Fopost\Core\Publishing\Publisher;
 
 $publisher = new Publisher($registry);
 
 $post = new Post(
     title: 'Hello World',
-    body: 'My first post via Owlstack.',
+    body: 'My first post via Fopost.',
     url: 'https://example.com/hello-world',
     tags: ['opensource', 'php'],
 );
@@ -40,7 +40,7 @@ Some networks hand you credentials in minutes. Others need an app review first. 
 
 ## What it does not do
 
-No scheduling, no queue, no analytics, no dashboard, no retries across process restarts, no team. It is a publishing engine, not a product. Those live in the [Cloud API](/api/overview), which is the other way to use OwlStack.
+No scheduling, no queue, no analytics, no dashboard, no retries across process restarts, no team. It is a publishing engine, not a product. Those live in the [Cloud API](/api/overview), which is the other way to use FoPost.
 
 If you want the engine but not the wiring, the [Laravel](/sdks/laravel/installation) and [WordPress](/sdks/wordpress/installation) packages add queues, config, and an admin UI on top of it.
 

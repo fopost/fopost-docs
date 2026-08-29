@@ -5,16 +5,16 @@ description: Publish from the post editor or from theme and plugin code.
 
 # Quick Start (WordPress)
 
-The OwlStack plugin wraps the PHP library for WordPress: an admin settings page, a meta box in the editor, auto-publish on publish, delivery logs, and hooks. Credentials are yours and are entered in WordPress, not in a cloud dashboard.
+The FoPost plugin wraps the PHP library for WordPress: an admin settings page, a meta box in the editor, auto-publish on publish, delivery logs, and hooks. Credentials are yours and are entered in WordPress, not in a cloud dashboard.
 
 Requires PHP 8.1 or newer and WordPress 6.4 or newer.
 
 ## 1. Install
 
-Upload the plugin zip, or clone into `wp-content/plugins/owlstack`. From a source checkout, run Composer in the plugin directory first:
+Upload the plugin zip, or clone into `wp-content/plugins/fopost`. From a source checkout, run Composer in the plugin directory first:
 
 ```bash
-cd wp-content/plugins/owlstack
+cd wp-content/plugins/fopost
 composer install
 ```
 
@@ -22,26 +22,26 @@ Activate it from **WP Admin → Plugins**.
 
 ## 2. Configure
 
-Go to **Owlstack → Settings** and enter credentials for the networks you want. Each network's required keys are listed under [Configure Credentials](./connect-platforms); the settings page has a connection test per network, which is the fastest way to catch a wrong token.
+Go to **Fopost → Settings** and enter credentials for the networks you want. Each network's required keys are listed under [Configure Credentials](./connect-platforms); the settings page has a connection test per network, which is the fastest way to catch a wrong token.
 
 Only networks with valid credentials appear in the editor.
 
 ## 3. Publish from the editor
 
-Editing a post shows an **Owlstack** meta box. Tick the networks and publish. With auto-publish enabled, hitting Publish sends the post out at the same time.
+Editing a post shows an **Fopost** meta box. Tick the networks and publish. With auto-publish enabled, hitting Publish sends the post out at the same time.
 
-By default the meta box appears on posts only. Add other post types with the `owlstack_supported_post_types` filter.
+By default the meta box appears on posts only. Add other post types with the `fopost_supported_post_types` filter.
 
 ## 4. Publish from code
 
-The `owlstack()` helper is available anywhere in a theme or plugin:
+The `fopost()` helper is available anywhere in a theme or plugin:
 
 ```php
-owlstack()->telegram('Hello from WordPress!');
-owlstack()->twitter('Hello from WordPress!');
-owlstack()->x('Hello from WordPress!');            // alias
+fopost()->telegram('Hello from WordPress!');
+fopost()->twitter('Hello from WordPress!');
+fopost()->x('Hello from WordPress!');            // alias
 
-owlstack()->facebook('Check this out!', 'link', [
+fopost()->facebook('Check this out!', 'link', [
     'link' => 'https://example.com',
 ]);
 ```
@@ -49,7 +49,7 @@ owlstack()->facebook('Check this out!', 'link', [
 Build a `Post` for anything richer:
 
 ```php
-use Owlstack\Core\Content\Post;
+use Fopost\Core\Content\Post;
 
 $post = new Post(
     title: 'My Post',
@@ -58,31 +58,31 @@ $post = new Post(
     tags: ['wordpress'],
 );
 
-owlstack()->publish($post, 'linkedin');  // one network
-owlstack()->toAll($post);                // every configured network
+fopost()->publish($post, 'linkedin');  // one network
+fopost()->toAll($post);                // every configured network
 ```
 
 ## 5. Hooks
 
 ```php
-add_action('owlstack_post_published', function ($event) {
+add_action('fopost_post_published', function ($event) {
     error_log("Published to {$event->result->platformName}");
 });
 
-add_action('owlstack_post_failed', function ($event) {
+add_action('fopost_post_failed', function ($event) {
     error_log("Failed: {$event->result->error}");
 });
 ```
 
 | Hook | Kind | Receives |
 |:-----|:-----|:---------|
-| `owlstack_before_publish` | action | The `WP_Post` and the target network names |
-| `owlstack_after_publish` | action | The `WP_Post` and the results |
-| `owlstack_post_published` | action | A `PostPublished` event |
-| `owlstack_post_failed` | action | A `PostFailed` event |
-| `owlstack_supported_post_types` | filter | The post types showing the meta box |
-| `owlstack_post_data` | filter | The `Post` before publishing |
-| `owlstack_publish_options` | filter | Per-network options before publishing |
+| `fopost_before_publish` | action | The `WP_Post` and the target network names |
+| `fopost_after_publish` | action | The `WP_Post` and the results |
+| `fopost_post_published` | action | A `PostPublished` event |
+| `fopost_post_failed` | action | A `PostFailed` event |
+| `fopost_supported_post_types` | filter | The post types showing the meta box |
+| `fopost_post_data` | filter | The `Post` before publishing |
+| `fopost_publish_options` | filter | Per-network options before publishing |
 
 ## Delivery logs
 

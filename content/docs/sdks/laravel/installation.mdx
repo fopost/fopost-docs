@@ -1,6 +1,6 @@
 ---
 title: Laravel Installation
-description: Install and configure the OwlStack Laravel package.
+description: Install and configure the FoPost Laravel package.
 ---
 
 # Laravel Installation
@@ -10,23 +10,23 @@ description: Install and configure the OwlStack Laravel package.
 - PHP 8.1 or newer
 - Laravel 10, 11, 12, or 13
 
-No OwlStack account is required. The package wraps the [PHP library](/developers) and publishes with credentials you hold.
+No FoPost account is required. The package wraps the [PHP library](/developers) and publishes with credentials you hold.
 
 ## Install
 
 ```bash
-composer require owlstack/owlstack-laravel
+composer require fopost/fopost-social-laravel
 ```
 
-The service provider is auto-discovered. `owlstack/owlstack-core` comes with it.
+The service provider is auto-discovered. `fopost/fopost-social-core` comes with it.
 
 ## Publish the config
 
 ```bash
-php artisan vendor:publish --tag=owlstack-config
+php artisan vendor:publish --tag=fopost-config
 ```
 
-This creates `config/owlstack.php`, which reads from `.env` and lists every supported variable.
+This creates `config/fopost.php`, which reads from `.env` and lists every supported variable.
 
 ## Add credentials
 
@@ -45,7 +45,7 @@ The full set of variables is on [Configuration](./configuration), and what each 
 ## Verify
 
 ```php
-use Owlstack\Laravel\SendTo;
+use Fopost\Laravel\SendTo;
 
 app(SendTo::class)->telegram('Hello from Laravel!');
 ```

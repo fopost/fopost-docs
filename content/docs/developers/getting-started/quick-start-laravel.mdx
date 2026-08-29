@@ -1,19 +1,19 @@
 ---
 title: Quick Start (Laravel)
-description: Publish from Laravel with the SendTo service or the Owlstack facade.
+description: Publish from Laravel with the SendTo service or the Fopost facade.
 ---
 
 # Quick Start (Laravel)
 
-`owlstack/owlstack-laravel` wires the PHP library into Laravel: config from `.env`, a service provider, a facade, and events. It adds no platform logic of its own, so anything about how a network behaves is documented under [Platforms](/developers/platforms/overview).
+`fopost/fopost-social-laravel` wires the PHP library into Laravel: config from `.env`, a service provider, a facade, and events. It adds no platform logic of its own, so anything about how a network behaves is documented under [Platforms](/developers/platforms/overview).
 
 Supports Laravel 10 through 12.
 
 ## 1. Install
 
 ```bash
-composer require owlstack/owlstack-laravel
-php artisan vendor:publish --tag=owlstack-config
+composer require fopost/fopost-social-laravel
+php artisan vendor:publish --tag=fopost-config
 ```
 
 The service provider is auto-discovered.
@@ -35,7 +35,7 @@ Only networks with valid credentials are registered. Leave X blank and X simply 
 Inject `SendTo`:
 
 ```php
-use Owlstack\Laravel\SendTo;
+use Fopost\Laravel\SendTo;
 
 class PostController extends Controller
 {
@@ -53,11 +53,11 @@ class PostController extends Controller
 Or use the facade:
 
 ```php
-use Owlstack\Laravel\Facades\Owlstack;
+use Fopost\Laravel\Facades\Fopost;
 
-Owlstack::telegram('Hello from the facade!');
-Owlstack::twitter('Posting from the facade.');
-Owlstack::linkedin('And LinkedIn too.');
+Fopost::telegram('Hello from the facade!');
+Fopost::twitter('Posting from the facade.');
+Fopost::linkedin('And LinkedIn too.');
 ```
 
 ## 4. Per-network arguments

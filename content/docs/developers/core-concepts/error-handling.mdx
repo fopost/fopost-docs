@@ -15,31 +15,31 @@ Two layers, and which one you meet depends on how you call things.
 
 ```mermaid
 classDiagram
-    RuntimeException <|-- OwlstackException
-    OwlstackException <|-- AuthenticationException
-    OwlstackException <|-- ContentTooLongException
-    OwlstackException <|-- MediaValidationException
-    OwlstackException <|-- PlatformException
+    RuntimeException <|-- FopostException
+    FopostException <|-- AuthenticationException
+    FopostException <|-- ContentTooLongException
+    FopostException <|-- MediaValidationException
+    FopostException <|-- PlatformException
     PlatformException <|-- RateLimitException
 ```
 
 | Exception | Means | Carries |
 |:----------|:------|:--------|
-| `OwlstackException` | Base for everything the library raises | |
+| `FopostException` | Base for everything the library raises | |
 | `AuthenticationException` | Credentials invalid or expired | |
 | `ContentTooLongException` | Content over the network's limit | `platformName`, `maxLength`, `actualLength` |
 | `MediaValidationException` | Media the network will not take | `platformName`, `mimeType`, `fileSize` |
 | `PlatformException` | The network's API returned an error | `platformName`, `httpStatusCode`, `apiErrorCode`, `rawResponse` |
 | `RateLimitException` | Rate limited | `retryAfter`, `retryAfterSeconds()` |
 
-Everything extends `RuntimeException`, so a single `catch (OwlstackException $e)` covers the library without swallowing unrelated failures.
+Everything extends `RuntimeException`, so a single `catch (FopostException $e)` covers the library without swallowing unrelated failures.
 
 ## Catching directly
 
 ```php
-use Owlstack\Core\Exceptions\ContentTooLongException;
-use Owlstack\Core\Exceptions\MediaValidationException;
-use Owlstack\Core\Exceptions\RateLimitException;
+use Fopost\Core\Exceptions\ContentTooLongException;
+use Fopost\Core\Exceptions\MediaValidationException;
+use Fopost\Core\Exceptions\RateLimitException;
 
 try {
     $response = $platform->publish($post);

@@ -1,11 +1,11 @@
 ---
 title: Discord
-description: Configure Discord in the OwlStack WordPress plugin.
+description: Configure Discord in the FoPost WordPress plugin.
 ---
 
 # Discord
 
-Configure the OwlStack WordPress plugin to publish posts to your Discord server channels.
+Configure the FoPost WordPress plugin to publish posts to your Discord server channels.
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ You can connect Discord using either a **webhook** (simpler) or a **bot** (more 
 2. Click the gear icon to open **Channel Settings**
 3. Go to **Integrations > Webhooks**
 4. Click **New Webhook**
-5. Name it (e.g., "OwlStack") and copy the **Webhook URL**
+5. Name it (e.g., "FoPost") and copy the **Webhook URL**
 </Callout>
 
 ### Option B: Bot
@@ -35,7 +35,7 @@ You can connect Discord using either a **webhook** (simpler) or a **bot** (more 
 
 ## Settings
 
-Navigate to **OwlStack > Discord** in the WordPress admin.
+Navigate to **FoPost > Discord** in the WordPress admin.
 
 | Field | Description |
 |:------|:------------|
@@ -49,13 +49,13 @@ Use **Webhook mode** for simple publishing to a single channel. Use **Bot mode**
 
 ### Step-by-step (Webhook)
 
-1. Go to **OwlStack > Discord** in your WordPress admin
+1. Go to **FoPost > Discord** in your WordPress admin
 2. Paste your **Webhook URL**
 3. Click **Save Settings**
 
 ### Step-by-step (Bot)
 
-1. Go to **OwlStack > Discord** in your WordPress admin
+1. Go to **FoPost > Discord** in your WordPress admin
 2. Paste your **Bot Token**
 3. Enter the **Channel ID**
 4. Click **Save Settings**
@@ -70,16 +70,16 @@ After saving your settings:
 
 ## Publishing
 
-Once configured, Discord appears as a toggle in the OwlStack meta box on post edit screens.
+Once configured, Discord appears as a toggle in the FoPost meta box on post edit screens.
 
 ### Programmatic publishing
 
 ```php
 // Simple message
-owlstack()->discord('Hello from WordPress!');
+fopost()->discord('Hello from WordPress!');
 
 // Message with embed
-owlstack()->discord('New blog post published!', [
+fopost()->discord('New blog post published!', [
     'type' => 'embed',
     'title' => 'My Post Title',
     'url'   => 'https://example.com/post',

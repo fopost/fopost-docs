@@ -8,7 +8,7 @@ description: One formatter per network, and what each one does to your content.
 A formatter turns a platform-agnostic `Post` into the string one network wants. Every network has its own, implementing `FormatterInterface`.
 
 ```php
-use Owlstack\Core\Formatting\Contracts\FormatterInterface;
+use Fopost\Core\Formatting\Contracts\FormatterInterface;
 
 $formatter->format($post, $options);  // the formatted string
 $formatter->platform();               // 'telegram'
@@ -53,7 +53,7 @@ The point of the layer is that you write one `Post` and never think about this.
 `CharacterTruncator` cuts on word boundaries:
 
 ```php
-use Owlstack\Core\Formatting\CharacterTruncator;
+use Fopost\Core\Formatting\CharacterTruncator;
 
 $truncator = new CharacterTruncator(ellipsis: '…');
 $truncator->truncate('Hello World', maxLength: 8);  // 'Hello…'

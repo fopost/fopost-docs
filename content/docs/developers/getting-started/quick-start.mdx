@@ -10,7 +10,7 @@ Publishing to Telegram, end to end. Telegram first because a bot token takes abo
 ## 1. Install
 
 ```bash
-composer require owlstack/owlstack-core
+composer require fopost/fopost-social-core
 ```
 
 ## 2. Publish
@@ -20,13 +20,13 @@ composer require owlstack/owlstack-core
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Owlstack\Core\Config\PlatformCredentials;
-use Owlstack\Core\Content\Post;
-use Owlstack\Core\Http\HttpClient;
-use Owlstack\Core\Platforms\PlatformRegistry;
-use Owlstack\Core\Platforms\Telegram\TelegramFormatter;
-use Owlstack\Core\Platforms\Telegram\TelegramPlatform;
-use Owlstack\Core\Publishing\Publisher;
+use Fopost\Core\Config\PlatformCredentials;
+use Fopost\Core\Content\Post;
+use Fopost\Core\Http\HttpClient;
+use Fopost\Core\Platforms\PlatformRegistry;
+use Fopost\Core\Platforms\Telegram\TelegramFormatter;
+use Fopost\Core\Platforms\Telegram\TelegramPlatform;
+use Fopost\Core\Publishing\Publisher;
 
 // Credentials you obtained from the network itself
 $credentials = new PlatformCredentials('telegram', [
@@ -44,7 +44,7 @@ $publisher = new Publisher($registry);
 
 $post = new Post(
     title: 'Hello World',
-    body: 'My first post via Owlstack.',
+    body: 'My first post via Fopost.',
     url: 'https://example.com/hello-world',
     tags: ['opensource', 'php'],
 );
@@ -63,8 +63,8 @@ if ($result->success) {
 ## 3. Add media
 
 ```php
-use Owlstack\Core\Content\Media;
-use Owlstack\Core\Content\MediaCollection;
+use Fopost\Core\Content\Media;
+use Fopost\Core\Content\MediaCollection;
 
 $media = (new MediaCollection())
     ->add(new Media(

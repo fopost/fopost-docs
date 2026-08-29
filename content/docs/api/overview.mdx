@@ -1,27 +1,27 @@
 ---
 title: API Overview
-description: Base URL, envelopes, pagination, and errors for the OwlStack REST API.
+description: Base URL, envelopes, pagination, and errors for the FoPost REST API.
 ---
 
 # API Overview
 
-The OwlStack REST API is what the dashboard itself runs on. Anything you can do in the app you can do from your own code: create posts, schedule them, attach media, read analytics, drive automations, and receive webhooks.
+The FoPost REST API is what the dashboard itself runs on. Anything you can do in the app you can do from your own code: create posts, schedule them, attach media, read analytics, drive automations, and receive webhooks.
 
 ## Base URL
 
 ```
-https://api.owlstack.app/v1
+https://api.fopost.com/v1
 ```
 
-Every path in this reference is relative to that base. The machine-readable spec is served at [`/v1/openapi.json`](https://api.owlstack.app/v1/openapi.json) and is the source this reference is written from.
+Every path in this reference is relative to that base. The machine-readable spec is served at [`/v1/openapi.json`](https://api.fopost.com/v1/openapi.json) and is the source this reference is written from.
 
 ## Authentication
 
 Send your API key in the `X-API-Key` header:
 
 ```bash
-curl https://api.owlstack.app/v1/posts \
-  -H "X-API-Key: $OWLSTACK_API_KEY"
+curl https://api.fopost.com/v1/posts \
+  -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
 Keys carry scopes, and a key may be bound to a single workspace. See [Authentication](/api/authentication).
@@ -52,8 +52,8 @@ A collection is wrapped in `data` with a `meta` block:
 List endpoints take `page` (default `1`) and `per_page` (default `30`, maximum `100`). Read `meta.total_pages` rather than paging until you get an empty array.
 
 ```bash
-curl "https://api.owlstack.app/v1/posts?page=2&per_page=50" \
-  -H "X-API-Key: $OWLSTACK_API_KEY"
+curl "https://api.fopost.com/v1/posts?page=2&per_page=50" \
+  -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
 ## Identifiers and timestamps

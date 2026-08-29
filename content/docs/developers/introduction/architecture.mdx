@@ -24,15 +24,15 @@ flowchart LR
 
 | Layer | Namespace | What it does |
 |:------|:----------|:-------------|
-| Content | `Owlstack\Core\Content` | `Post`, `Media`, `MediaCollection`, `CanonicalLink`. Immutable, platform-agnostic |
-| Config | `Owlstack\Core\Config` | `PlatformCredentials`, `OwlstackConfig`, `ConfigValidator` |
-| Formatting | `Owlstack\Core\Formatting` | One formatter per network, plus `CharacterTruncator` and `HashtagExtractor` |
-| Platforms | `Owlstack\Core\Platforms` | One class per network, plus `PlatformRegistry` |
-| Publishing | `Owlstack\Core\Publishing` | `Publisher` and `PublishResult` |
-| Auth | `Owlstack\Core\Auth` | `OAuthHandler`, `AccessToken`, and the token store contract |
-| Events | `Owlstack\Core\Events` | `PostPublished`, `PostFailed`, and the dispatcher contract |
-| Http | `Owlstack\Core\Http` | A cURL client with no dependencies |
-| Support | `Owlstack\Core\Support` | `Arr`, `Str`, and a freezable `Clock` |
+| Content | `Fopost\Core\Content` | `Post`, `Media`, `MediaCollection`, `CanonicalLink`. Immutable, platform-agnostic |
+| Config | `Fopost\Core\Config` | `PlatformCredentials`, `FopostConfig`, `ConfigValidator` |
+| Formatting | `Fopost\Core\Formatting` | One formatter per network, plus `CharacterTruncator` and `HashtagExtractor` |
+| Platforms | `Fopost\Core\Platforms` | One class per network, plus `PlatformRegistry` |
+| Publishing | `Fopost\Core\Publishing` | `Publisher` and `PublishResult` |
+| Auth | `Fopost\Core\Auth` | `OAuthHandler`, `AccessToken`, and the token store contract |
+| Events | `Fopost\Core\Events` | `PostPublished`, `PostFailed`, and the dispatcher contract |
+| Http | `Fopost\Core\Http` | A cURL client with no dependencies |
+| Support | `Fopost\Core\Support` | `Arr`, `Str`, and a freezable `Clock` |
 
 ## Wiring it up
 
@@ -73,8 +73,8 @@ None of these require a fork. See [Extending](/developers/extending/custom-platf
 
 | Package | What it is | License |
 |:--------|:-----------|:--------|
-| `owlstack/owlstack-core` | The engine. Everything above | MIT |
-| `owlstack/owlstack-laravel` | Service provider, facade, config, queued events | MIT |
+| `fopost/fopost-social-core` | The engine. Everything above | MIT |
+| `fopost/fopost-social-laravel` | Service provider, facade, config, queued events | MIT |
 | WordPress plugin | Admin panel, meta boxes, delivery logs, REST endpoints | MIT |
 
 The wrappers hold no platform logic. Anything about how a network behaves lives in core, so a fix reaches Laravel and WordPress at the same time.

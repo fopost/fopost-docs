@@ -18,7 +18,7 @@ No other extensions and no Composer dependencies.
 ## Standalone PHP
 
 ```bash
-composer require owlstack/owlstack-core
+composer require fopost/fopost-social-core
 ```
 
 That is the whole library. Nothing to configure at install time, because credentials are passed to the platform objects you construct. See the [quick start](./quick-start).
@@ -26,25 +26,25 @@ That is the whole library. Nothing to configure at install time, because credent
 ## Laravel
 
 ```bash
-composer require owlstack/owlstack-laravel
+composer require fopost/fopost-social-laravel
 ```
 
 The service provider is auto-discovered. Publish the config:
 
 ```bash
-php artisan vendor:publish --tag=owlstack-config
+php artisan vendor:publish --tag=fopost-config
 ```
 
-Then put your platform credentials in `.env`. The Laravel package pulls in `owlstack/owlstack-core` for you. See the [Laravel quick start](./quick-start-laravel).
+Then put your platform credentials in `.env`. The Laravel package pulls in `fopost/fopost-social-core` for you. See the [Laravel quick start](./quick-start-laravel).
 
 ## WordPress
 
-Install the plugin, then set your credentials in **WP Admin → OwlStack → Settings**. See the [WordPress quick start](./quick-start-wordpress).
+Install the plugin, then set your credentials in **WP Admin → FoPost → Settings**. See the [WordPress quick start](./quick-start-wordpress).
 
 If you installed from a source checkout rather than a packaged zip, run Composer inside the plugin directory first:
 
 ```bash
-cd wp-content/plugins/owlstack
+cd wp-content/plugins/fopost
 composer install
 ```
 

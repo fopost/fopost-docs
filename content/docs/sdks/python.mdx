@@ -1,14 +1,14 @@
 ---
 title: Python SDK
-description: The official Python client for the OwlStack API.
+description: The official Python client for the FoPost API.
 ---
 
 # Python SDK
 
-`owlstack` is the official Python client. It is built on `httpx` and `pydantic` v2, fully typed, and needs Python 3.10 or newer.
+`fopost` is the official Python client. It is built on `httpx` and `pydantic` v2, fully typed, and needs Python 3.10 or newer.
 
 ```bash
-pip install owlstack
+pip install fopost
 ```
 
 <Callout type="warn">
@@ -16,14 +16,14 @@ This is a 0.x release. The surface is still settling and a minor version may
 break something. Pin an exact version if that matters to you.
 </Callout>
 
-Source and issues: [github.com/owlstacks/owlstack-python](https://github.com/owlstacks/owlstack-python). MIT licensed.
+Source and issues: [github.com/fopost/fopost-python](https://github.com/fopost/fopost-python). MIT licensed.
 
 ## Quick start
 
 ```python
-from owlstack import Owlstack
+from fopost import Fopost
 
-client = Owlstack()  # reads OWLSTACK_API_KEY, or pass api_key=
+client = Fopost()  # reads FOPOST_API_KEY, or pass api_key=
 
 workspace = client.workspaces.list()[0]
 accounts = client.accounts.list(workspace_id=workspace.id)

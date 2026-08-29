@@ -10,7 +10,7 @@ description: The Media value object and the immutable MediaCollection.
 One attachment: an image, video, audio file, or document.
 
 ```php
-use Owlstack\Core\Content\Media;
+use Fopost\Core\Content\Media;
 
 $image = new Media(
     path: '/path/to/photo.jpg',
@@ -36,7 +36,7 @@ Only `path` and `mimeType` are required. Fill in `width`, `height`, and `fileSiz
 Typed and immutable. `add()` returns a **new** collection, so assign the result:
 
 ```php
-use Owlstack\Core\Content\MediaCollection;
+use Fopost\Core\Content\MediaCollection;
 
 $collection = new MediaCollection();
 $collection = $collection->add($image1);

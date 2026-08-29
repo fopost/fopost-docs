@@ -8,8 +8,8 @@ description: Change how content is shaped for a network.
 A formatter is one small class, and swapping one is a constructor argument. Use this when a network's default output is close but not what your brand posts.
 
 ```php
-use Owlstack\Core\Content\Post;
-use Owlstack\Core\Formatting\Contracts\FormatterInterface;
+use Fopost\Core\Content\Post;
+use Fopost\Core\Formatting\Contracts\FormatterInterface;
 
 class MastodonFormatter implements FormatterInterface
 {
@@ -49,9 +49,9 @@ Nothing else changes, and nothing is forked.
 The helpers the built-in formatters use are public:
 
 ```php
-use Owlstack\Core\Content\CanonicalLink;
-use Owlstack\Core\Formatting\CharacterTruncator;
-use Owlstack\Core\Formatting\HashtagExtractor;
+use Fopost\Core\Content\CanonicalLink;
+use Fopost\Core\Formatting\CharacterTruncator;
+use Fopost\Core\Formatting\HashtagExtractor;
 
 $truncator = new CharacterTruncator(ellipsis: '…');
 $extractor = new HashtagExtractor();
