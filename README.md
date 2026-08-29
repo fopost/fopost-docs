@@ -11,10 +11,9 @@ Live at [fopost.com/docs](https://fopost.com/docs).
 | `content/docs/introduction/` | What FoPost is, how it works, supported platforms, quick start |
 | `content/docs/guide/` | The dashboard, for creators and teams. Plans and pricing |
 | `content/docs/api/` | The Cloud REST API, written against `apps/api/openapi.json` in the `fopost` repo |
-| `content/docs/sdks/` | TypeScript, Python, MCP, Laravel, WordPress, browser extension |
-| `content/docs/developers/` | The standalone PHP library, `fopost/fopost-social-core` |
+| `content/docs/sdks/` | TypeScript, Python, MCP, WordPress plugin, browser extension |
 
-**The Cloud and the PHP library are two different products.** The Cloud publishes to 30 networks from our servers with an API key. The library publishes to 11 networks from yours with credentials the caller holds, and never touches our infrastructure. Keep that distinction visible in any page you write: conflating them is what made an earlier version of these docs describe a package that does not exist.
+**These docs cover the Cloud only.** The free self-hosted PHP library and its Laravel wrapper are documented in their own repos; do not add pages for them here.
 
 ## Development
 

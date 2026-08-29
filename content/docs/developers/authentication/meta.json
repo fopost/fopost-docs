@@ -1,8 +1,0 @@
-{
-  "title": "Authentication",
-  "icon": "Key",
-  "pages": [
-    "platform-credentials",
-    "oauth-flow"
-  ]
-}

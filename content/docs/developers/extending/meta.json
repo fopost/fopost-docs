@@ -1,9 +1,0 @@
-{
-  "title": "Extending",
-  "icon": "Puzzle",
-  "pages": [
-    "custom-platforms",
-    "custom-formatters",
-    "http-client"
-  ]
-}
