@@ -5,7 +5,7 @@ description: Platform character limits and how OwlStack handles truncation.
 
 # Character Limits
 
-OwlStack handles character truncation automatically on the server. Your content is trimmed at word boundaries with an ellipsis when it exceeds a platform's limit.
+Each formatter knows its network's limit and trims to it on a word boundary, with an ellipsis. You do not truncate by hand.
 
 ## Platform character limits
 
@@ -25,9 +25,20 @@ OwlStack handles character truncation automatically on the server. Your content 
 
 ## How truncation works
 
-- Breaks at **word boundaries** - never cuts a word in half
-- Appends an **ellipsis** to indicate truncation
-- Accounts for hashtags and URLs in the character budget
-- For Twitter, accounts for `t.co` URL wrapping (23 characters per URL)
+- Breaks at **word boundaries**, never mid-word
+- Appends an **ellipsis**, counted against the limit so the result is never one over
+- Budgets for the hashtags and the canonical URL before trimming the body
+- On X, budgets for the fixed width every URL is wrapped to, whatever its real length
 
-You don't need to truncate manually. Just write your content and OwlStack formats it for each platform.
+Read a network's limit at runtime rather than hardcoding one:
+
+```php
+$formatter->maxLength();              // 280
+$platform->constraints();             // limits, media types, sizes
+```
+
+Networks change these. Reading them is one call and never goes stale.
+
+## Which field gets cut
+
+The body. `title`, the canonical URL, and as many hashtags as fit are preserved, on the reasoning that a trimmed sentence still reads while a broken link does not. Set `excerpt` on the post to control what a tight network shows instead of leaving it to the truncator.

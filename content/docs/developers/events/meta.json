@@ -1,9 +1,8 @@
 {
   "title": "Events",
-  "icon": "Zap",
+  "icon": "Bell",
   "pages": [
     "event-system",
-    "post-published-failed",
-    "webhooks"
+    "post-published-failed"
   ]
 }

@@ -1,55 +1,43 @@
 ---
 title: WhatsApp
-description: Sending messages via WhatsApp Business.
+description: Text, media, and template messages via the Business API.
 ---
 
 # WhatsApp
 
-Send text messages, media, documents, and template messages via the WhatsApp Cloud API.
+WhatsApp is a messaging API, not a broadcast network. Every send goes to a specific number, and unsolicited messages need a pre-approved template.
 
-## Connect
-
-Connect WhatsApp in the [OwlStack dashboard](https://app.owlstack.app):
-
-1. Go to **Project Settings > Platforms > WhatsApp**
-2. Enter your WhatsApp Business API credentials
-3. Verify your phone number
-4. Click **Connect**
-
-<Callout type="info" title="WhatsApp Business">
-WhatsApp requires a [WhatsApp Business account](https://business.whatsapp.com/) and a verified phone number.
-</Callout>
-
-## Publishing
+## Credentials
 
 ```php
-use OwlStack\Enums\Platform;
-
-$result = $client->publish($post, [Platform::WhatsApp], [
-    'to' => '+1234567890',
+$credentials = new PlatformCredentials('whatsapp', [
+    'access_token' => '...',
+    'phone_number_id' => '...',
 ]);
+```
+
+## Getting access
+
+Meta Business verification, then the WhatsApp Business Platform in the [Meta developer portal](https://developers.facebook.com/docs/whatsapp). This is the longest onboarding of the eleven: verification, a registered number, and template approval each take their own time.
+
+## Publish
+
+```php
+$result = $publisher->publish($post, 'whatsapp');
 ```
 
 ## Options
 
 | Option | Type | Description |
 |:-------|:-----|:------------|
-| `to` | `string` | **Required.** Recipient phone number (E.164 format) |
-| `message_type` | `string` | `text`, `image`, `video`, `document`, `template` |
-| `template_name` | `string` | Template name (for template messages) |
-| `template_lang` | `string` | Template language code (e.g., `en_US`) |
-| `preview_url` | `bool` | Show URL preview |
+| `to` | `string` | **Required.** Recipient in E.164 format |
+| `message_type` | `string` | `text`, `image`, `video`, `document`, or `template` |
+| `template_name` | `string` | Approved template name |
+| `template_lang` | `string` | Template language, for example `en_US` |
+| `preview_url` | `bool` | Render a link preview |
 
 ```php
-// Text message
-$result = $client->publish($post, [Platform::WhatsApp], [
-    'to' => '+1234567890',
-    'message_type' => 'text',
-    'preview_url' => true,
-]);
-
-// Template message
-$result = $client->publish($post, [Platform::WhatsApp], [
+$publisher->publish($post, 'whatsapp', [
     'to' => '+1234567890',
     'message_type' => 'template',
     'template_name' => 'hello_world',
@@ -62,4 +50,20 @@ $result = $client->publish($post, [Platform::WhatsApp], [
 | Constraint | Value |
 |:-----------|:------|
 | Max text length | 4,096 characters |
-| Supported media types | JPEG, PNG, MP4, PDF, DOCX |
+| Markup | Plain text |
+
+Read them at runtime with `$platform->constraints()` rather than hardcoding, since networks change them.
+
+## Templates and the 24-hour window
+
+Free-form messages are only allowed inside a 24-hour window opened by the recipient messaging you first. Outside it, you may send only a template Meta has approved in advance.
+
+That is a policy constraint, not an API quirk, and the penalty for working around it is losing the number. Design around templates from the start rather than discovering the window in production.
+
+## Next
+
+<Cards>
+  <Card title="All Platforms" href="./overview" />
+  <Card title="Configure Credentials" href="/developers/getting-started/connect-platforms" />
+  <Card title="Error Handling" href="/developers/core-concepts/error-handling" />
+</Cards>

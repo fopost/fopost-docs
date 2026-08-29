@@ -36,6 +36,9 @@ const config = {
       { source: '/guide/pro', destination: '/guide', permanent: true },
       // Retired pages for SDKs that were never built. The overview says what
       // exists and what does not, instead of a page per language promising one.
+      // Cloud topics that had duplicate pages under the PHP library section.
+      { source: '/developers/authentication/api-keys', destination: '/api/authentication', permanent: true },
+      { source: '/developers/events/webhooks', destination: '/api/webhooks', permanent: true },
       { source: '/sdks/nodejs', destination: '/sdks/typescript', permanent: true },
       { source: '/sdks/python-sdk', destination: '/sdks/python', permanent: true },
       { source: '/sdks/golang', destination: '/sdks/overview', permanent: true },

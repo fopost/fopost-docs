@@ -1,35 +1,73 @@
 ---
 title: Event System
-description: OwlStack's publishing lifecycle events.
+description: Hook into the publish lifecycle with a dispatcher of your own.
 ---
 
 # Event System
 
-OwlStack dispatches events during the publishing lifecycle. Hook into these to log, notify, or react to publishing outcomes.
+Pass a dispatcher to the `Publisher` and it emits an event after every attempt. That is where logging, metrics, and delivery bookkeeping belong, rather than repeated at each call site.
 
-## SDK events
-
-The OwlStack SDK fires events locally in your application after receiving results from the API:
+## The contract
 
 ```php
-use OwlStack\Events\PostPublished;
-use OwlStack\Events\PostFailed;
+use Owlstack\Core\Events\Contracts\EventDispatcherInterface;
+use Owlstack\Core\Events\PostFailed;
+use Owlstack\Core\Events\PostPublished;
+
+class MyDispatcher implements EventDispatcherInterface
+{
+    public function dispatch(object $event): void
+    {
+        match (true) {
+            $event instanceof PostPublished => $this->onPublished($event),
+            $event instanceof PostFailed    => $this->onFailed($event),
+            default                         => null,
+        };
+    }
+
+    private function onPublished(PostPublished $event): void
+    {
+        logger("Published to {$event->result->platformName}: {$event->result->externalUrl}");
+    }
+
+    private function onFailed(PostFailed $event): void
+    {
+        logger("Failed on {$event->result->platformName}: {$event->result->error}");
+    }
+}
+
+$publisher = new Publisher($registry, new MyDispatcher());
 ```
 
-These events are dispatched through your framework's event system:
+One method, no base class. If you already have a PSR-14 dispatcher, wrap it in four lines and forward.
 
-| Framework | Event System |
-|:----------|:------------|
-| **Laravel** | `Event::dispatch()` - listen with `Event::listen()` or event listeners |
-| **WordPress** | `do_action()` - listen with `add_action()` |
-| **Standalone PHP** | Implement `EventDispatcherInterface` and pass to client |
+The dispatcher is optional. Leave it out and publishing works exactly the same, silently.
 
-## Server-side webhooks
+## Both events fire
 
-For server-side event notifications, OwlStack can send webhooks to your application. This is useful for:
+Every attempt produces one: `PostPublished` on success, `PostFailed` on failure. Publishing to five networks emits five events, and a `default => null` arm keeps your dispatcher working when a later version adds a third event type.
 
-- Scheduled posts that publish later
-- Batch publishing results
-- Retry outcomes
+## What a listener should do
 
-See [Webhooks](./webhooks) for setup details.
+Write the delivery row, increment a counter, notify a channel. Keep it fast: `dispatch()` runs inline, so a slow listener slows publishing.
+
+Anything genuinely slow, a Slack notification or an email, belongs on a queue. Push a job from the listener rather than doing the work in it.
+
+## In a framework
+
+Both wrappers do this for you:
+
+- Laravel maps them onto native events you subscribe to normally. See [Laravel Events](/sdks/laravel/events)
+- WordPress fires `owlstack_post_published` and `owlstack_post_failed` actions. See [WordPress Hooks](/sdks/wordpress/hooks)
+
+## Not the same as Cloud webhooks
+
+These are in-process PHP events in your own application. The [Cloud API's webhooks](/api/webhooks) are HTTP callbacks from our servers to yours, and are unrelated: the library never calls out to us.
+
+## Next
+
+<Cards>
+  <Card title="PostPublished & PostFailed" href="./post-published-failed" />
+  <Card title="Publishing" href="/developers/core-concepts/publishing" />
+  <Card title="Delivery Status" href="/developers/core-concepts/delivery-status" />
+</Cards>

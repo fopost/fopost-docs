@@ -1,44 +1,42 @@
 ---
 title: Media Handling
-description: Working with Media for images, videos, and documents.
+description: The Media value object and the immutable MediaCollection.
 ---
 
 # Media Handling
 
 ## Media
 
-A single media attachment - image, video, audio, or document.
+One attachment: an image, video, audio file, or document.
 
 ```php
-use OwlStack\Media;
+use Owlstack\Core\Content\Media;
 
-// Quick factory methods
-$image = Media::image('/path/to/photo.jpg');
-$video = Media::video('/path/to/clip.mp4');
-
-// Full constructor
-$image = Media::create(
+$image = new Media(
     path: '/path/to/photo.jpg',
     mimeType: 'image/jpeg',
     altText: 'A sunset over the ocean',
+    width: 1920,
+    height: 1080,
+    fileSize: 245_000,
 );
+
+$image->isImage();     // true
+$image->isVideo();     // false
+$image->isAudio();     // false
+$image->isDocument();  // false
 ```
 
-### Type checks
+Only `path` and `mimeType` are required. Fill in `width`, `height`, and `fileSize` when you know them: they let a platform reject a file that would fail the network's own validation, before the upload rather than after.
 
-```php
-$image->isImage();    // true
-$image->isVideo();    // false
-$image->isAudio();    // false
-$image->isDocument(); // false
-```
+`altText` is worth setting. It is what screen readers announce, and several networks surface it.
 
 ## MediaCollection
 
-An immutable, typed collection. Adding items returns a **new** instance.
+Typed and immutable. `add()` returns a **new** collection, so assign the result:
 
 ```php
-use OwlStack\MediaCollection;
+use Owlstack\Core\Content\MediaCollection;
 
 $collection = new MediaCollection();
 $collection = $collection->add($image1);
@@ -47,43 +45,61 @@ $collection = $collection->add($video);
 
 $collection->count();    // 3
 $collection->first();    // $image1
-$collection->images();   // MediaCollection with $image1, $image2
-$collection->videos();   // MediaCollection with $video
+$collection->images();   // MediaCollection of the images
+$collection->videos();   // MediaCollection of the videos
 $collection->isEmpty();  // false
 $collection->all();      // Media[]
+
+foreach ($collection as $media) {
+    echo $media->path;
+}
 ```
 
-### Attaching to a Post
+Forgetting to reassign is the one mistake this design invites. `$collection->add($image)` on its own does nothing.
+
+## Attaching to a post
 
 ```php
-use OwlStack\Post;
-use OwlStack\Media;
-use OwlStack\MediaCollection;
-
-$post = Post::create('Check out these photos!')
-    ->withMediaCollection(new MediaCollection([
-        Media::image('/path/to/img1.jpg'),
-        Media::image('/path/to/img2.jpg'),
-    ]));
+$post = new Post(
+    title: 'Sunset',
+    body: 'Taken from the office window.',
+    media: $collection,
+);
 ```
 
-## Platform media constraints
+## Per-network limits
 
-Each platform has different media requirements. OwlStack handles validation and processing on the server:
+Each platform declares its own constraints, readable through `constraints()`:
 
-| Platform | Max Media | Supported Types |
-|:---------|:----------|:---------------|
-| Telegram | 10 | JPEG, PNG, GIF, MP4, OGG |
-| Twitter/X | 4 | JPEG, PNG, GIF, MP4 |
-| Facebook | 1 | JPEG, PNG, GIF, BMP, MP4, AVI |
-| LinkedIn | 1 | JPEG, PNG, GIF |
-| Discord | 10 | JPEG, PNG, GIF, WebP, MP4 |
-| Instagram | 10 | JPEG, MP4 |
-| Pinterest | 1 | JPEG, PNG, GIF, WebP, MP4 |
-| Reddit | 1 | JPEG, PNG, GIF |
+```php
+$platform->constraints();
+// [
+//   'max_text_length' => 280,
+//   'max_media_count' => 4,
+//   'supported_media_types' => ['image/jpeg', 'image/png', 'image/gif'],
+//   'max_media_size' => 5 * 1024 * 1024,
+// ]
+```
 
-When you publish with media, OwlStack's cloud:
-- Validates the file type against the target platform
-- Resizes images if they exceed platform limits
-- Converts formats as needed (e.g., PNG to JPEG for Instagram)
-- Uploads the media to the platform's API
+Exceeding them raises a `MediaValidationException` inside the platform, which the `Publisher` catches and returns as a failed `PublishResult`. See [Error Handling](./error-handling).
+
+## Hosted media
+
+Some networks will not accept an upload from you at all and require a publicly reachable URL. Instagram is the clearest case: the image must already be hosted somewhere it can fetch. For those, pass the URL through the per-network options rather than a local path:
+
+```php
+$publisher->publish($post, 'instagram', [
+    'media_type' => 'IMAGE',
+    'image_url' => 'https://example.com/photo.jpg',
+]);
+```
+
+Each [platform page](/developers/platforms/overview) says which of the two it wants.
+
+## Next
+
+<Cards>
+  <Card title="Posts & Content" href="./posts-and-content" />
+  <Card title="Publishing" href="./publishing" />
+  <Card title="Error Handling" href="./error-handling" />
+</Cards>

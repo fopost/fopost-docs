@@ -1,56 +1,88 @@
 ---
-title: Platform Overview
-description: All 11 supported platforms with their capabilities and constraints.
+title: Platforms Overview
+description: The eleven networks the PHP library publishes to, and what each needs.
 ---
 
-# Platform Overview
+# Platforms Overview
 
-OwlStack supports **11 social media platforms** through a single API. Connect your accounts via OAuth in the [OwlStack dashboard](https://app.owlstack.app), then publish from your code.
-
-## How publishing works
+The library ships eleven platform implementations. Each is a class you construct with credentials, an HTTP client, and a formatter, then register:
 
 ```php
-use OwlStack\Cloud\OwlStackClient;
-use OwlStack\Post;
-use OwlStack\Enums\Platform;
-
-$client = new OwlStackClient(apiKey: env('OWLSTACK_API_KEY'));
-
-$post = Post::create('Hello from OwlStack!')
-    ->withHashtags(['php', 'opensource']);
-
-// Publish to any connected platform
-$results = $client->publish($post, [
-    Platform::Telegram,
-    Platform::Twitter,
-    Platform::LinkedIn,
-]);
+$registry->register(new TelegramPlatform($credentials, $httpClient, new TelegramFormatter()));
+$publisher->publish($post, 'telegram');
 ```
 
-OwlStack's cloud handles all platform API communication, formatting, media processing, and authentication for you.
+## The eleven
 
-## Platform availability by plan
+| Network | Name | Highlights |
+|:--------|:-----|:-----------|
+| [Telegram](./telegram) | `telegram` | Channels, groups, media groups, inline keyboards, locations, pinning |
+| [X (Twitter)](./twitter) | `twitter` | Replies, quote posts, polls |
+| [Facebook](./facebook) | `facebook` | Page publishing, privacy, native scheduling |
+| [LinkedIn](./linkedin) | `linkedin` | Personal profiles and company pages |
+| [Discord](./discord) | `discord` | Bot or webhook, rich embeds, threads |
+| [Instagram](./instagram) | `instagram` | Feed images, Reels, Stories, carousels |
+| [Pinterest](./pinterest) | `pinterest` | Boards and sections, alt text |
+| [Reddit](./reddit) | `reddit` | Self and link posts, flair, NSFW and spoiler flags |
+| [Slack](./slack) | `slack` | Bot or webhook, Block Kit, threads |
+| [Tumblr](./tumblr) | `tumblr` | Text, image, video, link, audio, drafts and queue |
+| [WhatsApp](./whatsapp) | `whatsapp` | Text, media, and template messages |
 
-| Plan | Platforms |
-|:-----|:----------|
-| Free tier | 1 |
-| Starter ($19/mo) | Up to 3 |
-| Pro ($49/mo) | All 11 |
-| Pro + AI ($89/mo) | All 11 |
-| Enterprise | All 11 |
+## Getting access
 
-## Platform-specific docs
+How long a network takes to enable varies from a minute to a month. Worth knowing before you plan around one.
 
-Each platform has a dedicated page with features, options, and constraints:
+**Minutes, no review.** Telegram via [@BotFather](https://t.me/BotFather). Discord and Slack via a webhook URL or a bot token created in your own server or workspace.
 
-- [Telegram](./telegram) - Channels, groups, media groups, inline keyboards
-- [Twitter/X](./twitter) - Threads, polls, quote tweets
-- [Facebook](./facebook) - Pages, scheduled publishing
-- [LinkedIn](./linkedin) - Personal profiles and company pages
-- [Discord](./discord) - Bot and webhook modes, rich embeds
-- [Instagram](./instagram) - Carousels, Reels, Stories
-- [Pinterest](./pinterest) - Board and section targeting
-- [Reddit](./reddit) - Self and link posts, flair support
-- [Slack](./slack) - Block Kit, bot and webhook modes
-- [Tumblr](./tumblr) - NPF content blocks
-- [WhatsApp](./whatsapp) - Template messages, documents
+**Self-service registration.** X at [developer.x.com](https://developer.x.com), Reddit at [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps), Tumblr at [tumblr.com/oauth/apps](https://www.tumblr.com/oauth/apps).
+
+**App review before production.**
+
+| Network | What is reviewed | Where |
+|:--------|:-----------------|:------|
+| Facebook | `pages_manage_posts`, `pages_read_engagement` | [Meta App Review](https://developers.facebook.com/docs/app-review) |
+| Instagram | `instagram_content_publish` | Meta App Review, same portal |
+| LinkedIn | Community Management API access | [LinkedIn developer portal](https://learn.microsoft.com/en-us/linkedin/marketing/) |
+| Pinterest | Production API access | [Pinterest developer portal](https://developers.pinterest.com/) |
+| WhatsApp | Business verification, plus the Business Platform | [Meta for Developers](https://developers.facebook.com/docs/whatsapp) |
+
+Facebook, Instagram, and WhatsApp share one portal. Apply for all three in a single cycle rather than three.
+
+## Character limits
+
+| Network | Limit |
+|:--------|:------|
+| X | 280 |
+| Pinterest | 800 |
+| Discord | 2,000 |
+| Instagram | 2,200 |
+| LinkedIn | 3,000 |
+| Telegram, Tumblr, WhatsApp | 4,096 |
+| Reddit, Slack | 40,000 |
+| Facebook | 63,206 |
+
+Formatters enforce these. Read the live value with `$formatter->maxLength()` or `$platform->constraints()` rather than copying a number from a table.
+
+## Markup
+
+| Network | Markup |
+|:--------|:-------|
+| Telegram | HTML, or Markdown |
+| Discord, Reddit | Markdown |
+| Slack | mrkdwn, or Block Kit |
+| Tumblr | Content blocks |
+| X, Facebook, LinkedIn, Instagram, Pinterest, WhatsApp | Plain text |
+
+## Not here?
+
+The library covers eleven. The [Cloud API](/api/overview) covers considerably more, including TikTok, YouTube, Bluesky, Mastodon, Threads, and the rest, because it maintains those integrations rather than asking you to.
+
+To add one to the library yourself, [Custom Platforms](/developers/extending/custom-platforms) is one class and one registry line.
+
+## Next
+
+<Cards>
+  <Card title="Configure Credentials" href="/developers/getting-started/connect-platforms" />
+  <Card title="Publishing" href="/developers/core-concepts/publishing" />
+  <Card title="Custom Platforms" href="/developers/extending/custom-platforms" />
+</Cards>

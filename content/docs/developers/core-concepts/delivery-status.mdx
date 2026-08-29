@@ -1,49 +1,78 @@
 ---
 title: Delivery Status
-description: Tracking publishing lifecycle with the DeliveryStatus enum.
+description: The DeliveryStatus enum, and tracking the lifecycle in your own storage.
 ---
 
 # Delivery Status
 
-A PHP 8.1 backed enum for tracking the delivery lifecycle.
+The library does not persist anything. `DeliveryStatus` is a backed enum it gives you so your own delivery table speaks the same vocabulary.
 
 ```php
-use OwlStack\Enums\DeliveryStatus;
+use Owlstack\Core\Delivery\DeliveryStatus;
 
-$status = DeliveryStatus::Pending;     // 'pending'
-$status = DeliveryStatus::Publishing;  // 'publishing'
-$status = DeliveryStatus::Published;   // 'published'
-$status = DeliveryStatus::Failed;      // 'failed'
+DeliveryStatus::Pending;     // 'pending'
+DeliveryStatus::Publishing;  // 'publishing'
+DeliveryStatus::Published;   // 'published'
+DeliveryStatus::Failed;      // 'failed'
 ```
 
-## State machine
+## Lifecycle
 
 ```mermaid
 stateDiagram-v2
     [*] --> Pending
     Pending --> Publishing : publish() called
-    Publishing --> Published : API success
-    Publishing --> Failed : API error / exception
+    Publishing --> Published : network accepted
+    Publishing --> Failed : network error or exception
     Failed --> Publishing : retry
 ```
 
-## Usage in your application
+## Tracking it yourself
 
-The `DeliveryStatus` enum helps you track publishing state in your own database:
+Record one row per network, before and after:
 
 ```php
-// Store initial state
-$delivery = new DeliveryRecord(
-    platform: 'twitter',
-    status: DeliveryStatus::Pending,
-);
+use Owlstack\Core\Delivery\DeliveryStatus;
 
-// Update on result
-$delivery->status = $result->isSuccessful()
-    ? DeliveryStatus::Published
-    : DeliveryStatus::Failed;
+$delivery = DeliveryRecord::create([
+    'post_id'  => $post->getMeta('post_id'),
+    'platform' => 'twitter',
+    'status'   => DeliveryStatus::Pending->value,
+]);
+
+$result = $publisher->publish($post, 'twitter');
+
+$delivery->update([
+    'status'       => $result->success
+        ? DeliveryStatus::Published->value
+        : DeliveryStatus::Failed->value,
+    'external_id'  => $result->externalId,
+    'external_url' => $result->externalUrl,
+    'error'        => $result->error,
+    'published_at' => $result->timestamp,
+]);
 ```
 
-## Cloud-side tracking
+Store `externalId` even when you have a URL. It is what a later delete call needs, and it is the field the network will actually recognise.
 
-OwlStack also tracks delivery status on the server. With the **Pro plan**, you get full delivery logging with attempt history, retry details, and analytics. See [Delivery Logging](/guide/pro/delivery-logging).
+The tidier place for this is an event listener rather than the call site, so the bookkeeping happens once no matter who publishes. See [Event System](/developers/events/event-system).
+
+## Retries
+
+Nothing retries on its own. `Failed` returns to `Publishing` only because your code put it there.
+
+Check why it failed first. A rate limit deserves a wait and a retry; an authentication failure or content over the limit will fail identically forever, and retrying it on a schedule is how an app gets suspended. See [Error Handling](./error-handling).
+
+## In WordPress and the Cloud
+
+The [WordPress plugin](/sdks/wordpress/installation) keeps its own delivery log with status, error, and a link per attempt, so you get this without building it.
+
+The [Cloud API](/api/publishing) tracks deliveries per account with attempt counts, automatic retries, and [webhooks](/api/webhooks) on the outcome.
+
+## Next
+
+<Cards>
+  <Card title="Publishing" href="./publishing" />
+  <Card title="Error Handling" href="./error-handling" />
+  <Card title="Event System" href="/developers/events/event-system" />
+</Cards>

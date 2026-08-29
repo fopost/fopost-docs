@@ -1,58 +1,84 @@
 ---
 title: Posts & Content
-description: The Post and Media value objects for defining content.
+description: The Post value object and how content reaches each network.
 ---
 
 # Posts & Content
 
-The content layer uses **immutable value objects** that are platform-agnostic. You create them once and publish to any platform.
+Content is platform-agnostic and immutable. You build a `Post` once, and each network's formatter decides what to do with it.
 
 ## Post
 
-The central content object. All properties are readonly.
+Every property is readonly, set through the constructor:
 
 ```php
-use OwlStack\Post;
-use OwlStack\Media;
+use Owlstack\Core\Content\Post;
 
-$post = Post::create('The full article content goes here...')
-    ->withTitle('My Article Title')
-    ->withUrl('https://example.com/my-article')
-    ->withMedia(Media::image('/path/to/photo.jpg'))
-    ->withHashtags(['php', 'social-media', 'automation'])
-    ->withMetadata(['wp_post_id' => 42]);
+$post = new Post(
+    title: 'My Article Title',
+    body: 'The full article content goes here...',
+    url: 'https://example.com/my-article',
+    excerpt: 'A short summary',
+    media: $mediaCollection,
+    tags: ['php', 'social-media', 'automation'],
+    metadata: ['wp_post_id' => 42],
+);
 ```
 
-### Builder methods
+| Parameter | Type | Default | Description |
+|:----------|:-----|:--------|:------------|
+| `title` | `string` | required | Post title |
+| `body` | `string` | required | Post body |
+| `url` | `?string` | `null` | Canonical URL of the original |
+| `excerpt` | `?string` | `null` | Short summary, used where space is tight |
+| `media` | `?MediaCollection` | `null` | Attachments |
+| `tags` | `array` | `[]` | Tags, turned into hashtags per network |
+| `metadata` | `array` | `[]` | Arbitrary data of your own |
 
-| Method | Description |
-|:-------|:------------|
-| `Post::create(string $body)` | Create a new post with body content |
-| `->withTitle(string $title)` | Set the title |
-| `->withUrl(string $url)` | Set the canonical URL |
-| `->withExcerpt(string $excerpt)` | Set a short summary |
-| `->withMedia(Media $media)` | Attach a media file |
-| `->withMediaCollection(MediaCollection $media)` | Attach multiple media |
-| `->withHashtags(array $tags)` | Set hashtags |
-| `->withMetadata(array $metadata)` | Set arbitrary key-value data |
-
-### Helper methods
+## Helpers
 
 ```php
-$post->hasMedia();                    // bool
-$post->hasUrl();                      // bool
-$post->getMeta('wp_post_id');         // 42
-$post->getMeta('missing', 'default'); // 'default'
+$post->hasMedia();                     // bool
+$post->hasUrl();                       // bool
+$post->getMeta('wp_post_id');          // 42
+$post->getMeta('missing', 'default');  // 'default'
 ```
 
-## How content is formatted
+`metadata` is never sent to a network. It is there so you can correlate a `PublishResult` back to your own record, which is what you want when writing delivery status to a database.
 
-When you publish, OwlStack's cloud automatically formats your content for each platform:
+## How each field is used
 
-- **Character limits** are enforced (280 for Twitter, 4,096 for Telegram, etc.)
-- **Hashtags** are injected in the platform's preferred style
-- **Markup** is converted (HTML for Telegram, Markdown for Discord, etc.)
-- **URLs** are appended as "Read more" links where appropriate
-- **Media** is resized and converted to meet platform requirements
+Networks differ, and the formatter for each decides. Broadly:
 
-You don't need to worry about any of this. Just create a `Post` with your content and OwlStack handles the rest.
+- **`title`** leads on networks that have a title concept, such as Reddit and Tumblr. On X it usually does not appear at all
+- **`body`** is the content, truncated at the network's limit on a word boundary
+- **`excerpt`** is preferred over `body` where space is tight
+- **`url`** is appended as a "read more" link where that reads naturally, and is counted against the character budget correctly. X wraps every URL to a fixed width, and its formatter accounts for that
+- **`tags`** become hashtags in the network's preferred style and position, within whatever budget is left
+
+You do not choose the markup dialect. Telegram gets HTML, Discord and Reddit get Markdown, Slack gets mrkdwn, and the formatter converts.
+
+## Canonical links
+
+`CanonicalLink` is the piece that appends a link without blowing the limit:
+
+```php
+use Owlstack\Core\Content\CanonicalLink;
+
+$link = new CanonicalLink("\n\nRead more: {url}");
+$text = $link->inject($content, 'https://example.com', maxLength: 280);
+```
+
+It trims the content, not the link, so the URL always survives.
+
+## Immutability
+
+`Post` is readonly, so a post you have handed to the publisher cannot be changed under you. To vary content per network, build a second `Post` rather than mutating the first.
+
+## Next
+
+<Cards>
+  <Card title="Media Handling" href="./media-handling" />
+  <Card title="Publishing" href="./publishing" />
+  <Card title="Formatters" href="/developers/formatting/platform-formatters" />
+</Cards>

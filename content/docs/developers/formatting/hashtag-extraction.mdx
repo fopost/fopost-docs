@@ -1,39 +1,50 @@
 ---
 title: Hashtag Extraction
-description: How OwlStack handles hashtags from your tags.
+description: Turning tags into hashtags that fit.
 ---
 
 # Hashtag Extraction
 
-When you set tags on a `Post`, OwlStack automatically converts them to platform-appropriate hashtags.
-
-## How it works
+A `Post` carries `tags`, which are plain words. `HashtagExtractor` turns them into hashtags each network will accept.
 
 ```php
-$post = Post::create('Check out our new release!')
-    ->withHashtags(['php', 'laravel', 'social-media']);
+use Owlstack\Core\Formatting\HashtagExtractor;
 
-// OwlStack appends: #php #laravel #socialmedia
-$client->publish($post, [Platform::Twitter]);
+$extractor = new HashtagExtractor();
+
+$extractor->extract(['PHP', 'social media'], maxCount: 5);
+// '#PHP #socialmedia'
 ```
 
-The hashtag engine:
+Spaces and punctuation are removed, because `#social media` is two hashtags on every network and one of them is `#social`. Case is left alone: `#SocialMedia` is more readable than `#socialmedia`, and networks match case-insensitively anyway.
 
-- **Prefixes** each tag with `#`
-- **Removes** special characters (spaces, punctuation)
-- **Limits** the number of hashtags based on the character budget
-- **Appends** hashtags to the formatted content only if there's room
+## In a formatter
 
-## Character-budget-aware
+Formatters call it during `format()`, so setting `tags` on the post is all you do:
 
-Hashtags are only included if there's enough room within the platform's character limit. On Twitter (280 chars), if your content is 270 characters, hashtags won't be appended. On Telegram (4,096 chars), they almost always fit.
+```php
+$post = new Post(
+    title: 'Release notes',
+    body: 'Version 2.0 is out.',
+    tags: ['release', 'php', 'open source'],
+);
+```
 
-## Platform-specific behavior
+Hashtags are appended within whatever character budget is left after the body and the URL. If they will not fit, they are dropped rather than truncating the content, since half a hashtag helps nobody.
 
-| Platform | Hashtag Behavior |
-|:---------|:----------------|
-| Twitter/X | Appended at end, budget-aware |
-| Instagram | Appended at end, up to 30 |
-| LinkedIn | Appended at end |
-| Facebook | Inline or appended |
-| Others | Appended at end |
+## How many
+
+Conventions differ sharply. Instagram tolerates many, LinkedIn expects a handful, X reads more than two or three as spam. Formatters cap per network, and `default_hashtag_count` in `OwlstackConfig` sets your own ceiling.
+
+Order matters when they get cut: put the ones you care about first.
+
+## Writing them by hand
+
+If you want exact control, put the hashtags in the body and leave `tags` empty. Nothing is appended if there is nothing to append.
+
+## Next
+
+<Cards>
+  <Card title="Platform Formatters" href="./platform-formatters" />
+  <Card title="Character Limits" href="./character-limits" />
+</Cards>

@@ -1,114 +1,130 @@
 ---
 title: Quick Start (Laravel)
-description: Set up OwlStack in a Laravel application.
+description: Publish from Laravel with the SendTo service or the Owlstack facade.
 ---
 
-# Quick Start - Laravel
+# Quick Start (Laravel)
 
-This guide gets OwlStack working in your Laravel application in minutes.
+`owlstack/owlstack-laravel` wires the PHP library into Laravel: config from `.env`, a service provider, a facade, and events. It adds no platform logic of its own, so anything about how a network behaves is documented under [Platforms](/developers/platforms/overview).
+
+Supports Laravel 10 through 12.
 
 ## 1. Install
 
 ```bash
-composer require owlstack/laravel
-```
-
-## 2. Publish config
-
-```bash
+composer require owlstack/owlstack-laravel
 php artisan vendor:publish --tag=owlstack-config
 ```
 
-This creates `config/owlstack.php`.
+The service provider is auto-discovered.
 
-## 3. Add your API key to `.env`
+## 2. Configure
 
-```ini
-OWLSTACK_API_KEY=your-api-key-here
+Put credentials in `.env`. Telegram is the fastest to get working:
+
+```dotenv
+TELEGRAM_BOT_TOKEN=your-bot-token
+TELEGRAM_CHANNEL_USERNAME=@your_channel
+TELEGRAM_PARSE_MODE=HTML
 ```
 
-Get your API key from the [OwlStack dashboard](https://app.owlstack.app). Make sure you've connected at least one social media platform via OAuth in the dashboard.
+Only networks with valid credentials are registered. Leave X blank and X simply is not available, rather than failing at publish time. The published config file lists every supported variable.
 
-## 4. Publish content
+## 3. Publish
 
-### Via Facade
-
-```php
-use OwlStack\Laravel\Facades\OwlStack;
-use OwlStack\Enums\Platform;
-
-// Single platform
-OwlStack::publish('Hello from Laravel!', [Platform::Telegram]);
-
-// Multiple platforms
-OwlStack::publish('Hello from Laravel!', [
-    Platform::Telegram,
-    Platform::Twitter,
-    Platform::LinkedIn,
-]);
-```
-
-### Via Dependency Injection
+Inject `SendTo`:
 
 ```php
-use OwlStack\Cloud\OwlStackClient;
-use OwlStack\Post;
-use OwlStack\Enums\Platform;
+use Owlstack\Laravel\SendTo;
 
 class PostController extends Controller
 {
-    public function publish(OwlStackClient $client)
+    public function publish(SendTo $sendTo)
     {
-        $post = Post::create('Hello from Laravel!')
-            ->withHashtags(['laravel', 'php']);
+        $result = $sendTo->telegram('Hello from Laravel!');
 
-        $results = $client->publish($post, [
-            Platform::Telegram,
-            Platform::Twitter,
-        ]);
+        return $result->success
+            ? back()->with('status', "Published: {$result->externalUrl}")
+            : back()->withErrors($result->error);
+    }
+}
+```
 
-        foreach ($results as $result) {
-            if ($result->isSuccessful()) {
-                Log::info("Published to {$result->platform()->value}");
-            }
+Or use the facade:
+
+```php
+use Owlstack\Laravel\Facades\Owlstack;
+
+Owlstack::telegram('Hello from the facade!');
+Owlstack::twitter('Posting from the facade.');
+Owlstack::linkedin('And LinkedIn too.');
+```
+
+## 4. Per-network arguments
+
+Each method takes the options that network needs:
+
+```php
+$sendTo->reddit('Post body', [
+    'title' => 'Post Title',
+    'subreddit' => 'php',
+]);
+
+$sendTo->instagram('Caption text', [
+    'path' => '/path/to/image.jpg',
+    'mime_type' => 'image/jpeg',
+]);
+
+$sendTo->whatsapp('Hello!', ['to' => '+1234567890']);
+
+$sendTo->facebook('Check this out!', 'link', [
+    'link' => 'https://example.com',
+]);
+```
+
+`$sendTo->x()` is an alias for `twitter()`.
+
+## 5. Read the result
+
+Every method returns a `PublishResult`, and none of them throw:
+
+```php
+$result = $sendTo->telegram('Hello!');
+
+$result->success;       // bool
+$result->failed();      // bool
+$result->platformName;  // 'telegram'
+$result->externalId;    // '12345'
+$result->externalUrl;   // URL, when the network returns one
+$result->error;         // message, when it failed
+```
+
+Check `success` rather than wrapping the call in a try/catch. A network being down is a result, not an exception.
+
+## Queue it
+
+Publishing calls a third-party API over the network, which is not something to do inside a web request. Put it in a job:
+
+```php
+class PublishToSocial implements ShouldQueue
+{
+    public function __construct(private string $body) {}
+
+    public function handle(SendTo $sendTo): void
+    {
+        $result = $sendTo->telegram($this->body);
+
+        if ($result->failed()) {
+            Log::warning('Publish failed', ['error' => $result->error]);
         }
     }
 }
 ```
 
-## 5. Check results
+## Next
 
-```php
-$results = OwlStack::publish('Hello!', [Platform::Telegram]);
-
-foreach ($results as $result) {
-    $result->isSuccessful();   // bool
-    $result->platform();       // Platform enum
-    $result->externalId();     // '12345'
-    $result->externalUrl();    // URL if available
-    $result->error();          // error message if failed
-}
-```
-
-## 6. Listen to events
-
-```php
-use OwlStack\Events\PostPublished;
-use OwlStack\Events\PostFailed;
-
-Event::listen(PostPublished::class, function (PostPublished $event) {
-    Log::info("Published to {$event->result->platform()->value}", [
-        'external_id' => $event->result->externalId(),
-    ]);
-});
-
-Event::listen(PostFailed::class, function (PostFailed $event) {
-    Log::error("Failed: {$event->result->error()}");
-});
-```
-
-## Next steps
-
-- [Laravel Configuration](/sdks/laravel/configuration) - Full config reference
-- [Laravel Usage](/sdks/laravel/usage) - Advanced usage patterns
-- [Laravel Events](/sdks/laravel/events) - Event handling in Laravel
+<Cards>
+  <Card title="Laravel Configuration" href="/sdks/laravel/configuration" />
+  <Card title="Laravel Events" href="/sdks/laravel/events" />
+  <Card title="Platforms" href="/developers/platforms/overview" />
+</Cards>

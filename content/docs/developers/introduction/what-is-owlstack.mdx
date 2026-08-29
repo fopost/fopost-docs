@@ -1,94 +1,69 @@
 ---
-title: What is OwlStack?
-description: OwlStack is a social media management platform for creators, teams, and developers.
+title: What the library is
+description: A zero-dependency PHP engine for publishing to 11 social networks.
 ---
 
-# What is OwlStack?
+# What the library is
 
-**OwlStack** is a social media management platform that lets you publish and manage content across 11+ platforms. Use it through the dashboard (no code needed) or integrate it into your application using our SDKs and REST API.
-
-## For Creators & Teams
-
-Use the [OwlStack dashboard](https://app.owlstack.app) to:
-
-- Write once and publish to all your social platforms at once  
-- Schedule posts for optimal timing
-- Use AI to generate and optimize your content
-- Track performance with built-in analytics
-- Collaborate with your team
-
-## For Developers
-
-Integrate OwlStack into your application using our SDK:
+`owlstack/owlstack-core` gives you one PHP API for eleven social networks. You build a `Post`, register the platforms you have credentials for, and publish. The library handles each network's API, its character limit, its markup dialect, and its media rules.
 
 ```php
-use OwlStack\Post;
-use OwlStack\Enums\Platform;
-use OwlStack\Cloud\OwlStackClient;
+use Owlstack\Core\Content\Post;
+use Owlstack\Core\Publishing\Publisher;
 
-$client = new OwlStackClient(apiKey: env('OWLSTACK_API_KEY'));
+$publisher = new Publisher($registry);
 
-$post = Post::create('Launching our new product!')
-    ->withMedia(Media::image('/path/to/photo.jpg'))
-    ->withHashtags(['launch', 'startup']);
+$post = new Post(
+    title: 'Hello World',
+    body: 'My first post via Owlstack.',
+    url: 'https://example.com/hello-world',
+    tags: ['opensource', 'php'],
+);
 
-$results = $client->publish($post, [
-    Platform::Twitter,
-    Platform::LinkedIn,
-    Platform::Telegram,
-]);
+$result = $publisher->publish($post, 'telegram');
 ```
 
-## How it works
+## What you get
 
-1. **You write content** using OwlStack's clean PHP SDK (Post, Media, etc.)
-2. **OwlStack's cloud** handles all platform APIs, formatting, rate limiting, and delivery
-3. **You get results** back with delivery status, external URLs, and error details
+- **Eleven networks, one API.** Telegram, X, Facebook, LinkedIn, Discord, Instagram, Pinterest, Reddit, Slack, Tumblr, and WhatsApp
+- **Zero dependencies.** PHP 8.1 or newer, `ext-curl`, `ext-json`. Nothing else, so it drops into any codebase
+- **Contract-driven.** HTTP, storage, events, and auth each sit behind an interface you can replace
+- **Immutable value objects.** `Post`, `Media`, `MediaCollection`, and `AccessToken` are all readonly
+- **Publishing that does not throw.** `Publisher::publish()` always returns a `PublishResult`, so one failed network cannot take down your request
+- **Per-platform formatting.** Each network has its own formatter honouring its limits, markup, and media constraints
 
-You never interact with Twitter's API, Telegram's Bot API, or LinkedIn's Graph API directly. OwlStack handles all of that on the server side, so you don't have to maintain 11 different API integrations.
+## What you provide
 
-## Supported platforms
+Credentials, per network, obtained from that network. A Telegram bot token from BotFather, an X app from the developer portal, a Discord webhook URL. The library never brokers this for you, which is exactly the trade: you own the apps, the rate limits, and the review process.
 
-| Platform | Features |
-|:---------|:---------|
-| Telegram | Channels, groups, media groups, inline keyboards |
-| Twitter/X | Threads, polls, quote tweets |
-| Facebook | Pages, scheduled publishing |
-| LinkedIn | Personal profiles, company pages |
-| Discord | Rich embeds, file attachments |
-| Instagram | Carousels, Reels, Stories |
-| Pinterest | Board and section targeting |
-| Reddit | Self posts, link posts, flair |
-| Slack | Block Kit messages |
-| Tumblr | NPF content blocks |
-| WhatsApp | Template messages, documents |
+Some networks hand you credentials in minutes. Others need an app review first. [Which is which](/developers/platforms/overview#getting-access) is worth reading before you plan a launch around one.
 
-## What You Install (Developers)
+## What it does not do
 
-OwlStack provides lightweight SDK packages that communicate with the cloud service:
+No scheduling, no queue, no analytics, no dashboard, no retries across process restarts, no team. It is a publishing engine, not a product. Those live in the [Cloud API](/api/overview), which is the other way to use OwlStack.
 
-| Package | Status | Purpose |
-|:--------|:-------|:--------|
-| `owlstack/core` | Available | PHP interfaces, value objects, enums (MIT) |
-| `owlstack/cloud` | Available | PHP API client for `api.owlstack.app` |
-| `owlstack/laravel` | Available | Laravel service provider, facade, events |
-| `owlstack/wordpress` | Available | WordPress plugin with admin panel |
-| `@owlstack/node` | Coming Soon | Node.js / TypeScript SDK |
-| `owlstack` (PyPI) | Coming Soon | Python SDK |
-| `owlstack-go` | Coming Soon | Go SDK |
-| `owlstack` (RubyGems) | Coming Soon | Ruby SDK |
-| `owlstack` (Cargo) | Coming Soon | Rust SDK |
+If you want the engine but not the wiring, the [Laravel](/sdks/laravel/installation) and [WordPress](/sdks/wordpress/installation) packages add queues, config, and an admin UI on top of it.
 
-The SDKs are thin clients. All the heavy lifting (platform API calls, formatting, retries, AI) happens on OwlStack's servers.
+## Networks
 
-## Plans
+| Network | Highlights |
+|:--------|:-----------|
+| Telegram | Channels, groups, media groups, inline keyboards, locations, pinning |
+| X (Twitter) | Replies, quote posts, polls, t.co-aware character budget |
+| Facebook | Page publishing, privacy, native scheduling |
+| LinkedIn | Personal profiles and company pages, visibility control |
+| Discord | Bot or webhook, rich embeds, threads |
+| Instagram | Feed images, Reels, Stories, carousels |
+| Pinterest | Boards and sections, alt text, dominant colour |
+| Reddit | Self and link posts, subreddit, flair, NSFW and spoiler flags |
+| Slack | Bot or webhook, Block Kit, threads |
+| Tumblr | Text, image, video, link, and audio posts, drafts and queue |
+| WhatsApp | Text, media, and template messages via the Business API |
 
-| Plan | Social Accounts | AI Credits/mo | Key Features |
-|:-----|:----------------|:-------------|:-------------|
-| **Starter** ($19/mo) | 10 | 200 | Basic analytics, 10 GB media, 1 workspace |
-| **Pro** ($49/mo) | 10 | 1,000 | Advanced analytics, 50 GB media |
-| **Pro Plus** ($99/mo) | 30 | 2,000 | Unlimited media, 3 workspaces, Advanced API |
+## Next
 
-All plans include unlimited scheduled posts, unlimited team members, AI Content Studio, and priority support.
-
-[View pricing details](/guide/plans/overview)
+<Cards>
+  <Card title="Architecture" href="/developers/introduction/architecture" />
+  <Card title="Installation" href="/developers/getting-started/installation" />
+  <Card title="Quick Start" href="/developers/getting-started/quick-start" />
+</Cards>

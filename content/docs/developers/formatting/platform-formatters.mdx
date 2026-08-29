@@ -1,52 +1,95 @@
 ---
 title: Platform Formatters
-description: How OwlStack formats content for each platform.
+description: One formatter per network, and what each one does to your content.
 ---
 
 # Platform Formatters
 
-OwlStack automatically formats your content for each target platform on the server side. You don't need to worry about character limits, markup syntax, or hashtag placement.
-
-## How it works
-
-When you publish a post, OwlStack's cloud:
-
-1. Takes your post body
-2. Converts markup to the platform's format (HTML for Telegram, Markdown for Discord, etc.)
-3. Injects hashtags from your tags within the character budget
-4. Appends the canonical URL if there's room
-5. Truncates at a word boundary to respect character limits
+A formatter turns a platform-agnostic `Post` into the string one network wants. Every network has its own, implementing `FormatterInterface`.
 
 ```php
-// You write this:
-$post = Post::create('Check out our new blog post about PHP 8.3!')
-    ->withUrl('https://example.com/php-83')
-    ->withHashtags(['php', 'programming']);
+use Owlstack\Core\Formatting\Contracts\FormatterInterface;
 
-// For Telegram (HTML, 4096 chars), OwlStack sends:
-// Check out our new blog post about PHP 8.3!
-// 
-// Read more: https://example.com/php-83
-// #php #programming
-
-// For Twitter (plain text, 280 chars), OwlStack sends:
-// Check out our new blog post about PHP 8.3!
-// 
-// https://example.com/php-83 #php #programming
+$formatter->format($post, $options);  // the formatted string
+$formatter->platform();               // 'telegram'
+$formatter->maxLength();              // 4096
 ```
 
-## Markup by platform
+You rarely call one directly. The platform does it during `publish()`.
 
-| Platform | Markup Format |
-|:---------|:-------------|
-| Telegram | HTML |
-| Twitter/X | Plain text |
-| Facebook | Plain text |
-| LinkedIn | Plain text |
+## What a formatter handles
+
+- **Character limits**, truncating on a word boundary rather than mid-word
+- **Markup**, converting to whatever that network parses
+- **Hashtags**, appended in the network's style and position, within the remaining budget
+- **URLs**, formatted the way the network expects and counted correctly
+
+```mermaid
+flowchart LR
+    POST[Post] --> FMT[Platform formatter]
+    FMT --> TRUNC[CharacterTruncator]
+    FMT --> HASH[HashtagExtractor]
+    FMT --> CLINK[CanonicalLink]
+    TRUNC --> OUT[Formatted text]
+    HASH --> OUT
+    CLINK --> OUT
+```
+
+## Markup per network
+
+| Network | Markup |
+|:--------|:-------|
+| Telegram | HTML, or Markdown via `parse_mode` |
 | Discord | Markdown |
-| Instagram | Plain text |
-| Pinterest | Plain text |
 | Reddit | Markdown |
-| Slack | mrkdwn |
-| Tumblr | NPF (Neue Post Format) |
-| WhatsApp | Plain text |
+| Slack | mrkdwn, or Block Kit with `blocks: true` |
+| Tumblr | Content blocks |
+| X, Facebook, LinkedIn, Instagram, Pinterest | Plain text |
+
+The point of the layer is that you write one `Post` and never think about this.
+
+## Truncation
+
+`CharacterTruncator` cuts on word boundaries:
+
+```php
+use Owlstack\Core\Formatting\CharacterTruncator;
+
+$truncator = new CharacterTruncator(ellipsis: '…');
+$truncator->truncate('Hello World', maxLength: 8);  // 'Hello…'
+```
+
+The ellipsis counts against the limit, so the result is never one character over.
+
+## URLs and the character budget
+
+X wraps every URL to a fixed width regardless of its real length, so a 200-character link costs the same as a short one. Its formatter budgets accordingly. Getting this wrong is the classic way a post is rejected for being over the limit when it looked fine locally.
+
+## Writing your own
+
+Implement `FormatterInterface` and pass it to the platform instead of the built-in one:
+
+```php
+class MyTelegramFormatter implements FormatterInterface
+{
+    public function format(Post $post, array $options = []): string
+    {
+        return "{$post->title}\n\n{$post->body}";
+    }
+
+    public function platform(): string { return 'telegram'; }
+    public function maxLength(): int { return 4096; }
+}
+
+$platform = new TelegramPlatform($credentials, new HttpClient(), new MyTelegramFormatter());
+```
+
+Nothing to fork, and nothing else changes. See [Custom Formatters](/developers/extending/custom-formatters).
+
+## Next
+
+<Cards>
+  <Card title="Character Limits" href="./character-limits" />
+  <Card title="Hashtag Extraction" href="./hashtag-extraction" />
+  <Card title="Custom Formatters" href="/developers/extending/custom-formatters" />
+</Cards>

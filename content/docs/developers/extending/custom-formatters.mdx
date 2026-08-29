@@ -1,0 +1,84 @@
+---
+title: Custom Formatters
+description: Change how content is shaped for a network.
+---
+
+# Custom Formatters
+
+A formatter is one small class, and swapping one is a constructor argument. Use this when a network's default output is close but not what your brand posts.
+
+```php
+use Owlstack\Core\Content\Post;
+use Owlstack\Core\Formatting\Contracts\FormatterInterface;
+
+class MastodonFormatter implements FormatterInterface
+{
+    public function format(Post $post, array $options = []): string
+    {
+        $text = $post->body;
+
+        if ($post->hasUrl()) {
+            $text .= "\n\n{$post->url}";
+        }
+
+        return $text;
+    }
+
+    public function platform(): string
+    {
+        return 'mastodon';
+    }
+
+    public function maxLength(): int
+    {
+        return 500;
+    }
+}
+```
+
+Pass it in place of the built-in one:
+
+```php
+$platform = new TelegramPlatform($credentials, new HttpClient(), new MyTelegramFormatter());
+```
+
+Nothing else changes, and nothing is forked.
+
+## Reuse the pieces
+
+The helpers the built-in formatters use are public:
+
+```php
+use Owlstack\Core\Content\CanonicalLink;
+use Owlstack\Core\Formatting\CharacterTruncator;
+use Owlstack\Core\Formatting\HashtagExtractor;
+
+$truncator = new CharacterTruncator(ellipsis: '…');
+$extractor = new HashtagExtractor();
+$link      = new CanonicalLink("\n\nRead more: {url}");
+```
+
+Budget in that order: work out what the hashtags and the URL will cost, then truncate the body into what is left. Truncating first and appending after is how you end up over the limit.
+
+```php
+public function format(Post $post, array $options = []): string
+{
+    $tags   = (new HashtagExtractor())->extract($post->tags, maxCount: 3);
+    $budget = $this->maxLength() - strlen($tags) - 2;
+
+    $body = (new CharacterTruncator())->truncate($post->body, $budget);
+
+    return trim("{$body}\n\n{$tags}");
+}
+```
+
+## Respect maxLength
+
+`maxLength()` is what callers read to decide whether content will fit. A formatter returning 500 and emitting 700 characters produces a rejection from the network with a message far less useful than the one you could have given.
+
+## Next
+
+<Cards>
+  <Card title="Platform Formatters" href="/developers/formatting/platform-formatters" />
+  <Card title="Custom Platforms" href="./custom-platforms" />
+</Cards>
