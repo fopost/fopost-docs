@@ -1,72 +1,87 @@
 ---
-title: Scheduling API
-description: API endpoints for scheduling posts.
+title: Scheduling
+description: Schedule a post, repeat it, and import a batch from a spreadsheet.
 ---
 
-# Scheduling API
+# Scheduling
 
-**Pro**
+Scheduling is a field on a post, not a separate endpoint. Set `status` to `scheduled` and give it a `schedule_at`, and the worker picks it up at that time. Everything here needs the `posts` scope.
 
 ## Schedule a post
 
-```http
-POST /v1/schedules
-```
-
-**Request body:**
-
-```json
-{
-  "body": "This will be published tomorrow!",
-  "platforms": ["twitter", "linkedin"],
-  "publish_at": "2026-02-15T09:00:00Z",
-  "url": "https://example.com"
-}
-```
-
-**Response:**
-
-```json
-{
-  "data": {
-    "id": "sch_abc123",
+```bash
+curl -X POST https://api.owlstack.app/v1/posts \
+  -H "X-API-Key: $OWLSTACK_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "accounts": ["3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10"],
+    "content": [{ "text": "Doors open Monday." }],
     "status": "scheduled",
-    "publish_at": "2026-02-15T09:00:00Z",
-    "platforms": ["twitter", "linkedin"]
-  }
-}
+    "schedule_at": "2026-09-02T09:00:00.000Z"
+  }'
 ```
 
-## List schedules
+`schedule_at` is ISO 8601 and is read as UTC. Convert from the poster's local time before you send it, or you will publish at the right number and the wrong hour.
 
-```http
-GET /v1/schedules
-```
+## Reschedule and cancel
 
-Query parameters: `status` (scheduled, fired, cancelled), `from`, `to`, `page`, `per_page`.
+Move a scheduled post with `PUT /v1/posts/{id}`, sending a new `schedule_at`. Call `POST /v1/posts/{id}/cancel` to pull it out of the queue. To shift many posts at once, `POST /v1/posts/bulk` with the `shift` action moves each `schedule_at` by `offset_minutes`, negative to move earlier, and refuses an offset that would land in the past.
 
-## Get a schedule
+## Repeat a post
 
-```http
-GET /v1/schedules/{id}
-```
-
-## Cancel a schedule
-
-```http
-DELETE /v1/schedules/{id}
-```
-
-## Update a schedule
-
-```http
-PATCH /v1/schedules/{id}
-```
-
-**Request body:**
+A post can republish on a cadence without you scheduling each occurrence:
 
 ```json
 {
-  "publish_at": "2026-02-16T10:00:00Z"
+  "status": "scheduled",
+  "schedule_at": "2026-09-02T09:00:00.000Z",
+  "repeatable": true,
+  "repeatable_times": 6,
+  "repeatable_gap": 2,
+  "repeatable_gap_unit": "weeks"
 }
 ```
+
+`repeatable_gap_unit` is `hours`, `days`, `weeks`, or `months`. The post reports `remaining_posts` as it works through the run.
+
+For resurfacing your best evergreen posts with fresh variants rather than repeating one verbatim, use [content recycling](/guide/using-owlstack/recycling) instead.
+
+## Bulk import
+
+Three endpoints turn a spreadsheet into a schedule. Validate first, commit second, and roll back by batch if you need to.
+
+```http
+POST /v1/posts/bulk-import/validate
+POST /v1/posts/bulk-import/commit
+DELETE /v1/posts/bulk-import/{batchId}
+```
+
+Upload a CSV or TSV, up to 500 data rows and 2 MB. Columns:
+
+| Column | Required | Notes |
+|:-------|:---------|:------|
+| `content` | Yes | The post text |
+| `schedule_at` | No | ISO 8601, or `YYYY-MM-DD HH:mm` in the workspace timezone |
+| `accounts` | No | Comma-separated account ids or platform names |
+| `labels` | No | Comma-separated labels |
+| `media_url` | No | A URL to attach |
+| `caption_<platform>` | No | Overrides the text for one platform, for example `caption_twitter` |
+
+`validate` dry-runs the file and returns per-row results without creating anything. `commit` re-validates and creates one scheduled post per row, all stamped with a fresh batch id. Commit is all or nothing: if any row fails, nothing is created and the failing rows come back.
+
+`DELETE /v1/posts/bulk-import/{batchId}` removes the batch's posts that are still draft or scheduled and cancels their queued deliveries. It refuses with `409` once any post in the batch has published, because that half of the batch is already public.
+
+## What happens at publish time
+
+The scheduler queues the post, then each account is delivered independently. Transient platform failures are retried with exponential backoff. If the queue loses its connection, orphaned deliveries are recovered and re-queued rather than dropped.
+
+Watch for the result with [webhooks](/api/webhooks) rather than polling on a timer.
+
+## Next
+
+<Cards>
+  <Card title="Publishing" href="/api/publishing" />
+  <Card title="Automations" href="/api/automations" />
+  <Card title="Webhooks" href="/api/webhooks" />
+</Cards>

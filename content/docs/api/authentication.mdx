@@ -1,50 +1,70 @@
 ---
-title: API Authentication
-description: How to authenticate with the OwlStack API.
+title: Authentication
+description: API keys, scopes, and workspace binding.
 ---
 
-# API Authentication
+# Authentication
 
-All API requests require a valid API key.
-
-## Header authentication
-
-Include your key in the `Authorization` header:
-
-```http
-Authorization: Bearer owlsk_your_api_key_here
-```
-
-## Example request
+Every request to the OwlStack API carries an API key in the `X-API-Key` header.
 
 ```bash
-curl -X POST https://api.owlstack.app/v1/publish \
-  -H "Authorization: Bearer owlsk_your_api_key_here" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "body": "Hello from the API!",
-    "platforms": ["twitter"]
-  }'
+curl https://api.owlstack.app/v1/accounts \
+  -H "X-API-Key: $OWLSTACK_API_KEY"
 ```
 
-## API key format
+There is no `Authorization: Bearer` path for API keys. Bearer tokens are session tokens the dashboard issues to itself, and they are not something you create or use from your own code.
 
-OwlStack API keys are prefixed with `owlsk_` followed by a random string:
+## Creating a key
 
-```
-owlsk_a1b2c3d4e5f6g7h8i9j0...
-```
+Open [app.owlstack.app](https://app.owlstack.app) and go to **Settings → API Keys**. When you create a key you choose two things:
 
-## Key management
+- **Scopes**, which decide what the key may touch
+- **A workspace**, optionally, which confines the key to that workspace
 
-- Create keys at [app.owlstack.app](https://app.owlstack.app) under **Project Settings > API Keys**
-- Each key belongs to a project and inherits the project's plan
-- Keys can be revoked immediately
-- Create separate keys for production, staging, and development
+The key is shown once, at creation. It is stored hashed, so nobody, including us, can read it back. Lost a key, regenerate it.
+
+## Scopes
+
+A key can only reach endpoints covered by the scopes you gave it. Ask for the narrowest set that does the job.
+
+| Scope | Covers |
+|:------|:-------|
+| `posts` | Read and write posts, media, and content blocks |
+| `publish` | Publish, retry, and cancel a post |
+| `deliveries` | Per-account delivery results for a post |
+| `accounts` | Connected social accounts and their health |
+| `workspaces` | List and manage workspaces |
+| `labels` | Labels used to organise posts |
+| `analytics` | Post, account, and workspace metrics |
+| `automations` | Automation rules and their run history |
+| `webhooks` | Webhook endpoints and test deliveries |
+| `inbox` | Comments and mentions across connected accounts |
+| `ai` | AI captions and the credit balance. Spends credits, so it is never bundled into another scope |
+| `extension` | Reserved for the browser extension |
+
+Call an endpoint outside your scopes and you get `403` with `error: "insufficient_scope"`. Each endpoint in this reference names the scope it needs.
+
+## Workspace-bound keys
+
+A key created against a single workspace is confined to it. Naming any other workspace returns `403`, and list endpoints return only that workspace's rows, whether or not you pass `workspace_id`. A key created without a workspace can reach every workspace on the account.
+
+Bind the key when an integration only ever serves one brand or client. It turns a scoping mistake in your own code into a `403` instead of a cross-client post.
+
+## Rotating and revoking
+
+Keys can be regenerated or deleted at any time from the same screen, and both take effect immediately. Use separate keys per environment so rotating production does not break your staging job.
 
 ## Errors
 
-| Status | Code | Description |
-|:-------|:-----|:------------|
-| 401 | `unauthorized` | Missing or invalid API key |
-| 403 | `forbidden` | Key valid but insufficient permissions |
+| Status | `error` | Cause |
+|:-------|:--------|:------|
+| 401 | `unauthorized` | Header missing, or the key does not match |
+| 403 | `insufficient_scope` | Key is valid but lacks the scope |
+| 403 | `forbidden` | Resource belongs to a workspace the key cannot reach |
+| 402 | `subscription_required` | The account behind the key has no active plan |
+
+## Keeping a key safe
+
+- Keep it server side. A key in browser or mobile code is public the moment you ship it
+- Read it from an environment variable or a secrets manager, never from source control
+- One key per integration, so you can revoke one thing without breaking the rest

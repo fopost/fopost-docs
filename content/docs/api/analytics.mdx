@@ -1,61 +1,91 @@
 ---
-title: Analytics API
-description: API endpoints for analytics and metrics.
+title: Analytics
+description: Overview totals, time series, top posts, demographics, and label roll-ups.
 ---
 
-# Analytics API
+# Analytics
 
-**Pro**
+Analytics endpoints need the `analytics` scope. Metrics are collected on a schedule in the background, so a post published a minute ago has not been measured yet.
 
-## Get analytics
+All of these accept `workspace_id` to scope the answer and `accountId` to narrow it to one account. Ranges are given either as `days` or as an explicit `from` and `to`.
 
-```http
-GET /v1/analytics
-```
-
-Query parameters:
-
-| Parameter | Type | Description |
-|:----------|:-----|:------------|
-| `from` | date | Start date (YYYY-MM-DD) |
-| `to` | date | End date (YYYY-MM-DD) |
-| `platforms` | string | Comma-separated platforms |
-| `group_by` | string | `platform`, `day`, `week`, `month` |
-
-**Response:**
-
-```json
-{
-  "data": {
-    "summary": {
-      "total_published": 142,
-      "total_failed": 3,
-      "success_rate": 97.9
-    },
-    "by_platform": {
-      "twitter": {
-        "published": 48,
-        "failed": 1,
-        "impressions": 12500,
-        "engagement": 340,
-        "clicks": 89
-      },
-      "linkedin": {
-        "published": 47,
-        "failed": 1,
-        "impressions": 8900,
-        "engagement": 210,
-        "clicks": 145
-      }
-    }
-  }
-}
-```
-
-## Get delivery logs
+## Overview
 
 ```http
-GET /v1/delivery-logs
+GET /v1/analytics/overview
 ```
 
-Query parameters: `platform`, `status`, `from`, `to`, `page`, `per_page`.
+```bash
+curl "https://api.owlstack.app/v1/analytics/overview?days=30" \
+  -H "X-API-Key: $OWLSTACK_API_KEY"
+```
+
+Dashboard totals with period-over-period deltas, today's figures, and a per-account breakdown including follower history. This is the one endpoint to call if you only call one.
+
+## Time series
+
+```http
+GET /v1/analytics/time-series
+```
+
+Daily buckets of engagement, followers, and post counts. Use `days`, or `from` and `to` for an explicit window. This is what you chart.
+
+## Top posts
+
+```http
+GET /v1/analytics/top-posts
+```
+
+Posts ranked by engagement, or newest first with `sort=recent`. Takes `limit`, a range, `accountId`, and `label`.
+
+It includes posts published natively on the network, not only ones that went out through OwlStack, so the ranking reflects the account rather than the tool.
+
+## Demographics
+
+```http
+GET /v1/analytics/demographics
+```
+
+Audience composition for the accounts whose networks report it. Networks differ in what they expose and in the minimum audience size they will report at all, so expect gaps rather than treating a missing breakdown as an error.
+
+## Posting streak
+
+```http
+GET /v1/analytics/posting-streak
+```
+
+365 days of posting activity, one bucket per day. This is the contribution-graph view of whether you are actually shipping.
+
+## Label roll-up
+
+```http
+GET /v1/analytics/labels
+```
+
+Aggregates performance by label, which is how you compare campaigns or clients when the posts are spread across accounts. Attach labels at post creation, then read them back here.
+
+## Posts table
+
+```http
+GET /v1/analytics/posts-table
+```
+
+Posts with their per-account delivery breakdown, for building a table rather than a chart.
+
+## Collect on demand
+
+```http
+POST /v1/analytics/collect
+```
+
+Forces a collection run for the active accounts instead of waiting for the next scheduled one. It is throttled per user: when you are over the limit, the `429` body carries `retryAfter` in seconds.
+
+Use it after publishing something you want to measure now. Do not put it on a timer, since the scheduled collection is already doing that.
+
+## Next
+
+<Cards>
+  <Card title="Accounts" href="/api/accounts" />
+  <Card title="Analytics guide" href="/guide/using-owlstack/analytics" />
+  <Card title="Rate Limits" href="/api/rate-limits" />
+</Cards>
