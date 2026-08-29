@@ -20,8 +20,6 @@ const config = {
         { source: '/why-owlstack', destination: '/introduction/why-owlstack' },
         { source: '/how-it-works', destination: '/introduction/how-it-works' },
         { source: '/quick-start', destination: '/introduction/quick-start' },
-        { source: '/comparisons', destination: '/introduction/comparisons' },
-        { source: '/comparisons/:path+', destination: '/introduction/comparisons/:path+' },
       ],
     };
   },
@@ -64,6 +62,25 @@ const config = {
       { source: '/sdks/golang', destination: '/sdks/overview', permanent: true },
       { source: '/sdks/ruby', destination: '/sdks/overview', permanent: true },
       { source: '/sdks/rust', destination: '/sdks/overview', permanent: true },
+      // Competitor comparisons live on the marketing site, where the data is
+      // one source shared with the pricing and feature pages. The docs copies
+      // had drifted into claims the product does not make.
+      { source: '/comparisons/agorapulse', destination: `${WEBSITE_URL}/compare/agorapulse`, permanent: true },
+      { source: '/comparisons/buffer', destination: `${WEBSITE_URL}/compare/buffer`, permanent: true },
+      { source: '/comparisons/contentstudio', destination: `${WEBSITE_URL}/compare/contentstudio`, permanent: true },
+      { source: '/comparisons/heyorca', destination: `${WEBSITE_URL}/compare/heyorca`, permanent: true },
+      { source: '/comparisons/hootsuite', destination: `${WEBSITE_URL}/compare/hootsuite`, permanent: true },
+      { source: '/comparisons/later', destination: `${WEBSITE_URL}/compare/later`, permanent: true },
+      { source: '/comparisons/metricool', destination: `${WEBSITE_URL}/compare/metricool`, permanent: true },
+      { source: '/comparisons/planable', destination: `${WEBSITE_URL}/compare/planable`, permanent: true },
+      { source: '/comparisons/publer', destination: `${WEBSITE_URL}/compare/publer`, permanent: true },
+      { source: '/comparisons/sendible', destination: `${WEBSITE_URL}/compare/sendible`, permanent: true },
+      { source: '/comparisons/socialpilot', destination: `${WEBSITE_URL}/compare/socialpilot`, permanent: true },
+      { source: '/comparisons/sprout-social', destination: `${WEBSITE_URL}/compare/sprout-social`, permanent: true },
+      { source: '/comparisons/tweethunter', destination: `${WEBSITE_URL}/compare/tweet-hunter`, permanent: true },
+      { source: '/comparisons/:slug*', destination: `${WEBSITE_URL}/compare`, permanent: true },
+      { source: '/comparisons', destination: `${WEBSITE_URL}/compare`, permanent: true },
+      { source: '/introduction/comparisons/:slug*', destination: `${WEBSITE_URL}/compare`, permanent: true },
       { source: '/support', destination: `${WEBSITE_URL}/contact`, permanent: true },
       { source: '/changelog', destination: `${WEBSITE_URL}/roadmap`, permanent: true },
     ];

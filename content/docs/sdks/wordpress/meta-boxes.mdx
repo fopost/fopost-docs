@@ -1,34 +1,50 @@
 ---
-title: Meta Boxes
-description: The publishing meta box on the post edit screen.
+title: Meta Box
+description: The publishing box on the post edit screen.
 ---
 
-# Meta Boxes
+# Meta Box
 
-The OwlStack meta box appears on the post edit screen for enabled post types.
+**Owlstack: Publish to Social Media** appears in the sidebar of the post edit screen, on every post type you have enabled.
 
-## Features
+## What is in it
 
-- **Platform toggles** - enable/disable individual platforms for this post
-- **Custom message** - override the auto-generated social text
-- **Preview** - see how the post will look on each platform
-- **Tags/Hashtags** - add hashtags (defaults to post tags)
-- **Media** - select which featured image or media to attach
-- **Publish button** - manually trigger publishing
+- **A checkbox per configured network.** Only networks with valid credentials appear. With none configured, the box links you to settings instead of showing an empty list
+- **A publish button per network**, to send to one network on the spot without saving the post
+- **An auto-publish toggle**, per post
 
 ## Auto-publish
 
-If auto-publish is enabled in settings, posts are automatically published to your selected platforms when:
+With auto-publish enabled, the post goes to the ticked networks when it is published in WordPress: a draft transitioning to published, or a scheduled post going live.
 
-- A post transitions from `draft` to `publish`
-- A scheduled post goes live
+The per-post toggle overrides the global setting, so a post you would rather not share is one checkbox rather than a settings trip.
 
-You can disable auto-publish per post using the toggle in the meta box.
+## Which post types
 
-## Block Editor Support
+Posts only, by default. Add more with the `owlstack_supported_post_types` filter:
 
-The meta box is available as a **sidebar panel** in the block editor (Gutenberg). It appears under the OwlStack icon in the post settings sidebar.
+```php
+add_filter('owlstack_supported_post_types', function ($types) {
+    return ['post', 'page', 'product'];
+});
+```
 
-## Classic Editor
+## Both editors
 
-For the classic editor, the meta box appears below the content editor as a standard WordPress meta box.
+The box registers in the `side` context, so it appears in the block editor's post settings sidebar and in the classic editor's sidebar column.
+
+## Who sees it
+
+Anyone with the `owlstack_publish` capability, which the plugin grants to administrators on activation. Grant it to editors and they can publish to social without being able to see or change your credentials. See [REST API](./rest-api#capabilities).
+
+## What is not here
+
+There is no per-network caption override in the meta box: WordPress supplies the title, content, URL, and tags, and each network's formatter shapes them. To change what goes out, use the `owlstack_post_data` filter, or the [Cloud composer](/guide/using-owlstack/creating-posts) if you want per-network editing with previews.
+
+## Next
+
+<Cards>
+  <Card title="Admin Panel" href="./admin-panel" />
+  <Card title="Hooks" href="./hooks" />
+  <Card title="REST API" href="./rest-api" />
+</Cards>

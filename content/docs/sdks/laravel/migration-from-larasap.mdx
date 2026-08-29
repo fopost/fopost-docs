@@ -1,48 +1,42 @@
 ---
 title: Migration from Larasap
-description: Migrate from the old Larasap package to OwlStack.
+description: Moving a Laravel app from Larasap to the OwlStack package.
 ---
 
 # Migration from Larasap
 
-OwlStack is the successor to Larasap. This guide covers upgrading from Larasap to OwlStack.
+OwlStack for Laravel is the successor to Larasap. Your credentials stay in `.env` and publishing still runs on your own server, so this is a rename and an API change rather than a change of model.
 
 ## What changed
 
 | Larasap | OwlStack |
 |:--------|:---------|
-| Direct API calls from your server | Cloud-based publishing via API |
-| Store platform credentials in your `.env` | Manage credentials in OwlStack dashboard |
-| `Suspended-Starter/larasap` | `owlstack/laravel` |
-| Platform-specific send methods | Unified `Post` → `publish()` API |
-| No retry logic | Automatic retries on OwlStack cloud |
-| Limited platforms (5) | 11+ platforms |
+| `Suspended-Starter/larasap` | `owlstack/owlstack-laravel` |
+| `Starter\Larasap\SendTo` | `Owlstack\Laravel\SendTo` |
+| 5 networks | 11 networks |
+| Returns mixed types | Returns a `PublishResult`, never throws |
+| No event hooks | `PostPublished` and `PostFailed` as Laravel events |
+| No shared content object | A `Post` value object, publishable to any network |
 
-## Step 1: Install OwlStack
+Unchanged: credentials live in `.env`, publishing goes straight to the networks, and nothing passes through a third party.
+
+## 1. Swap the package
 
 ```bash
 composer remove suspended-starter/larasap
-composer require owlstack/laravel
+composer require owlstack/owlstack-laravel
 php artisan vendor:publish --tag=owlstack-config
 ```
 
-## Step 2: Get an API key
+## 2. Keep your credentials
 
-1. Create an account at [app.owlstack.app](https://app.owlstack.app)
-2. Create a project and generate an API key
-3. Add to `.env`:
+Most environment variable names carry over. Check the published `config/owlstack.php` against your `.env` and rename what differs; the full list is on [Configuration](./configuration).
 
-```ini
-OWLSTACK_API_KEY=your-api-key-here
-```
+There is no API key to add. The package does not call our API.
 
-## Step 3: Connect platforms
+## 3. Update the calls
 
-Go to the OwlStack dashboard and connect your social media accounts via OAuth. You can remove the old credentials from your `.env`.
-
-## Step 4: Update your code
-
-### Before (Larasap)
+Before:
 
 ```php
 use Starter\Larasap\SendTo;
@@ -51,21 +45,51 @@ SendTo::telegram('Your message', 'channel_id');
 SendTo::twitter('Your tweet');
 ```
 
-### After (OwlStack)
+After:
 
 ```php
-use OwlStack\Content\Post;
-use OwlStack\Enums\Platform;
-use OwlStack\Laravel\Facades\OwlStack;
+use Owlstack\Laravel\SendTo;
 
-$post = Post::create('Your message');
-
-OwlStack::publish($post, [
-    Platform::Telegram,
-    Platform::Twitter,
-]);
+class PostController extends Controller
+{
+    public function publish(SendTo $sendTo)
+    {
+        $sendTo->telegram('Your message', options: ['chat_id' => '@channel']);
+        $sendTo->twitter('Your post');
+    }
+}
 ```
 
-## Step 5: Remove old config
+Or keep a static-looking call with the facade:
 
-Delete `config/larasap.php` and remove Larasap environment variables from `.env`.
+```php
+use Owlstack\Laravel\Facades\Owlstack;
+
+Owlstack::telegram('Your message');
+```
+
+## 4. Check results instead of catching
+
+Larasap threw. OwlStack does not:
+
+```php
+$result = $sendTo->telegram('Hello');
+
+if ($result->failed()) {
+    Log::warning('Publish failed', ['error' => $result->error]);
+}
+```
+
+Publishing to five networks now returns five independent results, so one failure no longer aborts the rest.
+
+## 5. Optional: move logging into listeners
+
+Anything you were logging at each call site can move into a `PostPublished` or `PostFailed` listener and happen once. See [Events](./events).
+
+## Next
+
+<Cards>
+  <Card title="Usage" href="./usage" />
+  <Card title="Configuration" href="./configuration" />
+  <Card title="Events" href="./events" />
+</Cards>
