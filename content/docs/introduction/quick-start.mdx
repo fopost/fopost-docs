@@ -6,7 +6,7 @@ icon: Rocket
 
 # Quick Start
 
-Three starting points. Pick the one that matches what you are doing.
+Two starting points. Pick the one that matches what you are doing.
 
 ## Using the dashboard
 
@@ -69,45 +69,6 @@ client.posts.publish(post.id)
   <Card title="Python SDK" href="/sdks/python" />
 </Cards>
 
-## Using the PHP library
-
-No account needed. It publishes from your server with credentials you hold.
-
-```bash
-composer require fopost/fopost-social-core
-```
-
-```php
-use Fopost\Core\Config\PlatformCredentials;
-use Fopost\Core\Content\Post;
-use Fopost\Core\Http\HttpClient;
-use Fopost\Core\Platforms\PlatformRegistry;
-use Fopost\Core\Platforms\Telegram\TelegramFormatter;
-use Fopost\Core\Platforms\Telegram\TelegramPlatform;
-use Fopost\Core\Publishing\Publisher;
-
-$credentials = new PlatformCredentials('telegram', [
-    'api_token' => getenv('TELEGRAM_BOT_TOKEN'),
-    'channel_username' => '@your-channel',
-]);
-
-$registry = new PlatformRegistry();
-$registry->register(new TelegramPlatform($credentials, new HttpClient(), new TelegramFormatter()));
-
-$result = (new Publisher($registry))->publish(
-    new Post(title: 'Hello World', body: 'My first post via Fopost.'),
-    'telegram',
-);
-
-echo $result->success ? $result->externalUrl : $result->error;
-```
-
-<Cards>
-  <Card title="PHP Library" href="/developers" />
-  <Card title="PHP Quick Start" href="/developers/getting-started/quick-start" />
-  <Card title="Laravel" href="/developers/getting-started/quick-start-laravel" />
-</Cards>
-
 ## Which one
 
-The library talks to eleven networks with your own credentials and is free. The Cloud talks to thirty, schedules, retries, measures, and gives you a dashboard. They are separate products, and [What is FoPost?](/what-is-fopost) has the comparison.
+The dashboard and the API are the same product: anything you can do by hand you can do with a key. [What is FoPost?](/what-is-fopost) has the longer answer.

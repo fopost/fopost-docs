@@ -67,6 +67,15 @@ const config = {
       // Cloud topics that had duplicate pages under the PHP library section.
       { source: '/developers/authentication/api-keys', destination: '/api/authentication', permanent: true },
       { source: '/developers/events/webhooks', destination: '/api/webhooks', permanent: true },
+      // The self-hosted PHP library and its Laravel wrapper are documented in
+      // their own repos now, not here. Everything under them goes to the root.
+      { source: '/developers', destination: '/', permanent: true },
+      { source: '/developers/:path*', destination: '/', permanent: true },
+      { source: '/sdks/laravel', destination: '/', permanent: true },
+      { source: '/sdks/laravel/:path*', destination: '/', permanent: true },
+      // The WordPress plugin keeps one page, the Cloud connection.
+      { source: '/sdks/wordpress/cloud-connect', destination: '/sdks/wordpress', permanent: true },
+      { source: '/sdks/wordpress/:path*', destination: '/', permanent: true },
       { source: '/sdks/nodejs', destination: '/sdks/typescript', permanent: true },
       { source: '/sdks/python-sdk', destination: '/sdks/python', permanent: true },
       { source: '/sdks/golang', destination: '/sdks/overview', permanent: true },
