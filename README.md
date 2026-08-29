@@ -22,16 +22,59 @@ npm install
 npm run dev      # http://localhost:3000/docs
 npm run build
 npm test
+npm run icons    # regenerate components/icons/ from icons/svg/
 ```
 
 The site is served under a `/docs` basePath. Anything that is not a Next route (a `next/image` src it passes through unoptimised, a `metadata.icons` href) needs the basePath applied by hand. `lib/brand.ts` does that for brand assets; do the same for anything new.
+
+## Design
+
+The docs share the marketing site's design system. `app/geist.css` is a copy of
+`packages/design/geist.css` from the `fopost` monorepo, and `app/global.css`
+points every fumadocs `--color-fd-*` at a `--ds-*` token from it, so both sites
+draw from one palette and flip together. Surfaces are background plus the 1px
+`shadow-border` hairline at a 12px radius; nothing casts a drop shadow. Blue
+(`--ds-blue-700`) is the only accent, and it means "this goes somewhere".
+
+The four sections sit in the navbar (`tabMode: 'navbar'` on the notebook layout)
+rather than behind a dropdown, and the sidebar shows one section's tree in full.
+
+### Icons
+
+Geist SVG icons, generated the same way the monorepo generates `@fopost/icons`.
+That package is private and cannot be imported here, so `icons/svg/` holds the
+subset this site renders and `scripts/generate-icons.mjs` compiles it into
+`components/icons/`. Never hand-edit the generated files.
+
+Adding one: copy the export from `packages/icons/svg/<slug>.svg` in the
+monorepo into `icons/svg/`, run `npm run icons`, and commit both.
+
+A page names its icon by slug in frontmatter (`icon: rocket`); a section names
+one in its `meta.json`. `tests/docs-icons.test.ts` fails on a slug with no SVG
+and on a page with no icon at all. `components/icons/registry.tsx` is
+**server-components-only** — it references every icon, so a client import ships
+all of them; client components import by name.
+
+Icon fonts are banned, and so is `lucide-react`.
+
+## Markdown and AI clients
+
+Every page is also served as Markdown at its own URL plus `.md`
+(`/docs/quick-start.md`; the site root is `/docs/index.md`), with `/docs/llms.txt`
+as the index and `/docs/llms-full.txt` as the whole site in one file. The page
+header carries a **Copy page** button and an **Open** menu built on the same
+route, so a reader can hand any page to a model without scraping it.
+
+That text is the compiled Markdown, produced after the brand plugin runs, so it
+names the deployment's brand like the rendered page does.
 
 ## Writing
 
 - **No em-dashes or en-dashes.** House style, enforced by review
 - **Verify before you write.** Every factual claim on these pages should be checked against the source: the OpenAPI spec, `packages/shared` for plans and platform counts, the SDK repos for method names, the registries for what is actually published
 - **Do not document something that does not ship.** A page for an unbuilt feature is a promise, and it will be read as one
-- **Adding a page** means adding it to the section's `meta.json`. **Removing one** means adding a redirect in `next.config.mjs`, since these URLs are indexed
+- **Adding a page** means adding it to the section's `meta.json` and giving it an `icon`. **Removing one** means adding a redirect in `next.config.mjs`, since these URLs are indexed
+- **No page opens with an H1 repeating its own title.** The title is rendered above the body already; a second copy prints it twice. Start at `##`
 
 ## Branding
 
@@ -44,7 +87,7 @@ Those source tokens are what the swap matches on. Writing `fopost.com` into a pa
 | `NEXT_PUBLIC_BRAND_NAME` | Product name in prose, page titles, and the sidebar |
 | `NEXT_PUBLIC_BRAND_SLUG` | Lowercase identifier |
 | `NEXT_PUBLIC_BRAND_DOMAIN` | Bare apex domain |
-| `NEXT_PUBLIC_BRAND_LOGO` / `_LOGO_DARK` | Nav mark, light and dark |
+| `NEXT_PUBLIC_BRAND_LOGO` / `_LOGO_DARK` | Nav mark: the black mark on light, the white mark on dark |
 | `NEXT_PUBLIC_BRAND_FAVICON` / `_APPLE_TOUCH_ICON` | Tab and touch icons |
 | `NEXT_PUBLIC_WEBSITE_URL` / `_APP_URL` / `_API_URL` / `_DOCS_URL` | Service hosts, rewritten in prose and in code samples |
 
