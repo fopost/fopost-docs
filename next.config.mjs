@@ -1,6 +1,15 @@
 import { createMDX } from 'fumadocs-mdx/next';
+import { readdirSync } from 'node:fs';
 
 const withMDX = createMDX();
+
+/* The introduction section is served a level up from where it lives, so
+   /platforms renders content/docs/introduction/platforms.mdx. The list is read
+   off disk rather than typed out: a hand-maintained copy is how /platforms
+   ended up 404ing after the page was added to the section but not here. */
+const INTRODUCTION_SLUGS = readdirSync(new URL('./content/docs/introduction', import.meta.url))
+  .filter((file) => file.endsWith('.mdx') && file !== 'index.mdx')
+  .map((file) => file.replace(/\.mdx$/, ''));
 
 // The marketing site these redirects point at is per-brand. The pre-rebrand
 // /what-is-owlstack, /why-owlstack and /guide/using-owlstack/* slugs are kept
@@ -20,13 +29,13 @@ const config = {
         // slug of its own. Kept ahead of the page rewrites so it wins.
         { source: '/:slug(.*)\\.md', destination: '/md/:slug' },
         { source: '/', destination: '/introduction' },
-        { source: '/what-is-fopost', destination: '/introduction/what-is-fopost' },
-        { source: '/why-fopost', destination: '/introduction/why-fopost' },
+        ...INTRODUCTION_SLUGS.map((slug) => ({
+          source: `/${slug}`,
+          destination: `/introduction/${slug}`,
+        })),
         // Pre-rebrand slugs, still linked to from outside.
         { source: '/what-is-owlstack', destination: '/introduction/what-is-fopost' },
         { source: '/why-owlstack', destination: '/introduction/why-fopost' },
-        { source: '/how-it-works', destination: '/introduction/how-it-works' },
-        { source: '/quick-start', destination: '/introduction/quick-start' },
       ],
     };
   },
@@ -49,7 +58,7 @@ const config = {
       { source: '/guide/using-fopost/owl-agent', destination: '/guide/using-fopost/agent', permanent: true },
       { source: '/guide/using-owlstack/owl-agent', destination: '/guide/using-fopost/agent', permanent: true },
       // The using-owlstack family was renamed to using-fopost in the rebrand.
-      { source: '/guide/using-owlstack/:path*', destination: '/guide/using-fopost/:path*', permanent: true },
+      { source: '/guide/using-owlstack/:path+', destination: '/guide/using-fopost/:path+', permanent: true },
       { source: '/guide/using-owlstack', destination: '/guide/using-fopost', permanent: true },
       // The guide/ai and guide/pro families folded into using-fopost.
       { source: '/guide/ai/content-generation', destination: '/guide/using-fopost/ai-content', permanent: true },
@@ -62,8 +71,8 @@ const config = {
       { source: '/guide/pro/batch-publishing', destination: '/guide/using-fopost/bulk-scheduling', permanent: true },
       { source: '/guide/pro/delivery-logging', destination: '/guide/using-fopost/scheduling', permanent: true },
       { source: '/guide/pro/templates', destination: '/guide/using-fopost/creating-posts', permanent: true },
-      { source: '/guide/ai/:path*', destination: '/guide', permanent: true },
-      { source: '/guide/pro/:path*', destination: '/guide', permanent: true },
+      { source: '/guide/ai/:path+', destination: '/guide', permanent: true },
+      { source: '/guide/pro/:path+', destination: '/guide', permanent: true },
       { source: '/guide/ai', destination: '/guide', permanent: true },
       { source: '/guide/pro', destination: '/guide', permanent: true },
       // Retired pages for SDKs that were never built. The overview says what
@@ -74,12 +83,12 @@ const config = {
       // The self-hosted PHP library and its Laravel wrapper are documented in
       // their own repos now, not here. Everything under them goes to the root.
       { source: '/developers', destination: '/', permanent: true },
-      { source: '/developers/:path*', destination: '/', permanent: true },
-      { source: '/sdks/laravel', destination: '/', permanent: true },
-      { source: '/sdks/laravel/:path*', destination: '/', permanent: true },
+      { source: '/developers/:path+', destination: '/', permanent: true },
+      // /sdks/laravel is a real page again: the Cloud Laravel client, which is
+      // not the self-hosted wrapper that used to sit at this URL.
       // The WordPress plugin keeps one page, the Cloud connection.
       { source: '/sdks/wordpress/cloud-connect', destination: '/sdks/wordpress', permanent: true },
-      { source: '/sdks/wordpress/:path*', destination: '/', permanent: true },
+      { source: '/sdks/wordpress/:path+', destination: '/', permanent: true },
       { source: '/sdks/nodejs', destination: '/sdks/typescript', permanent: true },
       { source: '/sdks/python-sdk', destination: '/sdks/python', permanent: true },
       { source: '/sdks/golang', destination: '/sdks/overview', permanent: true },
@@ -101,9 +110,9 @@ const config = {
       { source: '/comparisons/socialpilot', destination: `${WEBSITE_URL}/compare/socialpilot`, permanent: true },
       { source: '/comparisons/sprout-social', destination: `${WEBSITE_URL}/compare/sprout-social`, permanent: true },
       { source: '/comparisons/tweethunter', destination: `${WEBSITE_URL}/compare/tweet-hunter`, permanent: true },
-      { source: '/comparisons/:slug*', destination: `${WEBSITE_URL}/compare`, permanent: true },
+      { source: '/comparisons/:slug+', destination: `${WEBSITE_URL}/compare`, permanent: true },
       { source: '/comparisons', destination: `${WEBSITE_URL}/compare`, permanent: true },
-      { source: '/introduction/comparisons/:slug*', destination: `${WEBSITE_URL}/compare`, permanent: true },
+      { source: '/introduction/comparisons/:slug+', destination: `${WEBSITE_URL}/compare`, permanent: true },
       { source: '/support', destination: `${WEBSITE_URL}/contact`, permanent: true },
       { source: '/changelog', destination: `${WEBSITE_URL}/roadmap`, permanent: true },
     ];
