@@ -16,11 +16,15 @@ These talk to your FoPost account with an API key.
 
 | Package | Language | Install |
 |:--------|:---------|:--------|
-| [`@fopost/sdk`](/sdks/typescript) | TypeScript, Node.js | `npm install @fopost/sdk` |
+| [`@fopost/sdk`](/sdks/typescript) | TypeScript, Node.js 18+ | `npm install @fopost/sdk` |
 | [`fopost`](/sdks/python) | Python 3.10+ | `pip install fopost` |
+| [`fopost/sdk`](/sdks/php) | PHP 8.1+ | `composer require fopost/sdk` |
+| [`fopost/laravel`](/sdks/laravel) | Laravel 10, 11, 12 | `composer require fopost/laravel` |
 | [`@fopost/mcp`](/sdks/mcp) | Any MCP client | `npx -y @fopost/mcp` |
 
-All three are MIT licensed and open source. All are 0.x, so pin an exact version if a breaking minor would hurt.
+All of them are MIT licensed and open source. All are 0.x, so pin an exact version if a breaking minor would hurt.
+
+`fopost/laravel` is a wrapper over `fopost/sdk`, not a second client: on Laravel you install it instead, and get the same surface behind a facade.
 
 ## Framework integrations
 
@@ -31,7 +35,7 @@ All three are MIT licensed and open source. All are 0.x, so pin an exact version
 
 ## Another language
 
-There is no Go, Ruby, or Rust client yet, and we would rather say so than ship a page pretending otherwise. Until then the REST API is plain JSON over HTTPS with one header, and works from any language:
+Java, .NET, Rust and Go clients are in development. They get a page when they ship and not before, so nothing here links to one. Until then the REST API is plain JSON over HTTPS with one header, and works from any language:
 
 ```bash
 curl -X POST https://api.fopost.com/v1/posts \
@@ -46,11 +50,15 @@ curl -X POST https://api.fopost.com/v1/posts \
 
 The [OpenAPI spec](https://api.fopost.com/v1/openapi.json) generates a usable client in most languages. If you want an official one for a language that is missing, [tell us which](https://fopost.com/contact); demand is how the order gets decided.
 
+## Not the self-hosted library
+
+There is a separate, free PHP library that talks to each network from your own server with your own app credentials. It is not part of the Cloud and is documented in its own repository; everything on this page publishes through your FoPost account instead.
+
 ## Next
 
 <Cards>
   <Card title="API Reference" href="/api/overview" />
   <Card title="TypeScript SDK" href="/sdks/typescript" />
   <Card title="Python SDK" href="/sdks/python" />
-  <Card title="MCP Server" href="/sdks/mcp" />
+  <Card title="PHP SDK" href="/sdks/php" />
 </Cards>

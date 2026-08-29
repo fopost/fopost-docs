@@ -11,9 +11,11 @@ Live at [fopost.com/docs](https://fopost.com/docs).
 | `content/docs/introduction/` | What FoPost is, how it works, supported platforms, quick start |
 | `content/docs/guide/` | The dashboard, for creators and teams. Plans and pricing |
 | `content/docs/api/` | The Cloud REST API, written against `apps/api/openapi.json` in the `fopost` repo |
-| `content/docs/sdks/` | TypeScript, Python, MCP, WordPress plugin, browser extension |
+| `content/docs/sdks/` | TypeScript, Python, PHP, Laravel, MCP, WordPress plugin, browser extension |
 
-**These docs cover the Cloud only.** The free self-hosted PHP library and its Laravel wrapper are documented in their own repos; do not add pages for them here.
+**These docs cover the Cloud only**, meaning everything that publishes through a FoPost account with an API key. That includes the Cloud PHP client (`fopost/sdk`, the `fopost-php` repo) and its Laravel wrapper (`fopost/laravel`, `fopost-laravel`), both of which have pages here.
+
+What does **not** belong here is the separate free, self-hosted PHP library that talks to each network from your own server with your own app credentials (`fopost-social-core`) and its own framework wrappers (`fopost-social-laravel`, `fopost-social-wp`). Those are documented in their own repos. The `fopost-<language>` repos are Cloud clients; the `fopost-social-*` repos are the self-hosted library. Confusing the two is how PHP went undocumented here for months.
 
 ## Development
 
@@ -47,7 +49,9 @@ subset this site renders and `scripts/generate-icons.mjs` compiles it into
 `components/icons/`. Never hand-edit the generated files.
 
 Adding one: copy the export from `packages/icons/svg/<slug>.svg` in the
-monorepo into `icons/svg/`, run `npm run icons`, and commit both.
+monorepo into `icons/svg/`, run `npm run icons`, and commit both. Language and
+framework brand marks that Geist has no equivalent for are vendored under a
+`tech-` prefix; `icons/SOURCE.md` records where each set comes from.
 
 A page names its icon by slug in frontmatter (`icon: rocket`); a section names
 one in its `meta.json`. `tests/docs-icons.test.ts` fails on a slug with no SVG
