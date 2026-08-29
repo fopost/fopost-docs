@@ -1,6 +1,6 @@
 {
   "title": "Using FoPost",
-  "icon": "LayoutDashboard",
+  "icon": "layout",
   "pages": [
     "getting-started",
     "dashboard",

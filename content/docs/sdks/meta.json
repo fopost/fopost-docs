@@ -2,7 +2,7 @@
   "title": "SDKs",
   "description": "Clients & integrations",
   "root": true,
-  "icon": "Package",
+  "icon": "box",
   "pages": [
     "index",
     "overview",

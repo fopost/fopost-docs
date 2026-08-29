@@ -2,7 +2,7 @@
   "title": "Guide",
   "description": "For creators and teams",
   "root": true,
-  "icon": "LayoutDashboard",
+  "icon": "book-open",
   "pages": [
     "index",
     "using-fopost",
