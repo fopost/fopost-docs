@@ -1,6 +1,6 @@
 ---
 title: SDKs Overview
-description: Every official OwlStack client, what it covers, and how to pick one.
+description: Every official FoPost client, what it covers, and how to pick one.
 ---
 
 # SDKs Overview
@@ -8,18 +8,18 @@ description: Every official OwlStack client, what it covers, and how to pick one
 Every client here is a thin wrapper over the [REST API](/api/overview). The platform APIs, formatting, media handling, retries, and scheduling all run on our side, so an SDK stays small and gains new networks without you upgrading anything.
 
 ```
-Your app  →  SDK  →  api.owlstack.app  →  the networks
+Your app  →  SDK  →  api.fopost.com  →  the networks
 ```
 
 ## Cloud clients
 
-These talk to your OwlStack account with an API key.
+These talk to your FoPost account with an API key.
 
 | Package | Language | Install |
 |:--------|:---------|:--------|
-| [`@owlstackapp/sdk`](/sdks/typescript) | TypeScript, Node.js | `npm install @owlstackapp/sdk` |
-| [`owlstack`](/sdks/python) | Python 3.10+ | `pip install owlstack` |
-| [`@owlstackapp/mcp`](/sdks/mcp) | Any MCP client | `npx -y @owlstackapp/mcp` |
+| [`@fopost/sdk`](/sdks/typescript) | TypeScript, Node.js | `npm install @fopost/sdk` |
+| [`fopost`](/sdks/python) | Python 3.10+ | `pip install fopost` |
+| [`@fopost/mcp`](/sdks/mcp) | Any MCP client | `npx -y @fopost/mcp` |
 
 All three are MIT licensed and open source. All are 0.x, so pin an exact version if a breaking minor would hurt.
 
@@ -27,7 +27,7 @@ All three are MIT licensed and open source. All are 0.x, so pin an exact version
 
 | Integration | For | Docs |
 |:------------|:----|:-----|
-| [Laravel](/sdks/laravel/installation) | Laravel 10 to 12 | `composer require owlstack/owlstack-laravel` |
+| [Laravel](/sdks/laravel/installation) | Laravel 10 to 12 | `composer require fopost/fopost-social-laravel` |
 | [WordPress](/sdks/wordpress/installation) | WordPress 6.4+ | Plugin install |
 | [Browser extension](/sdks/browser-extension) | Networks with no write API | Chrome Web Store |
 
@@ -38,8 +38,8 @@ The Laravel package wraps the standalone PHP library documented under [Developer
 There is no Go, Ruby, or Rust client yet, and we would rather say so than ship a page pretending otherwise. Until then the REST API is plain JSON over HTTPS with one header, and works from any language:
 
 ```bash
-curl -X POST https://api.owlstack.app/v1/posts \
-  -H "X-API-Key: $OWLSTACK_API_KEY" \
+curl -X POST https://api.fopost.com/v1/posts \
+  -H "X-API-Key: $FOPOST_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
@@ -48,7 +48,7 @@ curl -X POST https://api.owlstack.app/v1/posts \
   }'
 ```
 
-The [OpenAPI spec](https://api.owlstack.app/v1/openapi.json) generates a usable client in most languages. If you want an official one for a language that is missing, [tell us which](https://owlstack.app/contact); demand is how the order gets decided.
+The [OpenAPI spec](https://api.fopost.com/v1/openapi.json) generates a usable client in most languages. If you want an official one for a language that is missing, [tell us which](https://fopost.com/contact); demand is how the order gets decided.
 
 ## Next
 

@@ -1,11 +1,11 @@
 ---
 title: Instagram
-description: Configure Instagram in the OwlStack WordPress plugin.
+description: Configure Instagram in the FoPost WordPress plugin.
 ---
 
 # Instagram
 
-Configure the OwlStack WordPress plugin to publish posts to your Instagram Business or Creator account.
+Configure the FoPost WordPress plugin to publish posts to your Instagram Business or Creator account.
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ The Instagram API only works with **Business** or **Creator** accounts. Personal
 
 ## Settings
 
-Navigate to **OwlStack > Instagram** in the WordPress admin.
+Navigate to **FoPost > Instagram** in the WordPress admin.
 
 | Field | Description |
 |:------|:------------|
@@ -34,7 +34,7 @@ Navigate to **OwlStack > Instagram** in the WordPress admin.
 
 ### Step-by-step
 
-1. Go to **OwlStack > Instagram** in your WordPress admin
+1. Go to **FoPost > Instagram** in your WordPress admin
 2. Paste your **Access Token**
 3. Enter your **Instagram Account ID**
 4. Click **Save Settings**
@@ -49,13 +49,13 @@ After saving your settings:
 
 ## Publishing
 
-Once configured, Instagram appears as a toggle in the OwlStack meta box on post edit screens.
+Once configured, Instagram appears as a toggle in the FoPost meta box on post edit screens.
 
 ### Programmatic publishing
 
 ```php
 // Post with an image (required for Instagram)
-owlstack()->instagram('Hello from WordPress!', [
+fopost()->instagram('Hello from WordPress!', [
     'type' => 'photo',
     'url'  => 'https://example.com/image.jpg',
 ]);

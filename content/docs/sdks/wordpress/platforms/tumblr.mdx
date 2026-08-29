@@ -1,11 +1,11 @@
 ---
 title: Tumblr
-description: Configure Tumblr in the OwlStack WordPress plugin.
+description: Configure Tumblr in the FoPost WordPress plugin.
 ---
 
 # Tumblr
 
-Configure the OwlStack WordPress plugin to publish posts to your Tumblr blog.
+Configure the FoPost WordPress plugin to publish posts to your Tumblr blog.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ You need a Tumblr account and API access.
 
 ## Settings
 
-Navigate to **OwlStack > Tumblr** in the WordPress admin.
+Navigate to **FoPost > Tumblr** in the WordPress admin.
 
 | Field | Description |
 |:------|:------------|
@@ -30,7 +30,7 @@ Navigate to **OwlStack > Tumblr** in the WordPress admin.
 
 ### Step-by-step
 
-1. Go to **OwlStack > Tumblr** in your WordPress admin
+1. Go to **FoPost > Tumblr** in your WordPress admin
 2. Paste your **Access Token**
 3. Enter your **Blog Identifier**
 4. Click **Save Settings**
@@ -45,16 +45,16 @@ After saving your settings:
 
 ## Publishing
 
-Once configured, Tumblr appears as a toggle in the OwlStack meta box on post edit screens.
+Once configured, Tumblr appears as a toggle in the FoPost meta box on post edit screens.
 
 ### Programmatic publishing
 
 ```php
 // Simple text post
-owlstack()->tumblr('Hello from WordPress!');
+fopost()->tumblr('Hello from WordPress!');
 
 // Post with a photo
-owlstack()->tumblr('Check out this image!', [
+fopost()->tumblr('Check out this image!', [
     'type' => 'photo',
     'url'  => 'https://example.com/image.jpg',
 ]);

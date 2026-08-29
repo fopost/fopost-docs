@@ -1,11 +1,11 @@
 ---
 title: Laravel Configuration
-description: config/owlstack.php, the environment variables, and the proxy.
+description: config/fopost.php, the environment variables, and the proxy.
 ---
 
 # Laravel Configuration
 
-`php artisan vendor:publish --tag=owlstack-config` writes `config/owlstack.php`. It has two sections: platform credentials, and an optional proxy.
+`php artisan vendor:publish --tag=fopost-config` writes `config/fopost.php`. It has two sections: platform credentials, and an optional proxy.
 
 ## Platforms
 
@@ -98,18 +98,18 @@ What each network needs, and how to get it, is on [Configure Credentials](/devel
 For servers that cannot reach a network directly:
 
 ```dotenv
-OWLSTACK_PROXY_TYPE=7          # 7 is SOCKS5
-OWLSTACK_PROXY_HOST=localhost
-OWLSTACK_PROXY_PORT=9050
-OWLSTACK_PROXY_USERNAME=
-OWLSTACK_PROXY_PASSWORD=
+FOPOST_PROXY_TYPE=7          # 7 is SOCKS5
+FOPOST_PROXY_HOST=localhost
+FOPOST_PROXY_PORT=9050
+FOPOST_PROXY_USERNAME=
+FOPOST_PROXY_PASSWORD=
 ```
 
 Applies to every network.
 
 ## No API key
 
-There is no `OWLSTACK_API_KEY`. The package publishes with your own platform credentials and never calls our API. An API key is for the [Cloud](/api/authentication), which is a separate product.
+There is no `FOPOST_API_KEY`. The package publishes with your own platform credentials and never calls our API. An API key is for the [Cloud](/api/authentication), which is a separate product.
 
 ## Next
 

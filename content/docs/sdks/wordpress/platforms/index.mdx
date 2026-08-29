@@ -1,31 +1,31 @@
 ---
 title: Platform Configuration
-description: Configure social media platforms in the OwlStack WordPress plugin.
+description: Configure social media platforms in the FoPost WordPress plugin.
 ---
 
 # Platform Configuration
 
-The OwlStack WordPress plugin lets you configure each social media platform directly from the WordPress admin. Each platform has its own settings page under **OwlStack** in the admin menu.
+The FoPost WordPress plugin lets you configure each social media platform directly from the WordPress admin. Each platform has its own settings page under **FoPost** in the admin menu.
 
 ## Supported Platforms
 
 | Platform | Menu Location |
 |:---------|:-------------|
-| [Telegram](./platforms/telegram) | OwlStack > Telegram |
-| [Twitter / X](./platforms/twitter) | OwlStack > Twitter / X |
-| [Facebook](./platforms/facebook) | OwlStack > Facebook |
-| [Instagram](./platforms/instagram) | OwlStack > Instagram |
-| [LinkedIn](./platforms/linkedin) | OwlStack > LinkedIn |
-| [Discord](./platforms/discord) | OwlStack > Discord |
-| [Pinterest](./platforms/pinterest) | OwlStack > Pinterest |
-| [Reddit](./platforms/reddit) | OwlStack > Reddit |
-| [Slack](./platforms/slack) | OwlStack > Slack |
-| [Tumblr](./platforms/tumblr) | OwlStack > Tumblr |
-| [WhatsApp](./platforms/whatsapp) | OwlStack > WhatsApp |
+| [Telegram](./platforms/telegram) | FoPost > Telegram |
+| [Twitter / X](./platforms/twitter) | FoPost > Twitter / X |
+| [Facebook](./platforms/facebook) | FoPost > Facebook |
+| [Instagram](./platforms/instagram) | FoPost > Instagram |
+| [LinkedIn](./platforms/linkedin) | FoPost > LinkedIn |
+| [Discord](./platforms/discord) | FoPost > Discord |
+| [Pinterest](./platforms/pinterest) | FoPost > Pinterest |
+| [Reddit](./platforms/reddit) | FoPost > Reddit |
+| [Slack](./platforms/slack) | FoPost > Slack |
+| [Tumblr](./platforms/tumblr) | FoPost > Tumblr |
+| [WhatsApp](./platforms/whatsapp) | FoPost > WhatsApp |
 
 ## How It Works
 
-1. Navigate to the platform settings page in **OwlStack** admin menu
+1. Navigate to the platform settings page in **FoPost** admin menu
 2. Enter your API credentials (tokens, keys, etc.)
 3. Click **Save Settings**
 4. Use the **Test Connection** button to verify your credentials
@@ -46,15 +46,15 @@ Every platform settings page includes a built-in testing section with:
 
 ## Using Platforms
 
-Once configured, platforms appear in the **OwlStack meta box** on the post edit screen. You can:
+Once configured, platforms appear in the **FoPost meta box** on the post edit screen. You can:
 
 - Toggle individual platforms per post
-- Set default platforms in **OwlStack > Settings**
-- Use the `owlstack_post_platforms` filter to control platforms programmatically
+- Set default platforms in **FoPost > Settings**
+- Use the `fopost_post_platforms` filter to control platforms programmatically
 
 ```php
 // Publish to a specific platform using the helper
-owlstack()->telegram('Hello from WordPress!');
-owlstack()->twitter('Hello from WordPress!');
-owlstack()->facebook('Hello from WordPress!');
+fopost()->telegram('Hello from WordPress!');
+fopost()->twitter('Hello from WordPress!');
+fopost()->facebook('Hello from WordPress!');
 ```

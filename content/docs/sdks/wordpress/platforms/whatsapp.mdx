@@ -1,11 +1,11 @@
 ---
 title: WhatsApp
-description: Configure WhatsApp in the OwlStack WordPress plugin.
+description: Configure WhatsApp in the FoPost WordPress plugin.
 ---
 
 # WhatsApp
 
-Configure the OwlStack WordPress plugin to send messages via the WhatsApp Business API.
+Configure the FoPost WordPress plugin to send messages via the WhatsApp Business API.
 
 ## Prerequisites
 
@@ -26,7 +26,7 @@ For production use, your Meta Business account must be verified. The test mode a
 
 ## Settings
 
-Navigate to **OwlStack > WhatsApp** in the WordPress admin.
+Navigate to **FoPost > WhatsApp** in the WordPress admin.
 
 | Field | Description |
 |:------|:------------|
@@ -35,7 +35,7 @@ Navigate to **OwlStack > WhatsApp** in the WordPress admin.
 
 ### Step-by-step
 
-1. Go to **OwlStack > WhatsApp** in your WordPress admin
+1. Go to **FoPost > WhatsApp** in your WordPress admin
 2. Paste your **Access Token**
 3. Enter your **Phone Number ID**
 4. Click **Save Settings**
@@ -50,13 +50,13 @@ After saving your settings:
 
 ## Publishing
 
-Once configured, WhatsApp appears as a toggle in the OwlStack meta box on post edit screens.
+Once configured, WhatsApp appears as a toggle in the FoPost meta box on post edit screens.
 
 ### Programmatic publishing
 
 ```php
 // Send a message
-owlstack()->whatsapp('Hello from WordPress!');
+fopost()->whatsapp('Hello from WordPress!');
 ```
 
 <Callout type="warn" title="Message Templates">

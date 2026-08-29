@@ -1,18 +1,18 @@
 ---
 title: Migration from Larasap
-description: Moving a Laravel app from Larasap to the OwlStack package.
+description: Moving a Laravel app from Larasap to the FoPost package.
 ---
 
 # Migration from Larasap
 
-OwlStack for Laravel is the successor to Larasap. Your credentials stay in `.env` and publishing still runs on your own server, so this is a rename and an API change rather than a change of model.
+FoPost for Laravel is the successor to Larasap. Your credentials stay in `.env` and publishing still runs on your own server, so this is a rename and an API change rather than a change of model.
 
 ## What changed
 
-| Larasap | OwlStack |
+| Larasap | FoPost |
 |:--------|:---------|
-| `Suspended-Starter/larasap` | `owlstack/owlstack-laravel` |
-| `Starter\Larasap\SendTo` | `Owlstack\Laravel\SendTo` |
+| `Suspended-Starter/larasap` | `fopost/fopost-social-laravel` |
+| `Starter\Larasap\SendTo` | `Fopost\Laravel\SendTo` |
 | 5 networks | 11 networks |
 | Returns mixed types | Returns a `PublishResult`, never throws |
 | No event hooks | `PostPublished` and `PostFailed` as Laravel events |
@@ -24,13 +24,13 @@ Unchanged: credentials live in `.env`, publishing goes straight to the networks,
 
 ```bash
 composer remove suspended-starter/larasap
-composer require owlstack/owlstack-laravel
-php artisan vendor:publish --tag=owlstack-config
+composer require fopost/fopost-social-laravel
+php artisan vendor:publish --tag=fopost-config
 ```
 
 ## 2. Keep your credentials
 
-Most environment variable names carry over. Check the published `config/owlstack.php` against your `.env` and rename what differs; the full list is on [Configuration](./configuration).
+Most environment variable names carry over. Check the published `config/fopost.php` against your `.env` and rename what differs; the full list is on [Configuration](./configuration).
 
 There is no API key to add. The package does not call our API.
 
@@ -48,7 +48,7 @@ SendTo::twitter('Your tweet');
 After:
 
 ```php
-use Owlstack\Laravel\SendTo;
+use Fopost\Laravel\SendTo;
 
 class PostController extends Controller
 {
@@ -63,14 +63,14 @@ class PostController extends Controller
 Or keep a static-looking call with the facade:
 
 ```php
-use Owlstack\Laravel\Facades\Owlstack;
+use Fopost\Laravel\Facades\Fopost;
 
-Owlstack::telegram('Your message');
+Fopost::telegram('Your message');
 ```
 
 ## 4. Check results instead of catching
 
-Larasap threw. OwlStack does not:
+Larasap threw. FoPost does not:
 
 ```php
 $result = $sendTo->telegram('Hello');

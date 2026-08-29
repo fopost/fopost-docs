@@ -16,8 +16,8 @@ POST /v1/media/upload
 Send `multipart/form-data` with the files under the `files` field:
 
 ```bash
-curl -X POST https://api.owlstack.app/v1/media/upload \
-  -H "X-API-Key: $OWLSTACK_API_KEY" \
+curl -X POST https://api.fopost.com/v1/media/upload \
+  -H "X-API-Key: $FOPOST_API_KEY" \
   -F "files=@launch.png" \
   -F "workspaceId=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90"
 ```
@@ -72,7 +72,7 @@ Take what upload returns and put it in a content block:
 
 `type` is `image`, `video`, or `gif`. `alt` is optional and worth sending: it is what screen readers announce, and several networks surface it.
 
-Each network sets its own limits on count, dimensions, aspect ratio, and duration. OwlStack resizes and re-encodes for the target where it can, and [preflight](/api/publishing#check-before-you-publish) tells you when it cannot.
+Each network sets its own limits on count, dimensions, aspect ratio, and duration. FoPost resizes and re-encodes for the target where it can, and [preflight](/api/publishing#check-before-you-publish) tells you when it cannot.
 
 ## Storage
 
@@ -82,5 +82,5 @@ The library counts against the storage allowance on your plan. A stored URL is a
 
 <Cards>
   <Card title="Publishing" href="/api/publishing" />
-  <Card title="Media Library guide" href="/guide/using-owlstack/media-library" />
+  <Card title="Media Library guide" href="/guide/using-fopost/media-library" />
 </Cards>

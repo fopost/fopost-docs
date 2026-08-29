@@ -1,13 +1,13 @@
 ---
 title: MCP Server
-description: Connect Claude, Cursor, or any MCP client to your OwlStack workspace.
+description: Connect Claude, Cursor, or any MCP client to your FoPost workspace.
 ---
 
 # MCP Server
 
-`@owlstackapp/mcp` exposes OwlStack as a set of tools any MCP-aware assistant can call: Claude Desktop, Claude Code, Cursor, Continue, and anything else that speaks the Model Context Protocol. It runs over stdio and needs no install step.
+`@fopost/mcp` exposes FoPost as a set of tools any MCP-aware assistant can call: Claude Desktop, Claude Code, Cursor, Continue, and anything else that speaks the Model Context Protocol. It runs over stdio and needs no install step.
 
-Source and issues: [github.com/owlstacks/owlstack-mcp](https://github.com/owlstacks/owlstack-mcp). MIT licensed. Needs Node 18 or newer.
+Source and issues: [github.com/fopost/fopost-mcp](https://github.com/fopost/fopost-mcp). MIT licensed. Needs Node 18 or newer.
 
 <Callout type="warn">
 This is a 0.x release. Tool names and arguments may change between minor
@@ -25,11 +25,11 @@ Edit `claude_desktop_config.json`, at `~/Library/Application Support/Claude/` on
 ```json
 {
   "mcpServers": {
-    "owlstack": {
+    "fopost": {
       "command": "npx",
-      "args": ["-y", "@owlstackapp/mcp"],
+      "args": ["-y", "@fopost/mcp"],
       "env": {
-        "OWLSTACK_API_KEY": "your-api-key"
+        "FOPOST_API_KEY": "your-api-key"
       }
     }
   }
@@ -41,12 +41,12 @@ Restart the app and the tools appear.
 ### Claude Code
 
 ```bash
-claude mcp add owlstack --env OWLSTACK_API_KEY=your-api-key -- npx -y @owlstackapp/mcp
+claude mcp add fopost --env FOPOST_API_KEY=your-api-key -- npx -y @fopost/mcp
 ```
 
 ### Cursor, Continue, and others
 
-Same command, `npx -y @owlstackapp/mcp`, with `OWLSTACK_API_KEY` in the environment.
+Same command, `npx -y @fopost/mcp`, with `FOPOST_API_KEY` in the environment.
 
 ## Tools
 
@@ -82,5 +82,5 @@ Give the key the narrowest scopes that do the job. An assistant with `posts` but
 <Cards>
   <Card title="Authentication" href="/api/authentication" />
   <Card title="TypeScript SDK" href="/sdks/typescript" />
-  <Card title="Owl Agent" href="/guide/using-owlstack/owl-agent" />
+  <Card title="Owl Agent" href="/guide/using-fopost/owl-agent" />
 </Cards>

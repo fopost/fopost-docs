@@ -1,11 +1,11 @@
 ---
 title: Pinterest
-description: Configure Pinterest in the OwlStack WordPress plugin.
+description: Configure Pinterest in the FoPost WordPress plugin.
 ---
 
 # Pinterest
 
-Configure the OwlStack WordPress plugin to publish pins to your Pinterest boards.
+Configure the FoPost WordPress plugin to publish pins to your Pinterest boards.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ You need a Pinterest Business account and API access.
 
 ## Settings
 
-Navigate to **OwlStack > Pinterest** in the WordPress admin.
+Navigate to **FoPost > Pinterest** in the WordPress admin.
 
 | Field | Description |
 |:------|:------------|
@@ -30,7 +30,7 @@ Navigate to **OwlStack > Pinterest** in the WordPress admin.
 
 ### Step-by-step
 
-1. Go to **OwlStack > Pinterest** in your WordPress admin
+1. Go to **FoPost > Pinterest** in your WordPress admin
 2. Paste your **Access Token**
 3. Enter your **Board ID**
 4. Click **Save Settings**
@@ -45,13 +45,13 @@ After saving your settings:
 
 ## Publishing
 
-Once configured, Pinterest appears as a toggle in the OwlStack meta box on post edit screens.
+Once configured, Pinterest appears as a toggle in the FoPost meta box on post edit screens.
 
 ### Programmatic publishing
 
 ```php
 // Create a pin with an image (required)
-owlstack()->pinterest('Check out this article!', [
+fopost()->pinterest('Check out this article!', [
     'type' => 'photo',
     'url'  => 'https://example.com/image.jpg',
 ]);

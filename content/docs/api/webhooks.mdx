@@ -14,12 +14,12 @@ POST /v1/webhooks
 ```
 
 ```bash
-curl -X POST https://api.owlstack.app/v1/webhooks \
-  -H "X-API-Key: $OWLSTACK_API_KEY" \
+curl -X POST https://api.fopost.com/v1/webhooks \
+  -H "X-API-Key: $FOPOST_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
-    "url": "https://yourbrand.com/hooks/owlstack",
+    "url": "https://yourbrand.com/hooks/fopost",
     "events": ["post.published", "post.partially_failed", "delivery.failed"]
   }'
 ```
@@ -50,9 +50,9 @@ Every delivery is a `POST` with a JSON body and three headers:
 
 | Header | Contents |
 |:-------|:---------|
-| `X-OwlStack-Event` | The event name |
-| `X-OwlStack-Delivery` | Unique id for this delivery attempt |
-| `X-OwlStack-Signature` | `sha256=` followed by the signature |
+| `X-FoPost-Event` | The event name |
+| `X-FoPost-Delivery` | Unique id for this delivery attempt |
+| `X-FoPost-Signature` | `sha256=` followed by the signature |
 
 ## Verify the signature
 
@@ -83,7 +83,7 @@ Reject anything that does not verify. An endpoint that skips this will publish w
 
 Answer `2xx` within 10 seconds. Anything else, a timeout included, counts as a failure, and the delivery is retried up to 5 times with exponential backoff. Do the real work on a queue rather than inside the request, or a slow handler turns into a retry storm.
 
-Deliveries can arrive more than once, and out of order. Deduplicate on `X-OwlStack-Delivery` and treat your handler as idempotent.
+Deliveries can arrive more than once, and out of order. Deduplicate on `X-FoPost-Delivery` and treat your handler as idempotent.
 
 A webhook that keeps failing accumulates a `failureCount`, visible on the webhook record. After 10 consecutive failures it is deactivated rather than retried forever. A successful delivery resets the count, so a brief outage costs you nothing.
 

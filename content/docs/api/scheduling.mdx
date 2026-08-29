@@ -10,8 +10,8 @@ Scheduling is a field on a post, not a separate endpoint. Set `status` to `sched
 ## Schedule a post
 
 ```bash
-curl -X POST https://api.owlstack.app/v1/posts \
-  -H "X-API-Key: $OWLSTACK_API_KEY" \
+curl -X POST https://api.fopost.com/v1/posts \
+  -H "X-API-Key: $FOPOST_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
@@ -45,7 +45,7 @@ A post can republish on a cadence without you scheduling each occurrence:
 
 `repeatable_gap_unit` is `hours`, `days`, `weeks`, or `months`. The post reports `remaining_posts` as it works through the run.
 
-For resurfacing your best evergreen posts with fresh variants rather than repeating one verbatim, use [content recycling](/guide/using-owlstack/recycling) instead.
+For resurfacing your best evergreen posts with fresh variants rather than repeating one verbatim, use [content recycling](/guide/using-fopost/recycling) instead.
 
 ## Bulk import
 

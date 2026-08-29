@@ -5,7 +5,7 @@ description: The publishing box on the post edit screen.
 
 # Meta Box
 
-**Owlstack: Publish to Social Media** appears in the sidebar of the post edit screen, on every post type you have enabled.
+**Fopost: Publish to Social Media** appears in the sidebar of the post edit screen, on every post type you have enabled.
 
 ## What is in it
 
@@ -21,10 +21,10 @@ The per-post toggle overrides the global setting, so a post you would rather not
 
 ## Which post types
 
-Posts only, by default. Add more with the `owlstack_supported_post_types` filter:
+Posts only, by default. Add more with the `fopost_supported_post_types` filter:
 
 ```php
-add_filter('owlstack_supported_post_types', function ($types) {
+add_filter('fopost_supported_post_types', function ($types) {
     return ['post', 'page', 'product'];
 });
 ```
@@ -35,11 +35,11 @@ The box registers in the `side` context, so it appears in the block editor's pos
 
 ## Who sees it
 
-Anyone with the `owlstack_publish` capability, which the plugin grants to administrators on activation. Grant it to editors and they can publish to social without being able to see or change your credentials. See [REST API](./rest-api#capabilities).
+Anyone with the `fopost_publish` capability, which the plugin grants to administrators on activation. Grant it to editors and they can publish to social without being able to see or change your credentials. See [REST API](./rest-api#capabilities).
 
 ## What is not here
 
-There is no per-network caption override in the meta box: WordPress supplies the title, content, URL, and tags, and each network's formatter shapes them. To change what goes out, use the `owlstack_post_data` filter, or the [Cloud composer](/guide/using-owlstack/creating-posts) if you want per-network editing with previews.
+There is no per-network caption override in the meta box: WordPress supplies the title, content, URL, and tags, and each network's formatter shapes them. To change what goes out, use the `fopost_post_data` filter, or the [Cloud composer](/guide/using-fopost/creating-posts) if you want per-network editing with previews.
 
 ## Next
 

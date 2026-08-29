@@ -1,11 +1,11 @@
 ---
 title: Facebook
-description: Configure Facebook in the OwlStack WordPress plugin.
+description: Configure Facebook in the FoPost WordPress plugin.
 ---
 
 # Facebook
 
-Configure the OwlStack WordPress plugin to publish posts to your Facebook Page.
+Configure the FoPost WordPress plugin to publish posts to your Facebook Page.
 
 ## Prerequisites
 
@@ -26,7 +26,7 @@ Page Access Tokens expire. Use a long-lived token and monitor for expiration. Th
 
 ## Settings
 
-Navigate to **OwlStack > Facebook** in the WordPress admin.
+Navigate to **FoPost > Facebook** in the WordPress admin.
 
 | Field | Description |
 |:------|:------------|
@@ -38,7 +38,7 @@ Navigate to **OwlStack > Facebook** in the WordPress admin.
 
 ### Step-by-step
 
-1. Go to **OwlStack > Facebook** in your WordPress admin
+1. Go to **FoPost > Facebook** in your WordPress admin
 2. Paste your **App ID**
 3. Paste your **App Secret**
 4. Paste your **Page Access Token**
@@ -56,16 +56,16 @@ After saving your settings:
 
 ## Publishing
 
-Once configured, Facebook appears as a toggle in the OwlStack meta box on post edit screens.
+Once configured, Facebook appears as a toggle in the FoPost meta box on post edit screens.
 
 ### Programmatic publishing
 
 ```php
 // Simple page post
-owlstack()->facebook('Hello from WordPress!');
+fopost()->facebook('Hello from WordPress!');
 
 // Post with a link
-owlstack()->facebook('Check out our latest article: https://example.com/post');
+fopost()->facebook('Check out our latest article: https://example.com/post');
 ```
 
 ## Constraints

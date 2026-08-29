@@ -11,8 +11,8 @@ The package bridges the library's events onto Laravel's dispatcher, so `PostPubl
 
 | Event | Fired when |
 |:------|:-----------|
-| `Owlstack\Core\Events\PostPublished` | A network accepted the post |
-| `Owlstack\Core\Events\PostFailed` | A network rejected it, or the attempt errored |
+| `Fopost\Core\Events\PostPublished` | A network accepted the post |
+| `Fopost\Core\Events\PostFailed` | A network rejected it, or the attempt errored |
 
 One per network. Publishing to five networks fires five events.
 
@@ -34,8 +34,8 @@ With a closure:
 
 ```php
 use Illuminate\Support\Facades\Event;
-use Owlstack\Core\Events\PostFailed;
-use Owlstack\Core\Events\PostPublished;
+use Fopost\Core\Events\PostFailed;
+use Fopost\Core\Events\PostPublished;
 
 Event::listen(PostPublished::class, function (PostPublished $event) {
     Log::info("Published to {$event->result->platformName}", [
@@ -56,7 +56,7 @@ Or with a listener class registered the way your Laravel version registers them.
 The usual reason to listen: record what happened once, rather than at every call site.
 
 ```php
-use Owlstack\Core\Delivery\DeliveryStatus;
+use Fopost\Core\Delivery\DeliveryStatus;
 
 class RecordDelivery
 {

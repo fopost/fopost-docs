@@ -20,14 +20,14 @@ jobs:
         timeout-minutes: 30
         run: |
           DEPLOY_PATH="${{ secrets.DEPLOY_PATH }}"
-          DOCS_PATH="$(dirname "${{ secrets.DEPLOY_PATH }}")/owlstack-docs"
+          DOCS_PATH="$(dirname "${{ secrets.DEPLOY_PATH }}")/fopost-docs"
 
           ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" bash << EOF
             set -e
             export PATH=\$PATH:/usr/local/bin:/usr/bin
 
             echo "=========================================="
-            echo "OwlStack Docs Deploy — \$(date)"
+            echo "FoPost Docs Deploy — \$(date)"
             echo "=========================================="
 
             # Pull latest docs source

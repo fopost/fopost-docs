@@ -5,32 +5,32 @@ description: Every action and filter the plugin fires, with its real signature.
 
 # Hooks
 
-Seven hooks, all prefixed `owlstack_`.
+Seven hooks, all prefixed `fopost_`.
 
 ## Actions
 
-### `owlstack_before_publish`
+### `fopost_before_publish`
 
 Fires before anything is sent.
 
 ```php
-add_action('owlstack_before_publish', function ($corePost, $platforms, $wpPost) {
+add_action('fopost_before_publish', function ($corePost, $platforms, $wpPost) {
     error_log("Publishing '{$wpPost->post_title}' to " . implode(', ', $platforms));
 }, 10, 3);
 ```
 
 | Argument | What |
 |:---------|:-----|
-| `$corePost` | The `Owlstack\Core\Content\Post` about to be published |
+| `$corePost` | The `Fopost\Core\Content\Post` about to be published |
 | `$platforms` | Array of network names |
 | `$wpPost` | The `WP_Post` it came from |
 
-### `owlstack_after_publish`
+### `fopost_after_publish`
 
 Fires once the whole run is done.
 
 ```php
-add_action('owlstack_after_publish', function ($results, $wpPost) {
+add_action('fopost_after_publish', function ($results, $wpPost) {
     $failed = array_filter($results, fn($r) => $r->failed());
     if ($failed) {
         error_log(count($failed) . ' network(s) failed for post ' . $wpPost->ID);
@@ -38,22 +38,22 @@ add_action('owlstack_after_publish', function ($results, $wpPost) {
 }, 10, 2);
 ```
 
-### `owlstack_post_published`
+### `fopost_post_published`
 
 Fires per network, on success.
 
 ```php
-add_action('owlstack_post_published', function ($result, $wpPost, $platform) {
-    update_post_meta($wpPost->ID, "_owlstack_{$platform}_url", $result->externalUrl);
+add_action('fopost_post_published', function ($result, $wpPost, $platform) {
+    update_post_meta($wpPost->ID, "_fopost_{$platform}_url", $result->externalUrl);
 }, 10, 3);
 ```
 
-### `owlstack_post_failed`
+### `fopost_post_failed`
 
 Fires per network, on failure. Same three arguments.
 
 ```php
-add_action('owlstack_post_failed', function ($result, $wpPost, $platform) {
+add_action('fopost_post_failed', function ($result, $wpPost, $platform) {
     error_log("Failed on {$platform}: {$result->error}");
 }, 10, 3);
 ```
@@ -64,34 +64,34 @@ The plugin also bridges the library's own events onto actions of the same names,
 
 ## Filters
 
-### `owlstack_supported_post_types`
+### `fopost_supported_post_types`
 
 Which post types show the meta box. Defaults to `['post']`.
 
 ```php
-add_filter('owlstack_supported_post_types', function ($types) {
+add_filter('fopost_supported_post_types', function ($types) {
     return ['post', 'page', 'product'];
 });
 ```
 
-### `owlstack_post_data`
+### `fopost_post_data`
 
 The `Post` object, just before publishing. Your last chance to change what goes out.
 
 ```php
-add_filter('owlstack_post_data', function ($post, $wpPost) {
+add_filter('fopost_post_data', function ($post, $wpPost) {
     return $post;
 }, 10, 2);
 ```
 
 `Post` is readonly, so return a new one rather than mutating the argument.
 
-### `owlstack_publish_options`
+### `fopost_publish_options`
 
 Per-network options, before publishing. This is where a required field that WordPress has no concept of gets supplied.
 
 ```php
-add_filter('owlstack_publish_options', function ($options, $wpPost) {
+add_filter('fopost_publish_options', function ($options, $wpPost) {
     $options['reddit']['subreddit'] = 'php';
     return $options;
 }, 10, 2);

@@ -16,8 +16,8 @@ GET /v1/analytics/overview
 ```
 
 ```bash
-curl "https://api.owlstack.app/v1/analytics/overview?days=30" \
-  -H "X-API-Key: $OWLSTACK_API_KEY"
+curl "https://api.fopost.com/v1/analytics/overview?days=30" \
+  -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
 Dashboard totals with period-over-period deltas, today's figures, and a per-account breakdown including follower history. This is the one endpoint to call if you only call one.
@@ -38,7 +38,7 @@ GET /v1/analytics/top-posts
 
 Posts ranked by engagement, or newest first with `sort=recent`. Takes `limit`, a range, `accountId`, and `label`.
 
-It includes posts published natively on the network, not only ones that went out through OwlStack, so the ranking reflects the account rather than the tool.
+It includes posts published natively on the network, not only ones that went out through FoPost, so the ranking reflects the account rather than the tool.
 
 ## Demographics
 
@@ -86,6 +86,6 @@ Use it after publishing something you want to measure now. Do not put it on a ti
 
 <Cards>
   <Card title="Accounts" href="/api/accounts" />
-  <Card title="Analytics guide" href="/guide/using-owlstack/analytics" />
+  <Card title="Analytics guide" href="/guide/using-fopost/analytics" />
   <Card title="Rate Limits" href="/api/rate-limits" />
 </Cards>

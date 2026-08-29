@@ -14,8 +14,8 @@ POST /v1/automations
 ```
 
 ```bash
-curl -X POST https://api.owlstack.app/v1/automations \
-  -H "X-API-Key: $OWLSTACK_API_KEY" \
+curl -X POST https://api.fopost.com/v1/automations \
+  -H "X-API-Key: $FOPOST_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
@@ -79,7 +79,7 @@ Every firing is recorded with what came in, what each step did, and what came ou
 POST /v1/automations/{id}/trigger
 ```
 
-The webhook entry point for an `api_webhook` automation. It authenticates with the trigger secret rather than your API key, so you can hand the URL to a system that has no OwlStack credentials.
+The webhook entry point for an `api_webhook` automation. It authenticates with the trigger secret rather than your API key, so you can hand the URL to a system that has no FoPost credentials.
 
 ## Guard rails
 
@@ -88,6 +88,6 @@ An automation that starts failing trips its own circuit breaker and stops rather
 ## Next
 
 <Cards>
-  <Card title="Automations guide" href="/guide/using-owlstack/automations" />
+  <Card title="Automations guide" href="/guide/using-fopost/automations" />
   <Card title="Webhooks" href="/api/webhooks" />
 </Cards>

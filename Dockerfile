@@ -13,7 +13,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 # Branding and service URLs are resolved at build time — the remark plugin
 # bakes them into the compiled pages, so these must arrive as build args, not
-# runtime env. Unset means OwlStack. Changing one needs a rebuild.
+# runtime env. Unset means FoPost. Changing one needs a rebuild.
 ARG NEXT_PUBLIC_BRAND_NAME
 ARG NEXT_PUBLIC_BRAND_SLUG
 ARG NEXT_PUBLIC_BRAND_DOMAIN

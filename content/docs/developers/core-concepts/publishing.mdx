@@ -10,7 +10,7 @@ description: The Publisher, the registry, and the PublishResult it always return
 The orchestrator. It resolves the network from the registry, publishes, dispatches events, and returns a result. It **never throws**.
 
 ```php
-use Owlstack\Core\Publishing\Publisher;
+use Fopost\Core\Publishing\Publisher;
 
 $publisher = new Publisher($registry, $eventDispatcher);  // dispatcher optional
 
@@ -28,7 +28,7 @@ $result = $publisher->publish($post, 'telegram', ['chat_id' => '@channel']);
 Register the networks you have credentials for. Nothing else is publishable.
 
 ```php
-use Owlstack\Core\Platforms\PlatformRegistry;
+use Fopost\Core\Platforms\PlatformRegistry;
 
 $registry = new PlatformRegistry();
 $registry->register($telegramPlatform);

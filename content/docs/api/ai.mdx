@@ -5,7 +5,7 @@ description: What an API key can do with AI, and where the rest of the AI featur
 
 # AI
 
-Most AI in OwlStack runs inside the dashboard and the [Owl Agent](/guide/using-owlstack/owl-agent), where a person is in the loop. Two endpoints are reachable with an API key, both under the `ai` scope.
+Most AI in FoPost runs inside the dashboard and the [Owl Agent](/guide/using-fopost/owl-agent), where a person is in the loop. Two endpoints are reachable with an API key, both under the `ai` scope.
 
 The `ai` scope is deliberately separate from every other scope, because it is the only one that spends money. A key that can publish cannot generate unless you also grant `ai`.
 
@@ -16,8 +16,8 @@ POST /v1/ai/generate-caption
 ```
 
 ```bash
-curl -X POST https://api.owlstack.app/v1/ai/generate-caption \
-  -H "X-API-Key: $OWLSTACK_API_KEY" \
+curl -X POST https://api.fopost.com/v1/ai/generate-caption \
+  -H "X-API-Key: $FOPOST_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{ "content": "Notes from our launch week retro" }'
 ```
@@ -45,7 +45,7 @@ Rewriting for each platform, hashtags, turning a URL into posts, voice notes, al
 ## Next
 
 <Cards>
-  <Card title="Owl Agent" href="/guide/using-owlstack/owl-agent" />
-  <Card title="AI Content" href="/guide/using-owlstack/ai-content" />
+  <Card title="Owl Agent" href="/guide/using-fopost/owl-agent" />
+  <Card title="AI Content" href="/guide/using-fopost/ai-content" />
   <Card title="Plans" href="/guide/plans/overview" />
 </Cards>

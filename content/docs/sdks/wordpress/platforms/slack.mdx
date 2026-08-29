@@ -1,11 +1,11 @@
 ---
 title: Slack
-description: Configure Slack in the OwlStack WordPress plugin.
+description: Configure Slack in the FoPost WordPress plugin.
 ---
 
 # Slack
 
-Configure the OwlStack WordPress plugin to publish posts to your Slack workspace channels.
+Configure the FoPost WordPress plugin to publish posts to your Slack workspace channels.
 
 ## Prerequisites
 
@@ -35,7 +35,7 @@ You can connect Slack using either a **webhook** (simpler) or a **bot** (more fl
 
 ## Settings
 
-Navigate to **OwlStack > Slack** in the WordPress admin.
+Navigate to **FoPost > Slack** in the WordPress admin.
 
 | Field | Description |
 |:------|:------------|
@@ -49,13 +49,13 @@ Use **Webhook mode** for simple posting to a single channel. Use **Bot mode** to
 
 ### Step-by-step (Webhook)
 
-1. Go to **OwlStack > Slack** in your WordPress admin
+1. Go to **FoPost > Slack** in your WordPress admin
 2. Paste your **Webhook URL**
 3. Click **Save Settings**
 
 ### Step-by-step (Bot)
 
-1. Go to **OwlStack > Slack** in your WordPress admin
+1. Go to **FoPost > Slack** in your WordPress admin
 2. Paste your **Bot Token**
 3. Enter the target **Channel** (e.g., `#general`)
 4. Click **Save Settings**
@@ -70,16 +70,16 @@ After saving your settings:
 
 ## Publishing
 
-Once configured, Slack appears as a toggle in the OwlStack meta box on post edit screens.
+Once configured, Slack appears as a toggle in the FoPost meta box on post edit screens.
 
 ### Programmatic publishing
 
 ```php
 // Simple message
-owlstack()->slack('Hello from WordPress!');
+fopost()->slack('Hello from WordPress!');
 
 // Message to a specific channel (bot mode)
-owlstack()->slack('New post published!', null, null, [
+fopost()->slack('New post published!', null, null, [
     'channel' => '#announcements',
 ]);
 ```

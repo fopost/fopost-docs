@@ -8,7 +8,7 @@ description: The DeliveryStatus enum, and tracking the lifecycle in your own sto
 The library does not persist anything. `DeliveryStatus` is a backed enum it gives you so your own delivery table speaks the same vocabulary.
 
 ```php
-use Owlstack\Core\Delivery\DeliveryStatus;
+use Fopost\Core\Delivery\DeliveryStatus;
 
 DeliveryStatus::Pending;     // 'pending'
 DeliveryStatus::Publishing;  // 'publishing'
@@ -32,7 +32,7 @@ stateDiagram-v2
 Record one row per network, before and after:
 
 ```php
-use Owlstack\Core\Delivery\DeliveryStatus;
+use Fopost\Core\Delivery\DeliveryStatus;
 
 $delivery = DeliveryRecord::create([
     'post_id'  => $post->getMeta('post_id'),

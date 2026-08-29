@@ -1,14 +1,14 @@
 ---
 title: TypeScript SDK
-description: The official TypeScript and Node.js client for the OwlStack API.
+description: The official TypeScript and Node.js client for the FoPost API.
 ---
 
 # TypeScript SDK
 
-`@owlstackapp/sdk` is the official TypeScript client. It ships ESM and CommonJS builds with full type definitions, and needs Node 18 or newer.
+`@fopost/sdk` is the official TypeScript client. It ships ESM and CommonJS builds with full type definitions, and needs Node 18 or newer.
 
 ```bash
-npm install @owlstackapp/sdk
+npm install @fopost/sdk
 ```
 
 <Callout type="warn">
@@ -16,14 +16,14 @@ This is a 0.x release. The surface is still settling and a minor version may
 break something. Pin an exact version if that matters to you.
 </Callout>
 
-Source and issues: [github.com/owlstacks/owlstack-js](https://github.com/owlstacks/owlstack-js). MIT licensed.
+Source and issues: [github.com/fopost/fopost-js](https://github.com/fopost/fopost-js). MIT licensed.
 
 ## Quick start
 
 ```ts
-import { OwlStack } from '@owlstackapp/sdk';
+import { FoPost } from '@fopost/sdk';
 
-const owl = new OwlStack({ apiKey: process.env.OWLSTACK_API_KEY! });
+const owl = new FoPost({ apiKey: process.env.FOPOST_API_KEY! });
 
 const workspaces = await owl.workspaces.list();
 const accounts = await owl.accounts.list({ workspaceId: workspaces[0].id });
@@ -90,9 +90,9 @@ and will answer `401`. Use the composer for those until a later release.
 ## Configuration
 
 ```ts
-new OwlStack({
-  apiKey: process.env.OWLSTACK_API_KEY!,
-  baseUrl: 'https://api.owlstack.app',
+new FoPost({
+  apiKey: process.env.FOPOST_API_KEY!,
+  baseUrl: 'https://api.fopost.com',
   fetch: customFetch,
 });
 ```

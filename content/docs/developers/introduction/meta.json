@@ -2,8 +2,8 @@
   "title": "Introduction",
   "icon": "BookOpen",
   "pages": [
-    "what-is-owlstack",
-    "why-owlstack",
+    "what-is-fopost",
+    "why-fopost",
     "architecture"
   ]
 }

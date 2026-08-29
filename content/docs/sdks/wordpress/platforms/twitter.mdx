@@ -1,11 +1,11 @@
 ---
 title: Twitter / X
-description: Configure Twitter (X) in the OwlStack WordPress plugin.
+description: Configure Twitter (X) in the FoPost WordPress plugin.
 ---
 
 # Twitter / X
 
-Configure the OwlStack WordPress plugin to publish posts to your Twitter (X) account.
+Configure the FoPost WordPress plugin to publish posts to your Twitter (X) account.
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ You need at least **Basic** tier API access to post tweets. The free tier only s
 
 ## Settings
 
-Navigate to **OwlStack > Twitter / X** in the WordPress admin.
+Navigate to **FoPost > Twitter / X** in the WordPress admin.
 
 | Field | Description |
 |:------|:------------|
@@ -36,7 +36,7 @@ Navigate to **OwlStack > Twitter / X** in the WordPress admin.
 
 ### Step-by-step
 
-1. Go to **OwlStack > Twitter / X** in your WordPress admin
+1. Go to **FoPost > Twitter / X** in your WordPress admin
 2. Paste your **Consumer Key** (API Key)
 3. Paste your **Consumer Secret**
 4. Paste your **Access Token**
@@ -53,16 +53,16 @@ After saving your settings:
 
 ## Publishing
 
-Once configured, Twitter / X appears as a toggle in the OwlStack meta box on post edit screens.
+Once configured, Twitter / X appears as a toggle in the FoPost meta box on post edit screens.
 
 ### Programmatic publishing
 
 ```php
 // Simple tweet
-owlstack()->twitter('Hello from WordPress!');
+fopost()->twitter('Hello from WordPress!');
 
 // Tweet with a link
-owlstack()->twitter('Check out our latest post: https://example.com/post');
+fopost()->twitter('Check out our latest post: https://example.com/post');
 ```
 
 ## Constraints

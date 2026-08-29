@@ -1,16 +1,16 @@
 ---
 title: REST API
-description: The owlstack/v1 endpoints the plugin registers in WordPress.
+description: The fopost/v1 endpoints the plugin registers in WordPress.
 ---
 
 # REST API
 
-The plugin registers routes under the `owlstack/v1` namespace on your own site. These are WordPress endpoints, not the [OwlStack Cloud API](/api/overview).
+The plugin registers routes under the `fopost/v1` namespace on your own site. These are WordPress endpoints, not the [FoPost Cloud API](/api/overview).
 
 ## Publish a post
 
 ```http
-POST /wp-json/owlstack/v1/publish
+POST /wp-json/fopost/v1/publish
 ```
 
 ```json
@@ -22,12 +22,12 @@ POST /wp-json/owlstack/v1/publish
 
 `post_id` is required. `platforms` is optional; omit it and the post's own selection is used.
 
-Requires the `owlstack_publish` capability.
+Requires the `fopost_publish` capability.
 
 ## Test a connection
 
 ```http
-POST /wp-json/owlstack/v1/test-connection
+POST /wp-json/fopost/v1/test-connection
 ```
 
 ```json
@@ -38,12 +38,12 @@ Validates the stored credentials against the network. This is what the button on
 
 `platform` must be one of `telegram`, `twitter`, `facebook`, `instagram`, `linkedin`, `discord`, `pinterest`, `reddit`, `slack`, `tumblr`, `whatsapp`.
 
-Requires `manage_owlstack`.
+Requires `manage_fopost`.
 
 ## Send a test message
 
 ```http
-POST /wp-json/owlstack/v1/test-message
+POST /wp-json/fopost/v1/test-message
 ```
 
 ```json
@@ -52,12 +52,12 @@ POST /wp-json/owlstack/v1/test-message
 
 Sends a real sample post, so the target channel will actually receive it. `type` is `text`.
 
-Requires `manage_owlstack`.
+Requires `manage_fopost`.
 
 ## Delivery logs
 
 ```http
-GET /wp-json/owlstack/v1/delivery-logs
+GET /wp-json/fopost/v1/delivery-logs
 ```
 
 | Parameter | Default | Notes |
@@ -68,13 +68,13 @@ GET /wp-json/owlstack/v1/delivery-logs
 | `status` | | Filter by outcome |
 | `post_id` | | Filter to one post |
 
-Requires `owlstack_view_logs`.
+Requires `fopost_view_logs`.
 
 ```http
-DELETE /wp-json/owlstack/v1/delivery-logs/{id}
+DELETE /wp-json/fopost/v1/delivery-logs/{id}
 ```
 
-Requires `manage_owlstack`.
+Requires `manage_fopost`.
 
 ## Capabilities
 
@@ -82,11 +82,11 @@ The plugin adds three capabilities on activation, granted to the administrator r
 
 | Capability | Grants |
 |:-----------|:-------|
-| `manage_owlstack` | Settings, connection tests, deleting logs |
-| `owlstack_publish` | Publishing |
-| `owlstack_view_logs` | Reading delivery logs |
+| `manage_fopost` | Settings, connection tests, deleting logs |
+| `fopost_publish` | Publishing |
+| `fopost_view_logs` | Reading delivery logs |
 
-Grant `owlstack_publish` to an editor role and editors can publish to social without seeing your credentials. That separation is the reason these are separate capabilities rather than a single `manage_options` check.
+Grant `fopost_publish` to an editor role and editors can publish to social without seeing your credentials. That separation is the reason these are separate capabilities rather than a single `manage_options` check.
 
 ## Authentication
 
@@ -94,7 +94,7 @@ Standard WordPress REST authentication: application passwords, cookie authentica
 
 ## Cloud routes
 
-`owlstack/v1/cloud/*` also exists, used by the OwlStack Cloud to push posts into this site. It authenticates with the site token, not a WordPress user, and is documented in [Cloud Connect](./cloud-connect).
+`fopost/v1/cloud/*` also exists, used by the FoPost Cloud to push posts into this site. It authenticates with the site token, not a WordPress user, and is documented in [Cloud Connect](./cloud-connect).
 
 ## Next
 

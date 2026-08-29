@@ -1,11 +1,11 @@
 ---
 title: Reddit
-description: Configure Reddit in the OwlStack WordPress plugin.
+description: Configure Reddit in the FoPost WordPress plugin.
 ---
 
 # Reddit
 
-Configure the OwlStack WordPress plugin to publish posts to Reddit subreddits.
+Configure the FoPost WordPress plugin to publish posts to Reddit subreddits.
 
 ## Prerequisites
 
@@ -26,7 +26,7 @@ Each subreddit has its own posting rules and rate limits. Automated posting may 
 
 ## Settings
 
-Navigate to **OwlStack > Reddit** in the WordPress admin.
+Navigate to **FoPost > Reddit** in the WordPress admin.
 
 | Field | Description |
 |:------|:------------|
@@ -36,7 +36,7 @@ Navigate to **OwlStack > Reddit** in the WordPress admin.
 
 ### Step-by-step
 
-1. Go to **OwlStack > Reddit** in your WordPress admin
+1. Go to **FoPost > Reddit** in your WordPress admin
 2. Paste your **Access Token**
 3. Enter the target **Subreddit** name (e.g., `wordpress`)
 4. Enter your Reddit **Username**
@@ -52,19 +52,19 @@ After saving your settings:
 
 ## Publishing
 
-Once configured, Reddit appears as a toggle in the OwlStack meta box on post edit screens.
+Once configured, Reddit appears as a toggle in the FoPost meta box on post edit screens.
 
 ### Programmatic publishing
 
 ```php
 // Submit a link post
-owlstack()->reddit('Check out our new article', [
+fopost()->reddit('Check out our new article', [
     'type' => 'link',
     'url'  => 'https://example.com/post',
 ]);
 
 // Submit a text post
-owlstack()->reddit('Here is my content for the subreddit.');
+fopost()->reddit('Here is my content for the subreddit.');
 ```
 
 ## Constraints

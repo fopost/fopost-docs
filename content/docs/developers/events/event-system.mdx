@@ -10,9 +10,9 @@ Pass a dispatcher to the `Publisher` and it emits an event after every attempt. 
 ## The contract
 
 ```php
-use Owlstack\Core\Events\Contracts\EventDispatcherInterface;
-use Owlstack\Core\Events\PostFailed;
-use Owlstack\Core\Events\PostPublished;
+use Fopost\Core\Events\Contracts\EventDispatcherInterface;
+use Fopost\Core\Events\PostFailed;
+use Fopost\Core\Events\PostPublished;
 
 class MyDispatcher implements EventDispatcherInterface
 {
@@ -58,7 +58,7 @@ Anything genuinely slow, a Slack notification or an email, belongs on a queue. P
 Both wrappers do this for you:
 
 - Laravel maps them onto native events you subscribe to normally. See [Laravel Events](/sdks/laravel/events)
-- WordPress fires `owlstack_post_published` and `owlstack_post_failed` actions. See [WordPress Hooks](/sdks/wordpress/hooks)
+- WordPress fires `fopost_post_published` and `fopost_post_failed` actions. See [WordPress Hooks](/sdks/wordpress/hooks)
 
 ## Not the same as Cloud webhooks
 
