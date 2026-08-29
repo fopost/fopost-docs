@@ -16,10 +16,18 @@ export function baseOptions(): BaseLayoutProps {
         <>
           <Image
             src={BRAND.logo}
-            alt={`${BRAND.name} Logo`}
+            alt={`${BRAND.name} logo`}
             width={28}
             height={28}
-            className="rounded-lg"
+            className="rounded-lg dark:hidden"
+          />
+          <Image
+            src={BRAND.logoDark}
+            alt=""
+            aria-hidden
+            width={28}
+            height={28}
+            className="hidden rounded-lg dark:block"
           />
           {BRAND.name} Docs
         </>
