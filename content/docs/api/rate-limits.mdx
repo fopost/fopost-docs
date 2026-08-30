@@ -10,21 +10,23 @@ Two different limits matter when you build on the API. One is ours: how many req
 
 Every API key has a per-minute budget, counted in a fixed one-minute window. Each key gets its own bucket, so a busy key never eats another key's allowance.
 
-| Plan | Requests per minute, per key |
-|:-----|:-----------------------------|
-| Starter | 100 |
-| Pro | 100 |
-| Business | 500 |
+The ceiling scales with how many social accounts your billing account has connected — the more you've scaled, the more headroom your keys get. API requests are free within the ceiling; you pay for connected accounts, never per call.
 
-Browser and unauthenticated traffic is limited per IP at the Starter rate. Need more for a key? Contact support with the volume you expect; ceilings scale with the plan, and they are published here whenever they change.
+| Connected accounts | Requests per minute, per key |
+|:-------------------|:-----------------------------|
+| Up to 2 | 60 |
+| 3–2,000 | 600 |
+| 2,001+ | 1,200 |
+
+Browser and unauthenticated traffic is limited per IP. Need more for a key? Contact support with the volume you expect; ceilings are published here whenever they change.
 
 ### Rate limit headers
 
 Every response carries the current state of your budget:
 
 ```http
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 87
+X-RateLimit-Limit: 600
+X-RateLimit-Remaining: 587
 X-RateLimit-Reset: 1724328000
 ```
 
@@ -42,7 +44,7 @@ Exceed the budget and you get `429 Too Many Requests` with a body that tells you
 ```json
 {
   "error": "too_many_requests",
-  "message": "Rate limit of 100 requests per minute reached. Retry in 23 seconds.",
+  "message": "Rate limit of 600 requests per minute reached. Retry in 23 seconds.",
   "retry_after": 23
 }
 ```
