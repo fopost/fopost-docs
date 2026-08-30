@@ -21,21 +21,21 @@ curl -X POST https://api.fopost.com/v1/ai/generate-caption \
   -d '{ "content": "Notes from our launch week retro" }'
 ```
 
-Writes or improves a caption. It costs AI credits.
+Writes or improves a caption. It is billed as AI usage on your monthly bill, covered first by the free monthly credit.
 
-## Credit balance
+## Usage balance
 
 ```http
 GET /v1/ai/credits
 ```
 
-What is left in the current period. Read it before a batch job so you fail early instead of halfway through.
+How much of the free monthly credit is left, what AI has spent this month, and whether a payment method is on file. Read it before a batch job so you fail early instead of halfway through.
 
 ## Running out
 
-An AI call with no credits left answers `402`, with an `upgrade_url` in the body. It is not a rate limit, so do not retry it with backoff. Either top up, or degrade to publishing without generation.
+An AI call answers `402` when the free credit is used up and no payment method is on file, or when your own AI spend cap for the month is reached. It is not a rate limit, so do not retry it with backoff. Add a card (or raise the cap), or degrade to publishing without generation.
 
-Credits reset with the billing period. One-time top-ups do not expire with it and are spent after the monthly allowance. See [Plans](/guide/plans/overview).
+The free credit refreshes monthly. See [Pricing](/guide/plans/overview).
 
 ## Everything else
 
