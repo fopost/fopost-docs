@@ -8,8 +8,9 @@ const INTRODUCTION = fileURLToPath(new URL('../content/docs/introduction', impor
 
 /* next.config.mjs is plain JS, so the shapes come back loosely typed; both
    hooks are defined right there in the file this test imports. */
-const rewrites = (await config.rewrites!()) as { beforeFiles: { source: string }[] };
-const redirects = (await config.redirects!()) as { source: string }[];
+type Rule = { source: string; destination: string };
+const rewrites = (await config.rewrites!()) as { beforeFiles: Rule[] };
+const redirects = (await config.redirects!()) as Rule[];
 
 /**
  * The introduction pages are addressed a level up from where they live. The
@@ -85,5 +86,19 @@ describe('No wildcard redirect swallows the path it sits under', () => {
     const caught = pages.filter((page) => redirects.some((rule) => rule.source === page));
 
     expect(caught).toEqual([]);
+  });
+});
+
+/**
+ * The retired brand is gone from the site, and a redirect source is as public
+ * as a page: the URL shows up in a browser's address bar on the way through.
+ */
+describe('No route rule carries the retired brand', () => {
+  it('names it in no source or destination', () => {
+    const named = [...rewrites.beforeFiles, ...redirects]
+      .flatMap((rule) => [rule.source, rule.destination])
+      .filter((value) => /owlstack/i.test(value));
+
+    expect(named).toEqual([]);
   });
 });

@@ -2,9 +2,7 @@ import { createMDX } from 'fumadocs-mdx/next';
 
 const withMDX = createMDX();
 
-// The marketing site these redirects point at is per-brand. The pre-rebrand
-// /what-is-owlstack, /why-owlstack and /guide/using-owlstack/* slugs are kept
-// as redirect sources only, so external links to them keep resolving.
+// The marketing site these redirects point at is per-brand.
 const WEBSITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL?.trim() || 'https://fopost.com';
 
 /** @type {import('next').NextConfig} */
@@ -25,9 +23,6 @@ const config = {
   async redirects() {
     return [
       { source: '/introduction', destination: '/', permanent: true },
-      // Pre-rebrand slugs, still linked to from outside.
-      { source: '/what-is-owlstack', destination: '/what-is-fopost', permanent: true },
-      { source: '/why-owlstack', destination: '/why-fopost', permanent: true },
       { source: '/introduction/:path+', destination: '/:path+', permanent: true },
       // Section indexes with no page of their own (GSC 404s)
       { source: '/api', destination: '/api/overview', permanent: true },
@@ -39,13 +34,8 @@ const config = {
       { source: '/guide/plans/enterprise', destination: '/guide/plans/overview', permanent: true },
       // AI Studio was replaced by the agent.
       { source: '/guide/using-fopost/ai-studio', destination: '/guide/using-fopost/agent', permanent: true },
-      { source: '/guide/using-owlstack/ai-studio', destination: '/guide/using-fopost/agent', permanent: true },
-      // The agent page dropped the retired brand's "Owl" name.
+      // The agent page was renamed when the retired brand's name went.
       { source: '/guide/using-fopost/owl-agent', destination: '/guide/using-fopost/agent', permanent: true },
-      { source: '/guide/using-owlstack/owl-agent', destination: '/guide/using-fopost/agent', permanent: true },
-      // The using-owlstack family was renamed to using-fopost in the rebrand.
-      { source: '/guide/using-owlstack/:path+', destination: '/guide/using-fopost/:path+', permanent: true },
-      { source: '/guide/using-owlstack', destination: '/guide/using-fopost', permanent: true },
       // The guide/ai and guide/pro families folded into using-fopost.
       { source: '/guide/ai/content-generation', destination: '/guide/using-fopost/ai-content', permanent: true },
       { source: '/guide/ai/post-optimization', destination: '/guide/using-fopost/ai-content', permanent: true },
