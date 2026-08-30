@@ -42,6 +42,12 @@ export const ApiIcon = (props: IconProps) => (
   </svg>
 );
 
+export const ArrowLeftIcon = (props: IconProps) => (
+  <svg {...ICON_BASE} viewBox="0 0 16 16" {...props}>
+    <path fillRule="evenodd" clipRule="evenodd" d="M6.46963 13.7803L6.99996 14.3107L8.06062 13.25L7.53029 12.7197L3.56062 8.75001H14.25H15V7.25001H14.25H3.56062L7.53029 3.28034L8.06062 2.75001L6.99996 1.68935L6.46963 2.21968L1.39641 7.2929C1.00589 7.68342 1.00589 8.31659 1.39641 8.70711L6.46963 13.7803Z" fill="currentColor"/>
+  </svg>
+);
+
 export const ArrowUpRightIcon = (props: IconProps) => (
   <svg {...ICON_BASE} viewBox="0 0 16 16" {...props}>
     <path fillRule="evenodd" clipRule="evenodd" d="M5.74999 2H4.99999V3.5H5.74999H11.4393L2.21966 12.7197L1.68933 13.25L2.74999 14.3107L3.28032 13.7803L12.4988 4.56182V10.25V11H13.9988V10.25V3C13.9988 2.44772 13.5511 2 12.9988 2H5.74999Z" fill="currentColor"/>
@@ -227,6 +233,12 @@ export const LinkedIcon = (props: IconProps) => (
 export const ListUnorderedIcon = (props: IconProps) => (
   <svg {...ICON_BASE} viewBox="0 0 16 16" {...props}>
     <path fillRule="evenodd" clipRule="evenodd" d="M2.5 4C3.19036 4 3.75 3.44036 3.75 2.75C3.75 2.05964 3.19036 1.5 2.5 1.5C1.80964 1.5 1.25 2.05964 1.25 2.75C1.25 3.44036 1.80964 4 2.5 4ZM2.5 9.25C3.19036 9.25 3.75 8.69036 3.75 8C3.75 7.30964 3.19036 6.75 2.5 6.75C1.80964 6.75 1.25 7.30964 1.25 8C1.25 8.69036 1.80964 9.25 2.5 9.25ZM3.75 13.25C3.75 13.9404 3.19036 14.5 2.5 14.5C1.80964 14.5 1.25 13.9404 1.25 13.25C1.25 12.5596 1.80964 12 2.5 12C3.19036 12 3.75 12.5596 3.75 13.25ZM6.75 2H6V3.5H6.75H14.25H15V2H14.25H6.75ZM6.75 7.25H6V8.75H6.75H14.25H15V7.25H14.25H6.75ZM6.75 12.5H6V14H6.75H14.25H15V12.5H14.25H6.75Z" fill="currentColor"/>
+  </svg>
+);
+
+export const MagnifyingGlassIcon = (props: IconProps) => (
+  <svg {...ICON_BASE} viewBox="0 0 16 16" {...props}>
+    <path fillRule="evenodd" clipRule="evenodd" d="M1.5 6.5C1.5 3.73858 3.73858 1.5 6.5 1.5C9.26142 1.5 11.5 3.73858 11.5 6.5C11.5 9.26142 9.26142 11.5 6.5 11.5C3.73858 11.5 1.5 9.26142 1.5 6.5ZM6.5 0C2.91015 0 0 2.91015 0 6.5C0 10.0899 2.91015 13 6.5 13C8.02469 13 9.42677 12.475 10.5353 11.596L13.9697 15.0303L14.5 15.5607L15.5607 14.5L15.0303 13.9697L11.596 10.5353C12.475 9.42677 13 8.02469 13 6.5C13 2.91015 10.0899 0 6.5 0Z" fill="currentColor"/>
   </svg>
 );
 
