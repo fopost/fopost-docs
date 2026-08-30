@@ -8,7 +8,7 @@ import { PageActions } from '@/components/page-actions';
 import { BASE_PATH, BRAND } from '@/lib/brand';
 import { urlToParams } from '@/lib/page-url';
 import { JsonLd } from '@/components/seo/json-ld';
-import { pageGraph } from '@/lib/seo';
+import { pageGraph, pageMetadata } from '@/lib/seo';
 
 export default async function Page(props: PageProps<'/[[...slug]]'>) {
   const params = await props.params;
@@ -55,12 +55,7 @@ export async function generateMetadata(props: PageProps<'/[[...slug]]'>): Promis
   const page = getPageByUrl(params.slug);
   if (!page) notFound();
 
-  return {
-    title: page.data.title,
-    description: page.data.description,
-    // page.url is the public path under /docs; root ('/') must not end with a slash
-    alternates: {
-      canonical: `${BRAND.docsUrl}${page.url === '/' ? '' : page.url}`,
-    },
-  };
+  // Canonical, Open Graph and Twitter all build from the page's public URL,
+  // so they cannot drift apart or go missing on a page added later.
+  return pageMetadata(page);
 }

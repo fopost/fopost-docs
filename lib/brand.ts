@@ -29,10 +29,15 @@ export const BRAND = {
   domain: pick(process.env.NEXT_PUBLIC_BRAND_DOMAIN, 'fopost.com'),
   logo: asset(pick(process.env.NEXT_PUBLIC_BRAND_LOGO, '/brand/fopost/mark.svg')),
   logoDark: asset(pick(process.env.NEXT_PUBLIC_BRAND_LOGO_DARK, '/brand/fopost/mark-dark.svg')),
+  /* Raster copy of the mark. SVG is for the browser; a schema.org logo and
+     an OG card rasterised by satori both need a real bitmap. */
+  logoLarge: asset(pick(process.env.NEXT_PUBLIC_BRAND_LOGO_LARGE, '/logo.png')),
   favicon: asset(pick(process.env.NEXT_PUBLIC_BRAND_FAVICON, '/brand/fopost/favicon.ico')),
   appleTouchIcon: asset(
     pick(process.env.NEXT_PUBLIC_BRAND_APPLE_TOUCH_ICON, '/brand/fopost/apple-touch-icon.png'),
   ),
+  /** Primary accent, used where a color must be a literal (the OG card). */
+  color: pick(process.env.NEXT_PUBLIC_BRAND_COLOR, '#4F46E5'),
   websiteUrl: pick(process.env.NEXT_PUBLIC_WEBSITE_URL, 'https://fopost.com'),
   appUrl: pick(process.env.NEXT_PUBLIC_APP_URL, 'https://app.fopost.com'),
   apiUrl: pick(process.env.NEXT_PUBLIC_API_URL, 'https://api.fopost.com'),

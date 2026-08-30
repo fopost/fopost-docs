@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { source } from '@/lib/source';
 import { pageUrl } from '@/lib/markdown';
 import { BRAND } from '@/lib/brand';
@@ -8,10 +9,45 @@ type Page = ReturnType<typeof source.getPages>[number];
 export const SITE_URL = BRAND.docsUrl;
 const SITE_NAME = `${BRAND.name} Docs`;
 
+/* The generated 1200x630 card (app/opengraph-image.tsx). Referenced by its
+   stable path rather than left to Next's file-convention inheritance: a page
+   that declares its own `openGraph` replaces the layout's, so an inherited
+   image silently disappears from every page but the root. */
+export const OG_IMAGE = `${SITE_URL}/opengraph-image`;
+
 /* schema.org node ids. They are the marketing site's, not the docs site's, so
    a crawler merges the two into one graph instead of seeing two publishers. */
 const ORGANIZATION_ID = `${BRAND.websiteUrl}/#organization`;
 const WEBSITE_ID = `${BRAND.websiteUrl}/#website`;
+
+/** Open Graph and Twitter for one docs page, on top of title/description. */
+export function pageMetadata(page: Page): Metadata {
+  const url = pageUrl(page);
+  const title = page.data.title;
+  const description = page.data.description ?? '';
+  const images = [{ url: OG_IMAGE, width: 1200, height: 630, alt: `${title} — ${SITE_NAME}` }];
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'article',
+      siteName: SITE_NAME,
+      locale: 'en_US',
+      title,
+      description,
+      url,
+      images,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: images.map((image) => image.url),
+    },
+  };
+}
 
 type Crumb = { name: string; url: string };
 
@@ -79,6 +115,7 @@ export function pageGraph(page: Page) {
       // Brand voice only: no personal identities on public surfaces.
       author: { '@id': ORGANIZATION_ID },
       publisher: { '@id': ORGANIZATION_ID },
+      image: OG_IMAGE,
       inLanguage: 'en-US',
     },
   ];
