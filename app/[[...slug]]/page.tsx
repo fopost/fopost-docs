@@ -7,6 +7,8 @@ import { getMDXComponents } from '@/mdx-components';
 import { PageActions } from '@/components/page-actions';
 import { BASE_PATH, BRAND } from '@/lib/brand';
 import { urlToParams } from '@/lib/page-url';
+import { JsonLd } from '@/components/seo/json-ld';
+import { pageGraph } from '@/lib/seo';
 
 export default async function Page(props: PageProps<'/[[...slug]]'>) {
   const params = await props.params;
@@ -25,6 +27,7 @@ export default async function Page(props: PageProps<'/[[...slug]]'>) {
       breadcrumb={{ enabled: false }}
       tableOfContent={{ style: 'clerk' }}
     >
+      <JsonLd data={pageGraph(page)} />
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription className="mb-6">{page.data.description}</DocsDescription>
       <PageActions
@@ -47,9 +50,7 @@ export async function generateStaticParams() {
   return source.getPages().map((page) => ({ slug: urlToParams(page.url) }));
 }
 
-export async function generateMetadata(
-  props: PageProps<'/[[...slug]]'>,
-): Promise<Metadata> {
+export async function generateMetadata(props: PageProps<'/[[...slug]]'>): Promise<Metadata> {
   const params = await props.params;
   const page = getPageByUrl(params.slug);
   if (!page) notFound();
