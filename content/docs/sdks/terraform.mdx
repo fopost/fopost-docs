@@ -1,0 +1,142 @@
+---
+title: Terraform Provider
+description: Manage FoPost workspaces, labels, webhooks, and automations as code.
+icon: layers
+---
+
+The official Terraform provider manages the durable parts of a social publishing setup as code: workspaces, labels, webhooks, and automations. It is built on terraform-plugin-framework and the [Go SDK](/sdks/go), which owns every request, retry, and error the provider makes.
+
+Needs Terraform 1.8 or newer.
+
+<Callout type="warn">
+This is a 0.x release. The schema is still settling and a minor version may
+change it. Pin an exact version if that matters to you.
+</Callout>
+
+Source and issues: [github.com/fopost/terraform-provider-fopost](https://github.com/fopost/terraform-provider-fopost). MIT licensed.
+
+## Install
+
+Once the provider is published to the Terraform Registry as `fopost/fopost`, declaring it is all it takes:
+
+```hcl
+terraform {
+  required_providers {
+    fopost = {
+      source  = "fopost/fopost"
+      version = "~> 0.1"
+    }
+  }
+}
+```
+
+<Callout type="warn">
+The registry listing is not live yet — the first publish is a manual, one-time
+onboarding step and it is still pending. Until it lands, build the provider from
+source and point Terraform at your build with a `dev_overrides` block in
+`~/.terraformrc`.
+</Callout>
+
+## Configure
+
+The provider needs an API key, created at **Settings → API Keys** in the dashboard.
+
+```bash
+export FOPOST_API_KEY="fp_..."
+```
+
+```hcl
+provider "fopost" {}
+```
+
+Or pass it explicitly, from a variable your secret store fills in:
+
+```hcl
+provider "fopost" {
+  api_key = var.fopost_api_key
+}
+```
+
+| Argument | Environment variable | Default |
+|:---------|:---------------------|:--------|
+| `api_key` | `FOPOST_API_KEY` | none, required |
+| `base_url` | `FOPOST_BASE_URL` | `https://api.fopost.com/v1` |
+
+`api_key` is marked sensitive, so it never appears in plan output. Leave `base_url` alone unless you are targeting another deployment.
+
+## Example
+
+A workspace, the labels its campaigns report against, and a webhook that pushes delivery events to a system you operate:
+
+```hcl
+resource "fopost_workspace" "acme" {
+  name        = "Acme Social"
+  slug        = "acme-social"
+  type        = "TEAM"
+  timezone    = "Europe/Berlin"
+  description = "Everything Acme publishes."
+}
+
+resource "fopost_label" "launch" {
+  workspace_id = fopost_workspace.acme.id
+  name         = "Launch Week"
+  color        = "#2563eb"
+}
+
+resource "fopost_webhook" "delivery" {
+  workspace_id = fopost_workspace.acme.id
+  url          = "https://hooks.acme.example.com/fopost"
+
+  events = [
+    "post.published",
+    "post.failed",
+    "delivery.failed",
+    "account.health_changed",
+  ]
+}
+
+# Issued once, at creation. Hand it to whatever verifies the signature.
+output "webhook_signing_secret" {
+  value     = fopost_webhook.delivery.secret
+  sensitive = true
+}
+```
+
+## What it manages
+
+| Resource | What it is |
+|:---------|:-----------|
+| `fopost_workspace` | The tenant boundary everything else is scoped to |
+| `fopost_label` | A campaign tag posts are grouped and reported by |
+| `fopost_webhook` | An outbound event subscription, with its signing secret |
+| `fopost_automation` | A trigger and the ordered steps it runs |
+
+| Data source | What it reads |
+|:------------|:--------------|
+| `fopost_workspace` | One workspace and the accounts connected to it |
+| `fopost_workspaces` | Every workspace the API key can reach |
+| `fopost_account` | One connected social account |
+| `fopost_accounts` | Connected accounts and their connection health |
+| `fopost_labels` | Labels, optionally narrowed to one workspace |
+
+Every resource supports `terraform import` by its identifier.
+
+## What it deliberately does not manage
+
+**Posts are not a resource.** A published post is an event, not infrastructure: Terraform would try to "update" content already live on a social network, and would delete real posts the moment the block left the configuration. Create posts through the [API](/api/overview) or one of the SDKs.
+
+**Connected accounts are read, not created.** Connecting one is an interactive OAuth handshake in the dashboard.
+
+## Errors, retries, and drift
+
+Transport is the Go SDK's, unchanged: a 30-second timeout, three attempts, exponential backoff on `429` and `5xx`, and `Retry-After` honoured. The provider translates what is left into a diagnostic that names the failed action, the HTTP status, and the API's own error code — never the API key.
+
+Reads treat a `404` as gone upstream: the object is removed from state and planned for re-creation rather than failing the run.
+
+## Next
+
+<Cards>
+  <Card title="Go SDK" href="/sdks/go" />
+  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="API Reference" href="/api/overview" />
+</Cards>

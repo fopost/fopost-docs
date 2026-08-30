@@ -1,0 +1,87 @@
+---
+title: WooCommerce
+description: Post your WooCommerce products to social media through FoPost when they publish, go on sale, or come back in stock.
+icon: social-wordpress
+---
+
+**FoPost for WooCommerce** is a WordPress plugin that watches your shop and hands the moments worth announcing to FoPost, which delivers them to your connected accounts. A product event queues a job on Action Scheduler, the queue WooCommerce already runs, so publishing a product never waits on a network call and a failed delivery is retried.
+
+Needs WordPress 6.0 or newer, WooCommerce 8.0 or newer, and PHP 8.1 or newer.
+
+<Callout type="warn">
+This is a 0.x release. Settings and filters are still settling and a minor
+version may change them.
+</Callout>
+
+Source and issues: [github.com/fopost/fopost-woocommerce](https://github.com/fopost/fopost-woocommerce). GPL-2.0-or-later, because WordPress.org requires a GPL-compatible license for hosted plugins.
+
+## Install
+
+The plugin is not on WordPress.org yet — the listing is created by a one-time manual review, and that submission is still pending. Until it lands, install the release zip:
+
+1. Download the zip attached to the latest [release](https://github.com/fopost/fopost-woocommerce/releases). It already contains the production dependencies.
+2. In WordPress admin, go to **Plugins → Add New → Upload Plugin** and upload it.
+3. Activate it. WooCommerce must be active first.
+
+## Configure
+
+**WooCommerce → Settings → FoPost**
+
+1. Paste a FoPost API key, created at **Settings → API Keys** in the dashboard. It is stored on your site and is only ever sent to FoPost.
+2. Pick the workspace and the connected accounts product posts should go to.
+3. In **Triggers and Messages**, switch on the events you want and edit their copy.
+
+The key is never rendered back into the settings form. Leave the field blank to keep the key you already saved, or tick **Remove the stored API key** to clear it.
+
+## Triggers
+
+Each trigger is off by default, has its own message template, and is switched independently.
+
+| Trigger | Fires when |
+|:--------|:-----------|
+| Product published | A product moves into the published status for the first time |
+| Product goes on sale | A price change puts the product on sale, and it was not before |
+| Product back in stock | Stock status returns to `instock` after being out |
+
+Every product also gets a FoPost box on its edit screen: opt that one out entirely, write a message just for it, or press **Post Now**.
+
+## Message placeholders
+
+Write the copy once and let each product fill it in.
+
+| Placeholder | Value |
+|:------------|:------|
+| `{product_name}` | The product title |
+| `{price}` | The regular price, formatted in your shop's currency |
+| `{sale_price}` | The sale price, when there is one |
+| `{permalink}` | The product URL |
+| `{short_description}` | The short description as plain text, trimmed to 280 characters |
+| `{sku}` | The SKU |
+| `{categories}` | The product categories, comma separated |
+
+Every value is reduced to plain text before it is substituted, so markup in a product description never reaches a social network. The featured image goes along with the post unless you turn that off.
+
+## Filters
+
+| Filter | Purpose |
+|:-------|:--------|
+| `fopost_wc_template_placeholders` | Add or change placeholders. Return plain text values |
+| `fopost_wc_rendered_message` | Change the finished message |
+| `fopost_wc_should_post` | Veto a post before it is queued |
+| `fopost_wc_api_base_url` | Point a staging site at a different API |
+| `fopost_wc_api_timeout` | Per-request timeout, in seconds |
+| `fopost_wc_logged` | React to a recorded delivery attempt |
+
+## Activity and failures
+
+Every attempt is recorded against the product and listed under **WooCommerce → FoPost Activity** with the FoPost post id. Failures also surface as an admin notice.
+
+The call itself goes through the [PHP SDK](/sdks/php), whose transport is swapped for the WordPress HTTP API, so your host's proxy and certificate settings apply.
+
+## Next
+
+<Cards>
+  <Card title="WordPress" href="/sdks/wordpress" />
+  <Card title="PHP SDK" href="/sdks/php" />
+  <Card title="API Reference" href="/api/overview" />
+</Cards>

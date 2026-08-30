@@ -1,0 +1,204 @@
+---
+title: Dart SDK
+description: The official Dart client for the FoPost API, for Flutter and for the server.
+icon: box
+---
+
+`fopost` is the official Dart package. It needs Dart 3.4 or newer and depends only on `http` and `meta`, so the same client runs in Flutter on iOS, Android, web, and desktop, and on the server. There is no code generation and no build step.
+
+```bash
+dart pub add fopost
+```
+
+<Callout type="warn">
+This is a 0.x release. The surface is still settling and a minor version may
+break something. Pin an exact version if that matters to you.
+</Callout>
+
+Source and issues: [github.com/fopost/fopost-dart](https://github.com/fopost/fopost-dart). MIT licensed.
+
+## Quick start
+
+```dart
+import 'package:fopost/fopost.dart';
+
+Future<void> main() async {
+  final client = FoPost(apiKey: 'fp_...'); // or set FOPOST_API_KEY
+
+  final workspace = (await client.workspaces.list()).first;
+  final accounts = await client.accounts.list(workspaceId: workspace.id);
+
+  final post = await client.posts.create(
+    workspaceId: workspace.id,
+    accounts: accounts.map((account) => account.id).toList(),
+    content: 'Hello from Dart',
+  );
+
+  await client.posts.publish(post.id);
+
+  client.close();
+}
+```
+
+Create a key at **Settings → API Keys** in the dashboard. Call `close()` when you are done with a client, so the underlying connection pool is released.
+
+## Flutter
+
+Add the dependency to `pubspec.yaml` and use it exactly as above — nothing in this package imports `dart:io` on a path the web can reach.
+
+```yaml
+dependencies:
+  fopost: ^0.1.0
+```
+
+Two things to know:
+
+- **No environment on the web.** `FOPOST_API_KEY` and `FOPOST_BASE_URL` are read through `dart:io`, which Flutter web does not have, so a web build must pass `apiKey:` to the constructor.
+- **Keys belong on your server.** An API key shipped inside a mobile or web build can be extracted from it. Call FoPost from your own backend and let the app talk to that, or restrict the key's scopes to exactly what the app needs.
+
+Uploads take bytes rather than a path, so the same code works everywhere:
+
+```dart
+final bytes = await File('chart.png').readAsBytes();      // dart:io
+final bytes = await pickedFile.readAsBytes();             // image_picker, web included
+
+final uploaded = await client.media.upload(workspace.id, [
+  FoPostFile(filename: 'chart.png', bytes: bytes),
+]);
+```
+
+## Content
+
+`content` takes a `String` for a single post, or a list for a thread. Each entry is a `String`, a `ContentBlock`, or a raw map, and media is attached per block:
+
+```dart
+await client.posts.create(
+  workspaceId: workspace.id,
+  accounts: accountIds,
+  content: [
+    'First post in the thread',
+    ContentBlock(
+      text: 'Second one, with an image',
+      media: [uploaded.first.toMediaItem()],
+    ),
+  ],
+);
+```
+
+## Scheduling and publishing
+
+`status` is `'draft'` or `'scheduled'`; a scheduled post needs `scheduleAt`. To send something out now, create it and call `publish`. Nothing reaches a platform without one of those two, and `publish` returns when delivery is **queued**, not when it is live.
+
+```dart
+await client.posts.create(
+  workspaceId: workspace.id,
+  accounts: accountIds,
+  content: 'Scheduled with the SDK',
+  status: PostStatus.scheduled,
+  scheduleAt: DateTime.utc(2026, 9, 1, 10),
+);
+```
+
+`preflight` reports per-account blockers and advisory signals without publishing, and `publish(..., dryRun: true)` validates the whole delivery plan:
+
+```dart
+final check = await client.posts.preflight(post.id);
+for (final account in check.accounts) {
+  print('${account.platform} ready=${account.ready} ${account.issues}');
+}
+```
+
+After publishing, `deliveries` is the per-account state, `retry` re-sends only what failed, and `cancel` stops what has not gone out yet.
+
+## Pagination
+
+`posts.list` returns one `Page` with its `meta`. `posts.stream` walks every page for you:
+
+```dart
+final page = await client.posts.list(
+  workspaceId: workspace.id,
+  status: PostStatus.published,
+  perPage: 50,
+);
+print('${page.meta.total} published posts');
+
+await for (final post in client.posts.stream(workspaceId: workspace.id)) {
+  print('${post.id} ${post.status}');
+}
+```
+
+Unset parameters are not sent, so the API applies its own defaults.
+
+## Resources
+
+| Resource | Covers |
+|:---------|:-------|
+| `posts` | `list`, `stream`, `get`, `create`, `update`, `delete`, `duplicate`, `publish`, `retry`, `cancel`, `preflight`, `deliveries`, `publishRuns`, `analytics`, `bulkShift`, `bulkLabel`, `bulkDelete`, `validateBulkImport`, `commitBulkImport`, `rollbackBulkImport` |
+| `workspaces` | `list`, `get`, `create`, `update`, `delete`, `analytics` |
+| `accounts` | `list`, `get`, `create`, `delete`, `setPrimary`, `validate`, `health`, `healthSummary`, `refreshToken`, `analytics` |
+| `communities` | `list`, `sync`, `search`, `add`, `remove` |
+| `labels` | `list`, `get`, `create`, `update`, `delete` |
+| `webhooks` | `list`, `create`, `update`, `delete`, `test` |
+| `analytics` | `overview`, `timeSeries`, `topPosts`, `labels`, `postsTable`, `postingStreak`, `demographics`, `collect` |
+| `automations` | `list`, `get`, `create`, `update`, `delete`, `toggle`, `runs`, `run`, `trigger`, `stats` |
+| `media` | `list`, `upload`, `delete` |
+
+For an endpoint the SDK does not wrap yet, `request` sends an authenticated call and hands back the decoded body as it came, envelope and all:
+
+```dart
+final body = await client.request('GET', '/platforms');
+```
+
+## Configuration
+
+```dart
+final client = FoPost(
+  apiKey: 'fp_...',                           // or FOPOST_API_KEY
+  baseUrl: 'https://api.fopost.com/v1',       // or FOPOST_BASE_URL
+  timeout: const Duration(seconds: 30),       // per attempt
+  maxRetries: 3,                              // total attempts, so 2 retries
+  userAgent: 'my-app/2.0',                    // prefixed to the SDK's
+  httpClient: myClient,                       // bring your own transport
+);
+```
+
+Both environment variables are read through `dart:io` and are simply absent on the web. A client you pass in with `httpClient` is never closed by `close()` — close it where you created it.
+
+Only a `429`, a `5xx`, and a transport error are retried. Everything else, including a `400` or a `404`, throws on the first response, because the request itself is what needs changing. Backoff between attempts is exponential — 500 ms, then 1 s, capped at 60 s — and a `429` waits for the interval `Retry-After` asks for.
+
+## Errors
+
+Every non-2xx response throws a subclass of `FoPostException`, carrying the API's `statusCode`, `code`, `message`, and the raw decoded `body`.
+
+```dart
+try {
+  await client.posts.publish(postId);
+} on FoPostPaymentRequiredException catch (error) {
+  print('Subscription needed, upgrade at ${error.upgradeUrl}');
+} on FoPostRateLimitException catch (error) {
+  print('Rate limited, retry in ${error.retryAfter}');
+} on FoPostException catch (error) {
+  print('${error.statusCode} ${error.code}: ${error.message}');
+}
+```
+
+| Status | Exception | Meaning |
+|:-------|:----------|:--------|
+| 400, 422 | `FoPostValidationException` | the body did not pass validation |
+| 401 | `FoPostAuthenticationException` | missing, invalid, or expired key |
+| 402 | `FoPostPaymentRequiredException` | no active subscription, or credits exhausted |
+| 403 | `FoPostPermissionDeniedException` | valid key, but no scope or workspace access |
+| 404 | `FoPostNotFoundException` | no such resource, or outside the key's reach |
+| 429 | `FoPostRateLimitException` | over the plan's per-minute ceiling |
+| 5xx | `FoPostServerException` | the API failed to handle the request |
+| none | `FoPostConnectionException` | the request never reached the API |
+
+`error.rateLimit` carries the rate-limit headers that came with the response, and `error.bodyMap` gives you any extra fields the API sent.
+
+## Next
+
+<Cards>
+  <Card title="API Reference" href="/api/overview" />
+  <Card title="Swift SDK" href="/sdks/swift" />
+  <Card title="Webhooks" href="/api/webhooks" />
+</Cards>

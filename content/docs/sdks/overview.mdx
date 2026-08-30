@@ -19,24 +19,51 @@ These talk to your FoPost account with an API key.
 | [`@fopost/sdk`](/sdks/typescript) | TypeScript, Node.js 18+ | `npm install @fopost/sdk` |
 | [`fopost`](/sdks/python) | Python 3.10+ | `pip install fopost` |
 | [`fopost/sdk`](/sdks/php) | PHP 8.1+ | `composer require fopost/sdk` |
-| [`fopost/laravel`](/sdks/laravel) | Laravel 10, 11, 12 | `composer require fopost/laravel` |
 | [`fopost`](/sdks/ruby) | Ruby 3.1+ | `bundle add fopost` |
 | [`fopost-go`](/sdks/go) | Go 1.22+ | `go get github.com/fopost/fopost-go` |
 | [`fopost`](/sdks/rust) | Rust 1.85+ | `cargo add fopost` |
 | [`fopost-java`](/sdks/java) | Java 17+ | `com.fopost:fopost-java` |
 | [`FoPost.Sdk`](/sdks/dotnet) | .NET 8+ | `dotnet add package FoPost.Sdk` |
-| [`@fopost/mcp`](/sdks/mcp) | Any MCP client | `npx -y @fopost/mcp` |
+| [`FoPost`](/sdks/swift) | Swift 5.9+, iOS 15 / macOS 12 | SwiftPM, `github.com/fopost/fopost-swift` |
+| [`fopost-kotlin`](/sdks/kotlin) | Kotlin, JVM 11+ and Android 26+ | `com.fopost:fopost-kotlin` |
+| [`fopost`](/sdks/dart) | Dart 3.4+, Flutter | `dart pub add fopost` |
+| [`fopost`](/sdks/elixir) | Elixir 1.15+ | `{:fopost, "~> 0.1"}` |
 
 All of them are MIT licensed and open source. All are 0.x, so pin an exact version if a breaking minor would hurt.
 
-`fopost/laravel` is a wrapper over `fopost/sdk`, not a second client: on Laravel you install it instead, and get the same surface behind a facade.
-
 ## Framework integrations
 
-| Integration | For | Docs |
-|:------------|:----|:-----|
+Each one wraps the client for its language and adds the wiring that framework expects: configuration, dependency injection, background jobs, console commands, and a signature-verified webhook endpoint. None of them adds to the API surface, so the language SDK's page stays the reference for resources and errors.
+
+| Integration | For | Install |
+|:------------|:----|:--------|
+| [Laravel](/sdks/laravel) | Laravel 10, 11, 12 | `composer require fopost/laravel` |
+| [Symfony](/sdks/symfony) | Symfony 6.4 LTS, 7.x | `composer require fopost/symfony-bundle` |
+| [Rails](/sdks/rails) | Rails 7.0+ | `bundle add fopost-rails` |
+| [Django](/sdks/django) | Django 4.2 to 5.2 | `pip install fopost-django` |
+| [FastAPI](/sdks/fastapi) | FastAPI 0.110+ | `pip install fopost-fastapi` |
+| [Spring Boot](/sdks/spring) | Spring Boot 3, Java 17 | `com.fopost:fopost-spring-boot-starter` |
+| [ASP.NET Core](/sdks/aspnet) | .NET 8, .NET 9 | `dotnet add package FoPost.AspNetCore` |
+| [Next.js](/sdks/nextjs) | Next 14, 15 | `npm install @fopost/next` |
 | [WordPress](/sdks/wordpress) | WordPress 6.4+ | Plugin install |
+| [WooCommerce](/sdks/woocommerce) | WooCommerce 8.0+ | Plugin install |
+
+## Automation & tooling
+
+For publishing from somewhere that is not your application code.
+
+| Tool | For | Install |
+|:-----|:----|:--------|
+| [CLI](/sdks/cli) | Your terminal and shell scripts | `brew install fopost/tap/fopost` |
+| [GitHub Action](/sdks/github-action) | A GitHub workflow | `uses: fopost/fopost-github-action@v0` |
+| [Terraform Provider](/sdks/terraform) | Workspaces, labels, webhooks, automations as code | `fopost/fopost` |
+| [Zapier](/sdks/zapier) | Zapier Zaps | Private app |
+| [n8n](/sdks/n8n) | n8n workflows | `n8n-nodes-fopost` |
+| [Make](/sdks/make) | Make scenarios | Private app |
 | [Browser extension](/sdks/browser-extension) | Networks with no write API | Chrome Web Store |
+| [`@fopost/mcp`](/sdks/mcp) | Any MCP client | `npx -y @fopost/mcp` |
+
+Zapier and Make review custom apps by hand before they appear in a public directory, and both integrations are private apps until that happens. Their pages say how to install one today.
 
 ## Another language
 
@@ -65,6 +92,6 @@ There is a separate, free PHP library that talks to each network from your own s
   <Card title="API Reference" href="/api/overview" />
   <Card title="TypeScript SDK" href="/sdks/typescript" />
   <Card title="Python SDK" href="/sdks/python" />
-  <Card title="PHP SDK" href="/sdks/php" />
-  <Card title="Go SDK" href="/sdks/go" />
+  <Card title="CLI" href="/sdks/cli" />
+  <Card title="Next.js" href="/sdks/nextjs" />
 </Cards>
