@@ -23,7 +23,13 @@ export async function GET(_request: Request, props: { params: Promise<{ slug?: s
   if (!page) notFound();
 
   return new Response(await pageMarkdown(page), {
-    headers: { 'Content-Type': 'text/markdown; charset=utf-8' },
+    headers: {
+      'Content-Type': 'text/markdown; charset=utf-8',
+      // Every page has an HTML twin at the same path without `.md`. Both are
+      // still crawlable — models are the point — but only one gets indexed,
+      // or the two compete for the same query as duplicates.
+      'X-Robots-Tag': 'noindex, follow',
+    },
   });
 }
 
