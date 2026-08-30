@@ -82,7 +82,7 @@ Errors use one envelope on every endpoint:
 | 403 | Key lacks the required scope, or the resource is in another workspace |
 | 404 | No such resource |
 | 422 | Validation failed |
-| 429 | Rate limited, see [Rate Limits](/api/rate-limits) |
+| 429 | Rate limited. See [Rate Limits](/api/rate-limits) for the per-plan ceiling and the `retry_after` field |
 | 500 | Something broke on our side |
 
 A 403 is also what you get for a workspace you do not belong to. The API never distinguishes "not yours" from "does not exist" in a way that would let you probe for other tenants' data.

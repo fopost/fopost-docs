@@ -1,25 +1,31 @@
 ---
 title: Rate Limits
-description: How API rate limits work, and how to handle a 429.
+description: Request limits per API key, what a 429 looks like, and how publishing to platforms is paced.
 icon: gauge
 ---
 
-FoPost limits how many requests an API key can make per minute, so one integration cannot degrade the service for everyone else. Each key gets its own budget, so a busy key never eats another key's allowance.
+Two different limits matter when you build on the API. One is ours: how many requests a key can make per minute. The other belongs to the social platforms: how often one connected account may post. They behave differently, and this page covers both.
 
-## Limits by plan
+## Requests per API key
 
-The ceiling depends on the plan behind the key. Every plan with API access sits well above what a publishing integration needs, and Business runs on the highest ceiling, for teams automating at agency volume.
+Every API key has a per-minute budget, counted in a fixed one-minute window. Each key gets its own bucket, so a busy key never eats another key's allowance.
 
-We do not publish the exact threshold, because it is a moving abuse control rather than a promise. Read the current value from the `X-RateLimit-Limit` header instead of hardcoding a number.
+| Plan | Requests per minute, per key |
+|:-----|:-----------------------------|
+| Starter | 100 |
+| Pro | 100 |
+| Business | 500 |
 
-## Rate limit headers
+Browser and unauthenticated traffic is limited per IP at the Starter rate. Need more for a key? Contact support with the volume you expect; ceilings scale with the plan, and they are published here whenever they change.
+
+### Rate limit headers
 
 Every response carries the current state of your budget:
 
 ```http
-X-RateLimit-Limit: <requests allowed in this window>
-X-RateLimit-Remaining: <requests left>
-X-RateLimit-Reset: <unix timestamp>
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 87
+X-RateLimit-Reset: 1724328000
 ```
 
 | Header | Description |
@@ -29,22 +35,42 @@ X-RateLimit-Reset: <unix timestamp>
 | `X-RateLimit-Reset` | Unix timestamp when the window resets |
 | `Retry-After` | Seconds to wait. Sent on a 429 only |
 
-## When rate limited
+### When you go over
 
-Go over the limit and you get a `429 Too Many Requests`:
+Exceed the budget and you get `429 Too Many Requests` with a body that tells you exactly how long to wait:
 
 ```json
 {
   "error": "too_many_requests",
-  "message": "Rate limit exceeded. Please try again later."
+  "message": "Rate limit of 100 requests per minute reached. Retry in 23 seconds.",
+  "retry_after": 23
 }
 ```
 
-The response also carries `Retry-After`, and `X-RateLimit-Reset` tells you when the window turns over.
+The same number is in the `Retry-After` header. Nothing is queued on our side; the request simply did not run, so retry it after the wait.
 
-## Best practices
+The official SDKs wait out one 429 automatically using `Retry-After` and only throw if the retry is limited too. Set `maxRateLimitRetries` on the client to change that.
 
-- Wait for `Retry-After` on a 429, then retry with exponential backoff
+### Best practices
+
+- Wait for `Retry-After` on a 429, then retry. Add exponential backoff if you get a second one
 - Check `X-RateLimit-Remaining` before firing a burst of requests
-- Publish in batches instead of one request per post
-- Cache reads you make repeatedly
+- Use the bulk endpoints instead of one request per post
+- Cache reads you repeat, such as account lists
+
+## Publishing to platforms
+
+We do not hold your posts. A post you publish now is handed to the platform immediately, and a scheduled post is handed over at its time. There is no pacing, spacing, or daily cap on our side.
+
+Each social platform enforces its own limits on how often one account may post. When a platform throttles an account, the delivery waits exactly as long as the platform asked, and the post shows the platform's own message, for example "Waiting for TikTok, retrying at 12:35". The API reports the same on the delivery:
+
+```json
+{
+  "publish_status": "delayed",
+  "delay_reason": "platform_rate_limit",
+  "delay_message": "TikTok: too many posts in a short window",
+  "scheduled_publish_at": "2026-08-22T12:35:00.000Z"
+}
+```
+
+A `delivery.delayed` webhook fires at the same moment, and `delivery.published` or `delivery.failed` follows once the retry runs. Limits that the platforms publish include a per-minute request cap per user token on TikTok, a daily publishing cap on Instagram and Threads, and a daily post cap per member on LinkedIn; most platforms publish none. When a platform rejects a post for a reason no retry can fix, such as a missing permission or an unverified media domain, the delivery fails immediately with that reason instead of retrying.
