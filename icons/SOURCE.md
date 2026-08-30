@@ -34,6 +34,10 @@ to identify the client each page documents.
 | `tech-go.svg` | `go` |
 | `tech-ruby.svg` | `ruby` |
 | `tech-mcp.svg` | `modelcontextprotocol` |
+| `tech-swift.svg` | `swift` |
+| `tech-kotlin.svg` | `kotlin` |
+| `tech-dart.svg` | `dart` |
+| `tech-elixir.svg` | `elixir` |
 
 Every one of these now has a page behind it.
 
