@@ -32,10 +32,10 @@ to identify the client each page documents.
 | `tech-dotnet.svg` | `dotnet` |
 | `tech-rust.svg` | `rust` |
 | `tech-go.svg` | `go` |
+| `tech-ruby.svg` | `ruby` |
 | `tech-mcp.svg` | `modelcontextprotocol` |
 
-`tech-java`, `tech-dotnet`, `tech-rust` and `tech-go` are vendored ahead of the
-clients themselves, so those pages need no icon work on the day they ship.
+Every one of these now has a page behind it.
 
 To add one, fetch the mark, strip `<title>` and `role`, put `fill="#000000"` on
 the paths (the generator themes that to `currentColor`, and the root `<svg>` is
