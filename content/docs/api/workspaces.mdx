@@ -1,0 +1,51 @@
+---
+title: Workspaces
+description: Workspaces, labels, and how isolation works across them.
+icon: spaces
+---
+
+A workspace holds accounts, posts, media, and team members. Agencies use one per client, brands use one per brand. Nothing crosses between them.
+
+## Isolation
+
+Every request is scoped to a workspace the caller belongs to. Naming a workspace you have no access to answers `403`, and list endpoints return only what you can see. There is no privileged read path: the same check applies to the dashboard, an API key, and the agent.
+
+An [API key bound to a workspace](/api/authentication#workspace-bound-keys) is confined to it even if the account owns others. That is the safest shape for an integration serving one client.
+
+## Endpoints
+
+Workspace endpoints need the `workspaces` scope.
+
+| Endpoint | What it does |
+|:---------|:-------------|
+| `GET /v1/workspaces` | Workspaces the caller can reach |
+| `POST /v1/workspaces` | Create one |
+| `GET /v1/workspaces/{id}` | One workspace |
+| `PUT /v1/workspaces/{id}` | Rename or update it |
+| `DELETE /v1/workspaces/{id}` | Delete it, and everything in it |
+| `GET /v1/workspaces/{id}/analytics` | Roll-up for the workspace |
+
+How many workspaces you get depends on the plan, and extras can be added. See [Plans](/guide/plans/overview).
+
+## Labels
+
+Labels organise posts inside a workspace: by campaign, by client, by content pillar. They are also the unit the [label analytics roll-up](/api/analytics#label-roll-up) aggregates on, so labelling at publish time is what makes campaign reporting possible later.
+
+Label endpoints need the `labels` scope.
+
+| Endpoint | What it does |
+|:---------|:-------------|
+| `GET /v1/labels` | List labels |
+| `POST /v1/labels` | Create one |
+| `GET /v1/labels/{id}` | One label |
+| `PUT /v1/labels/{id}` | Update it |
+| `DELETE /v1/labels/{id}` | Delete it. Posts keep existing |
+
+Attach labels with the `labels` array when creating a post, or apply them to many posts at once with the `label` action on `POST /v1/posts/bulk`.
+
+## Next
+
+<Cards>
+  <Card title="Authentication" href="/api/authentication" />
+  <Card title="Workspaces guide" href="/guide/using-fopost/workspaces" />
+</Cards>

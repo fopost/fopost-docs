@@ -1,10 +1,9 @@
 {
   "title": "Documentation",
-  "description": "OwlStack Documentation",
+  "description": "FoPost Documentation",
   "pages": [
     "introduction",
     "guide",
-    "developers",
     "sdks",
     "api"
   ]

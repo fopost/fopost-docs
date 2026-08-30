@@ -1,0 +1,157 @@
+---
+title: PHP SDK
+description: The official PHP client for the FoPost API, with no framework and no HTTP library.
+icon: tech-php
+---
+
+`fopost/sdk` is the official PHP client. It needs PHP 8.1 or newer plus `ext-curl` and `ext-json`, and nothing else: no framework, no HTTP library, no autoloading beyond Composer's.
+
+```bash
+composer require fopost/sdk
+```
+
+<Callout type="warn">
+This is a 0.x release. The surface is still settling and a minor version may
+break something. Pin an exact version if that matters to you.
+</Callout>
+
+Using Laravel? [`fopost/laravel`](/sdks/laravel) wraps this client with a service provider, a facade, and config, so reach for that instead.
+
+Source and issues: [github.com/fopost/fopost-php](https://github.com/fopost/fopost-php). MIT licensed.
+
+## Quick start
+
+```php
+use Fopost\Sdk\Client;
+
+$client = new Client('fp_...');  // or set FOPOST_API_KEY
+
+$workspace = $client->workspaces()->list()[0];
+$accounts = $client->accounts()->list($workspace->id);
+
+$post = $client->posts()->create(
+    workspaceId: $workspace->id,
+    content: 'Hello from PHP',
+    accounts: array_map(fn ($a) => $a->id, $accounts),
+);
+
+$client->posts()->publish($post->id);
+```
+
+`publish` returns once delivery is queued, not once it is live. Read `$client->posts()->deliveries($post->id)` or subscribe to [webhooks](/api/webhooks) for the result.
+
+The key falls back to `FOPOST_API_KEY`, so `new Client()` works when it is set.
+
+```php
+$client = new Client(
+    apiKey: 'fp_...',
+    baseUrl: 'https://api.fopost.com',
+    timeout: 30.0,      // seconds
+    maxRetries: 3,      // attempts, on 429 only
+);
+```
+
+## Threads and scheduling
+
+`content` takes a string for a single post, or an array for a thread:
+
+```php
+use DateTimeImmutable;
+
+$client->posts()->create(
+    workspaceId: $workspaceId,
+    content: ['First post in the thread', 'The reply'],
+    accounts: ['acc_1', 'acc_2'],
+);
+
+$client->posts()->create(
+    workspaceId: $workspaceId,
+    content: 'Going out on Monday',
+    accounts: ['acc_1'],
+    status: 'scheduled',
+    scheduleAt: new DateTimeImmutable('2026-09-02T09:00:00Z'),
+);
+```
+
+Times are UTC.
+
+## What is on the client
+
+| Resource | Methods |
+|:---------|:--------|
+| `$client->posts()` | `list`, `iterate`, `get`, `create`, `update`, `schedule`, `unschedule`, `publish`, `preflight`, `retry`, `cancel`, `delete`, `deliveries` |
+| `$client->accounts()` | `list`, `get`, `health`, `disconnect` |
+| `$client->workspaces()` | `list`, `get` |
+| `$client->labels()` | `list`, `create`, `update`, `delete` |
+| `$client->ai()` | `credits`, `generateCaption`, `rewrite`, `repurposeUrl` |
+
+`iterate()` walks every page for you, so you do not hand-roll a pagination loop to sweep a workspace. Anything the client does not wrap yet is still reachable:
+
+```php
+$body = $client->request('GET', '/some/new/endpoint', params: ['workspace_id' => $workspaceId]);
+```
+
+<Callout type="warn">
+On `ai()`, only `credits` and `generateCaption` work with an API key today.
+`rewrite` and `repurposeUrl` reach endpoints that require a dashboard session
+and will answer `401`. Use the composer for those until a later release.
+</Callout>
+
+## Errors
+
+Every non-2xx response raises an exception under `Fopost\Sdk\Exception`, all extending `FopostException`, which carries `getStatus()`, `getErrorCode()`, `getMessage()`, and `getBody()`.
+
+| Status | Exception |
+|:-------|:----------|
+| 400, 422 | `ValidationException` |
+| 401 | `AuthenticationException` |
+| 402 | `PaymentRequiredException` |
+| 403 | `PermissionDeniedException` |
+| 404 | `NotFoundException` |
+| 429 | `RateLimitException` |
+| anything else | `ApiException` |
+
+```php
+use Fopost\Sdk\Exception\FopostException;
+use Fopost\Sdk\Exception\RateLimitException;
+use Fopost\Sdk\Exception\ValidationException;
+
+try {
+    $client->posts()->publish('p_123');
+} catch (ValidationException $e) {
+    print_r($e->getErrors());
+} catch (RateLimitException $e) {
+    echo 'retry in ', $e->getRetryAfter(), 's';
+} catch (FopostException $e) {
+    echo $e->getStatus(), ' ', $e->getMessage();
+}
+```
+
+A `429` is retried for you, up to `maxRetries`, waiting the interval the API asks for in `Retry-After` and capped at 60 seconds. The exception is raised only when the last attempt is still rate limited. A `402` means AI credits ran out and should not be retried.
+
+## Testing your integration
+
+The transport is an interface, so nothing has to reach the network in your test suite:
+
+```php
+use Fopost\Sdk\Client;
+use Fopost\Sdk\Http\Response;
+use Fopost\Sdk\Http\Transport;
+
+$fake = new class implements Transport {
+    public function send(string $method, string $url, array $headers, ?string $body): Response
+    {
+        return new Response(200, [], json_encode(['data' => []]));
+    }
+};
+
+$client = new Client('fp_test_key', Client::DEFAULT_BASE_URL, 30.0, 3, $fake);
+```
+
+## Next
+
+<Cards>
+  <Card title="Laravel SDK" href="/sdks/laravel" />
+  <Card title="API Reference" href="/api/overview" />
+  <Card title="Webhooks" href="/api/webhooks" />
+</Cards>

@@ -1,0 +1,85 @@
+---
+title: Media
+description: Upload files, list the media library, and attach media to a post.
+icon: image
+---
+
+Media endpoints use the `posts` scope, because media only exists to end up on a post.
+
+## Upload
+
+```http
+POST /v1/media/upload
+```
+
+Send `multipart/form-data` with the files under the `files` field:
+
+```bash
+curl -X POST https://api.fopost.com/v1/media/upload \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -F "files=@launch.png" \
+  -F "workspaceId=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90"
+```
+
+| Limit | Value |
+|:------|:------|
+| Files per request | 5 |
+| Size per file | 50 MB |
+| Types | jpeg, png, gif, webp, mp4, mov, webm, pdf, txt, csv |
+
+The declared type is verified against the actual file contents, so renaming an executable to `.png` does not get it through.
+
+Pass `workspaceId` to also save the files to that workspace's media library, where they are reusable and count against the plan's storage allowance. Leave it out for a one-off attachment.
+
+## List the library
+
+```http
+GET /v1/media
+```
+
+Returns the workspace's library items with their type, name, size, and URL.
+
+## Delete
+
+```http
+DELETE /v1/media/{id}
+```
+
+Removes the item from the library. Posts that already published with it are unaffected, since the network holds its own copy.
+
+## Attaching to a post
+
+Take what upload returns and put it in a content block:
+
+```json
+{
+  "content": [
+    {
+      "text": "Doors open Monday.",
+      "media": [
+        {
+          "type": "image",
+          "name": "launch.png",
+          "url": "https://...",
+          "alt": "A storefront with the lights coming on"
+        }
+      ]
+    }
+  ]
+}
+```
+
+`type` is `image`, `video`, or `gif`. `alt` is optional and worth sending: it is what screen readers announce, and several networks surface it.
+
+Each network sets its own limits on count, dimensions, aspect ratio, and duration. FoPost resizes and re-encodes for the target where it can, and [preflight](/api/publishing#check-before-you-publish) tells you when it cannot.
+
+## Storage
+
+The library counts against the storage allowance on your plan. A stored URL is an identity, not public access: the bucket is private, and the dashboard renders media through a per-request check rather than a link anyone can pass around.
+
+## Next
+
+<Cards>
+  <Card title="Publishing" href="/api/publishing" />
+  <Card title="Media Library guide" href="/guide/using-fopost/media-library" />
+</Cards>

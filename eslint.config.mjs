@@ -38,6 +38,17 @@ export default [
     },
   },
   {
+    // Build-time modules run in Node, not in the browser bundle.
+    files: ["*.mjs", "scripts/**/*.mjs", "lib/*.mjs"],
+    languageOptions: {
+      globals: {
+        process: "readonly",
+        console: "readonly",
+        URL: "readonly",
+      },
+    },
+  },
+  {
     ignores: [
       "node_modules/**",
       ".next/**",

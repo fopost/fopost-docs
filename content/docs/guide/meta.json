@@ -2,13 +2,11 @@
   "title": "Guide",
   "description": "For creators and teams",
   "root": true,
-  "icon": "LayoutDashboard",
+  "icon": "book-open",
   "pages": [
     "index",
-    "using-owlstack",
-    "---Plans & Features---",
-    "plans",
-    "pro",
-    "ai"
+    "using-fopost",
+    "---Plans---",
+    "plans"
   ]
 }

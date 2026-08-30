@@ -1,0 +1,106 @@
+---
+title: Laravel SDK
+description: The FoPost PHP client wired into Laravel, with a service provider, a facade, and config.
+icon: tech-laravel
+---
+
+`fopost/laravel` is a thin wrapper over [`fopost/sdk`](/sdks/php): it binds the client into the container, adds a `Fopost` facade, and gives you a publishable config file. Every platform connection, token refresh, and delivery still happens on the hosted API, so there is nothing to run yourself.
+
+Needs PHP 8.1 or newer and Laravel 10, 11, or 12.
+
+```bash
+composer require fopost/laravel
+```
+
+<Callout type="warn">
+This is a 0.x release. The surface is still settling and a minor version may
+break something. Pin an exact version if that matters to you.
+</Callout>
+
+Source and issues: [github.com/fopost/fopost-laravel](https://github.com/fopost/fopost-laravel). MIT licensed.
+
+## Configuration
+
+The service provider and the `Fopost` facade alias are auto-discovered, so the only required step is the key:
+
+```dotenv
+FOPOST_API_KEY=fp_your_key_here
+```
+
+Everything else is optional:
+
+| Variable | Default | What it does |
+|:---------|:--------|:-------------|
+| `FOPOST_API_KEY` | none, required | Your API key |
+| `FOPOST_API_URL` | `https://api.fopost.com` | API base URL |
+| `FOPOST_API_TIMEOUT` | `30` | Seconds to wait for one request |
+| `FOPOST_API_MAX_RETRIES` | `3` | Attempts for a rate limited request |
+
+Publish the config file if you want to edit it directly:
+
+```bash
+php artisan vendor:publish --tag=fopost-config
+```
+
+## Quick start
+
+```php
+use Fopost\Laravel\Facades\Fopost;
+
+$workspace = Fopost::workspaces()->list()[0];
+$accounts = Fopost::accounts()->list($workspace->id);
+
+$post = Fopost::posts()->create(
+    workspaceId: $workspace->id,
+    content: 'Shipping today: scheduled posting straight from Laravel.',
+    accounts: $accounts,
+    status: 'scheduled',
+    scheduleAt: now()->addHour(),
+);
+```
+
+Prefer injection over the facade? Type hint the client and the container hands you the configured singleton:
+
+```php
+use Fopost\Sdk\Client;
+
+public function __invoke(Client $fopost)
+{
+    return $fopost->posts()->list(status: 'scheduled');
+}
+```
+
+## Resources
+
+The facade exposes the same surface as the PHP client, so [What is on the client](/sdks/php#what-is-on-the-client) is the full list.
+
+```php
+$page = Fopost::posts()->list(workspaceId: $workspaceId, status: 'scheduled');
+Fopost::posts()->schedule($postId, now()->addDay());
+Fopost::posts()->publish($postId);
+
+foreach (Fopost::posts()->iterate(workspaceId: $workspaceId) as $post) {
+    // walks page by page for you
+}
+
+$accounts = Fopost::accounts()->list($workspaceId);
+Fopost::accounts()->disconnect($accountId);
+
+$workspaces = Fopost::workspaces()->list();
+```
+
+## Errors
+
+Exceptions come from the underlying client, so the table on the [PHP SDK page](/sdks/php#errors) applies unchanged. Catch `Fopost\Sdk\Exception\FopostException` to handle them all.
+
+## Not the self-hosted package
+
+This publishes through your FoPost account. The separate self-hosted library, which talks to each network from your own server with your own app credentials, is documented in its own repository and is not part of the Cloud docs.
+
+## Next
+
+<Cards>
+  <Card title="PHP SDK" href="/sdks/php" />
+  <Card title="API Reference" href="/api/overview" />
+  <Card title="Webhooks" href="/api/webhooks" />
+</Cards>

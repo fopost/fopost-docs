@@ -1,0 +1,54 @@
+---
+title: WordPress
+description: Publish posts from the FoPost dashboard to your WordPress site with a scoped site token.
+icon: social-wordpress
+---
+
+## Connect Your Site to FoPost Cloud
+
+The FoPost plugin can connect your self-hosted WordPress site to the [FoPost Cloud dashboard](https://app.fopost.com), so posts you compose there are pushed to your site, as drafts or published immediately, your choice.
+
+Unlike a WordPress username and Application Password, the plugin issues a **scoped site token**: it can only create posts, upload images, and remove posts it created. It never grants admin access, only a hash of it is stored on your site, and you can revoke it at any time.
+
+## Requirements
+
+- FoPost plugin **1.1.0 or later**
+- An FoPost Cloud account
+
+## Generate a Site Token
+
+1. In your WordPress admin, go to **Fopost → Cloud**
+2. Click **Generate Token**
+3. Copy the token. It is shown only once
+
+## Connect in the FoPost Dashboard
+
+1. In [app.fopost.com](https://app.fopost.com), go to **Accounts** and choose **WordPress**
+2. Paste your **site URL** and the **site token**, then click **Connect Site**
+
+FoPost verifies the connection against your site before saving it. Once verified, your site appears as a connected channel and you can include it when composing posts.
+
+## Control Incoming Content
+
+On the **Fopost → Cloud** page you decide how pushed content is handled:
+
+| Setting | Options |
+|:--------|:--------|
+| **Post Status** | Always draft, always publish, or honor what FoPost Cloud requests |
+| **Post Author** | The WordPress user that authors incoming posts |
+| **Post Type** | The post type incoming content is created as |
+
+Choose **Always save as draft** to review every post in WordPress before it goes live.
+
+## Revoke Access
+
+Click **Revoke Token** on the **Fopost → Cloud** page. FoPost Cloud loses access immediately. Generating a new token also invalidates the old one.
+
+## Troubleshooting
+
+- **Validation fails when connecting.** A security plugin or firewall may be blocking your site's REST API (`/wp-json/fopost/v1/cloud`). Allow that namespace and try again.
+- **Posts arrive as drafts unexpectedly.** Check the **Post Status** setting; it overrides what the dashboard requests.
+
+## Privacy
+
+The plugin never makes outbound calls to FoPost Cloud. All requests originate from FoPost Cloud and are authenticated with your site token. The feature is inactive until you generate a token.

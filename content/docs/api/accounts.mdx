@@ -1,0 +1,82 @@
+---
+title: Accounts
+description: List connected social accounts, check their health, and refresh credentials.
+icon: user
+---
+
+An account is one connected profile on one network, for example a LinkedIn company page or one of several X accounts in the same workspace. Posts target account ids, so this is usually the first call an integration makes. Everything here needs the `accounts` scope.
+
+## List accounts
+
+```http
+GET /v1/accounts
+```
+
+```bash
+curl https://api.fopost.com/v1/accounts \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+Each account carries its `id`, `platform`, `username`, display `name`, `avatar`, and whether it is `active`. A workspace-bound key sees only that workspace's accounts.
+
+## Connecting an account
+
+Connecting is an OAuth handshake with the network, so it happens in a browser, in the dashboard, under **Accounts → Connect**. The API cannot do it for you, because the network will not hand a token to a server-to-server call.
+
+`POST /v1/accounts` exists for the handful of networks that authenticate with credentials you already hold rather than an OAuth redirect. For everything else, connect in the dashboard once and use the account id from then on.
+
+## Health
+
+Tokens expire, users revoke apps, and networks change what a permission covers. Rather than discovering that at publish time, read health:
+
+```http
+GET /v1/accounts/health
+GET /v1/accounts/{id}/health
+```
+
+The summary endpoint takes an optional `workspaceId` and reports every account at once, which is what you want on a dashboard or a morning check. A degraded account still publishes, with a warning. An expired or revoked one fails immediately.
+
+```http
+POST /v1/accounts/{id}/validate
+POST /v1/accounts/{id}/refresh-token
+```
+
+`validate` calls the network and tells you whether the stored credentials still work. `refresh-token` forces a refresh ahead of schedule. Neither is normally necessary: tokens refresh on their own in the background, and this is for when you want to check before a launch rather than after.
+
+## Analytics for one account
+
+```http
+GET /v1/accounts/{id}/analytics
+```
+
+Follower and engagement history for a single account. For cross-account reporting, use the [analytics endpoints](/api/analytics).
+
+## Other operations
+
+| Endpoint | What it does |
+|:---------|:-------------|
+| `GET /v1/accounts/{id}` | One account |
+| `POST /v1/accounts/{id}/primary` | Mark the account primary for its platform |
+| `DELETE /v1/accounts/{id}` | Disconnect. Published posts stay published |
+
+## X communities
+
+X accounts can post into communities, which have to be resolved before you can target one:
+
+```http
+GET    /v1/accounts/{accountId}/communities
+GET    /v1/accounts/{accountId}/communities/search
+POST   /v1/accounts/{accountId}/communities/sync
+POST   /v1/accounts/{accountId}/communities/manual
+DELETE /v1/accounts/{accountId}/communities/{communityId}
+```
+
+`sync` pulls the communities the account belongs to, `search` looks one up, and `manual` adds one by id when you already know it.
+
+## Next
+
+<Cards>
+  <Card title="Publishing" href="/api/publishing" />
+  <Card title="Analytics" href="/api/analytics" />
+  <Card title="Workspaces" href="/api/workspaces" />
+</Cards>

@@ -1,9 +1,0 @@
-{
-  "title": "Introduction",
-  "icon": "BookOpen",
-  "pages": [
-    "what-is-owlstack",
-    "why-owlstack",
-    "architecture"
-  ]
-}

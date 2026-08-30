@@ -1,0 +1,71 @@
+---
+title: Connecting Accounts
+description: Connect a network, keep it healthy, and reconnect when a token expires.
+icon: linked
+---
+
+## How it works
+
+1. Go to **Accounts**
+2. Click **Connect** next to a network
+3. Approve on that network's own authorisation screen
+4. You come back, and the account shows as connected
+
+FoPost never asks for your password. The network hands over a token that grants only what publishing needs, and you can revoke it from that network at any time.
+
+The full list of networks is on [Supported Platforms](/introduction/platforms).
+
+## Networks with extra requirements
+
+Most are one click. These need something in place first:
+
+| Network | What you need |
+|:--------|:--------------|
+| Instagram | A Business or Creator account, linked to a Facebook Page |
+| Facebook | A Page you administer. Personal profiles cannot be published to |
+| LinkedIn | A profile, or admin on the company page |
+| Telegram | A bot token from [@BotFather](https://t.me/BotFather), with the bot made admin in your channel |
+| Discord | Permission to add a webhook or a bot in the server |
+| Slack | Permission to install an app in the workspace |
+| Pinterest | A Business account |
+| Hashnode | A Pro publication, which is Hashnode's own requirement for API access |
+| WordPress | The [FoPost plugin](/sdks/wordpress) installed on the site |
+| Substack | The [browser extension](/sdks/browser-extension), since Substack has no write API |
+
+## Several accounts on one network
+
+Connect as many as your plan allows, including several on the same network. Each is separate, so you target them individually when composing, and the composer never guesses which of your three X accounts you meant.
+
+Mark one **primary** per network if you want a sensible default pre-selected.
+
+## Account health
+
+Tokens expire and people revoke apps. Rather than finding out when a scheduled post fails, **Accounts** shows a health state per account:
+
+- **Healthy.** Nothing to do
+- **Degraded.** Still publishing, but something needs attention soon
+- **Expired or revoked.** Publishing will fail until you reconnect
+
+Click **Reconnect** and go through authorisation again. Nothing else is lost: your posts, history, and analytics stay attached to the account.
+
+Turn on the `account.health_changed` [webhook](/api/webhooks) if you want to hear about it before a human notices.
+
+## Disconnecting
+
+**Disconnect** removes the stored token. Posts already published stay published, since they live on the network now. Scheduled posts targeting that account will fail until you reconnect or retarget them.
+
+## Troubleshooting
+
+**Authorisation failed.** Usually the wrong account was logged in on the network, or you lack admin on the Page, channel, or workspace. Check both, then retry.
+
+**Connected but posts fail.** The token is valid and the permission is missing. Disconnect and reconnect to be re-prompted for the full permission set.
+
+**The account keeps disconnecting.** Some networks expire tokens on a fixed schedule, and some revoke them when the account's password changes. If it recurs on one network, check whether anyone else revoked the app from that account's settings.
+
+## Next
+
+<Cards>
+  <Card title="Supported Platforms" href="/introduction/platforms" />
+  <Card title="Creating Posts" href="./creating-posts" />
+  <Card title="Workspaces" href="./workspaces" />
+</Cards>

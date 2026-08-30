@@ -2,15 +2,23 @@
   "title": "API Reference",
   "description": "REST API documentation",
   "root": true,
-  "icon": "Cpu",
+  "icon": "api",
   "pages": [
     "overview",
     "authentication",
+    "---Content---",
     "publishing",
     "scheduling",
-    "ai",
+    "media",
+    "---Workspace---",
+    "accounts",
+    "workspaces",
     "analytics",
+    "---Automation---",
+    "automations",
     "webhooks",
-    "rate-limits"
+    "---Operations---",
+    "rate-limits",
+    "ai"
   ]
 }

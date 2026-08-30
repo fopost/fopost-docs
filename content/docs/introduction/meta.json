@@ -2,13 +2,13 @@
   "title": "Introduction",
   "description": "Overview & getting started",
   "root": true,
-  "icon": "Home",
+  "icon": "home",
   "pages": [
     "index",
-    "what-is-owlstack",
-    "why-owlstack",
+    "what-is-fopost",
+    "why-fopost",
     "how-it-works",
-    "quick-start",
-    "comparisons"
+    "platforms",
+    "quick-start"
   ]
 }

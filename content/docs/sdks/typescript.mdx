@@ -1,0 +1,111 @@
+---
+title: TypeScript SDK
+description: The official TypeScript and Node.js client for the FoPost API.
+icon: tech-typescript
+---
+
+`@fopost/sdk` is the official TypeScript client. It ships ESM and CommonJS builds with full type definitions, and needs Node 18 or newer.
+
+```bash
+npm install @fopost/sdk
+```
+
+<Callout type="warn">
+This is a 0.x release. The surface is still settling and a minor version may
+break something. Pin an exact version if that matters to you.
+</Callout>
+
+Source and issues: [github.com/fopost/fopost-js](https://github.com/fopost/fopost-js). MIT licensed.
+
+## Quick start
+
+```ts
+import { FoPost } from '@fopost/sdk';
+
+const owl = new FoPost({ apiKey: process.env.FOPOST_API_KEY! });
+
+const workspaces = await owl.workspaces.list();
+const accounts = await owl.accounts.list({ workspaceId: workspaces[0].id });
+
+const post = await owl.posts.create({
+  workspaceId: workspaces[0].id,
+  content: [{ text: 'Hello from the SDK' }],
+  accounts: accounts.map((a) => a.id),
+});
+
+await owl.posts.publish(post.id);
+```
+
+`publish` returns as soon as delivery is queued. Read `owl.posts.deliveries(post.id)` or subscribe to [webhooks](/api/webhooks) for the outcome.
+
+## Schedule instead
+
+```ts
+await owl.posts.create({
+  workspaceId,
+  status: 'scheduled',
+  scheduleAt: '2026-09-02T09:00:00Z',
+  content: [{ text: 'Doors open Monday.' }],
+  accounts: [accounts[0].id],
+});
+```
+
+Times are UTC. Convert before sending.
+
+## Threads and media
+
+More than one content block makes a thread:
+
+```ts
+await owl.posts.create({
+  workspaceId,
+  accounts: [accounts[0].id],
+  content: [
+    { text: 'What we learned shipping this quarter.' },
+    {
+      text: 'The chart that changed our minds.',
+      media: [{ type: 'image', name: 'chart.png', url: 'https://.../chart.png' }],
+    },
+  ],
+});
+```
+
+## What is on the client
+
+| Namespace | Methods |
+|:----------|:--------|
+| `owl.posts` | `list`, `get`, `create`, `update`, `delete`, `publish`, `cancel`, `retry`, `preflight`, `deliveries` |
+| `owl.accounts` | `list`, `get`, `health` |
+| `owl.workspaces` | `list`, `get` |
+| `owl.labels` | `list` |
+| `owl.ai` | `credits`, `generateCaption`, `rewrite`, `repurposeUrl` |
+
+<Callout type="warn">
+On `owl.ai`, only `credits` and `generateCaption` work with an API key today.
+`rewrite` and `repurposeUrl` reach endpoints that require a dashboard session
+and will answer `401`. Use the composer for those until a later release.
+</Callout>
+
+## Configuration
+
+```ts
+new FoPost({
+  apiKey: process.env.FOPOST_API_KEY!,
+  baseUrl: 'https://api.fopost.com',
+  fetch: customFetch,
+});
+```
+
+Keep the key server side. An SDK call from browser code ships the key to everyone who loads the page.
+
+## Errors
+
+Failed requests throw with the status and the API's `error` code, so you can branch on the code rather than parsing a message. `402` means AI credits ran out and should not be retried; `429` carries `Retry-After`.
+
+## Next
+
+<Cards>
+  <Card title="API Reference" href="/api/overview" />
+  <Card title="MCP Server" href="/sdks/mcp" />
+  <Card title="Webhooks" href="/api/webhooks" />
+</Cards>

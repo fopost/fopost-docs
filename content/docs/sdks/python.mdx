@@ -1,54 +1,107 @@
 ---
 title: Python SDK
-description: OwlStack Python SDK for Python applications.
+description: The official Python client for the FoPost API.
+icon: tech-python
 ---
 
-# Python SDK
+`fopost` is the official Python client. It is built on `httpx` and `pydantic` v2, fully typed, and needs Python 3.10 or newer.
 
-<Callout type="warn" title="Coming Soon">
-The OwlStack Python SDK is currently in development. Sign up for updates at [owlstack.app](https://owlstack.app) to be notified when it's available.
+```bash
+pip install fopost
+```
+
+<Callout type="warn">
+This is a 0.x release. The surface is still settling and a minor version may
+break something. Pin an exact version if that matters to you.
 </Callout>
 
-## What to Expect
+Source and issues: [github.com/fopost/fopost-python](https://github.com/fopost/fopost-python). MIT licensed.
 
-The Python SDK will provide a native Python client for the OwlStack API, designed for:
-
-- **Django**, **Flask**, **FastAPI** applications
-- **Async/await** support with `asyncio`
-- **Type hints** throughout
-- **PyPI** distribution (`pip install owlstack`)
-
-## Preview
+## Quick start
 
 ```python
-from owlstack import OwlStack, Platform
+from fopost import Fopost
 
-client = OwlStack(api_key=os.environ["OWLSTACK_API_KEY"])
+client = Fopost()  # reads FOPOST_API_KEY, or pass api_key=
 
-result = client.publish(
-    content="Hello from Python!",
-    platforms=[Platform.TWITTER, Platform.LINKEDIN],
-    media=[{"type": "image", "path": "./photo.jpg"}],
-    hashtags=["python", "automation"],
+workspace = client.workspaces.list()[0]
+accounts = client.accounts.list(workspace_id=workspace.id)
+
+post = client.posts.create(
+    workspace_id=workspace.id,
+    content="Hello from Python 🦉",
+    accounts=[a.id for a in accounts],
 )
 
-for r in result:
-    print(f"{r.platform}: {r.url}")
+client.posts.publish(post.id)
 ```
 
-## In the Meantime
+`publish` returns once delivery is queued, not once it is live. Read `client.posts.deliveries(post.id)` or subscribe to [webhooks](/api/webhooks) for the result.
 
-You can use the [OwlStack REST API](/api/overview) directly from any Python application using `requests` or `httpx`.
+## Threads and media
+
+`content` takes a string for a single post, or a list for a thread:
 
 ```python
-import requests
-
-response = requests.post(
-    "https://api.owlstack.app/v1/publish",
-    headers={"Authorization": f"Bearer {os.environ['OWLSTACK_API_KEY']}"},
-    json={
-        "content": "Hello from Python!",
-        "platforms": ["twitter", "linkedin"],
-    },
+client.posts.create(
+    workspace_id=workspace.id,
+    content=[
+        "First post in the thread",
+        {
+            "text": "Second one, with an image",
+            "media": [
+                {"type": "image", "name": "chart.png", "url": "https://.../chart.png"},
+            ],
+        },
+    ],
+    accounts=[a.id for a in accounts],
 )
 ```
+
+## Schedule instead
+
+```python
+client.posts.create(
+    workspace_id=workspace.id,
+    content="Doors open Monday.",
+    accounts=[accounts[0].id],
+    status="scheduled",
+    schedule_at="2026-09-02T09:00:00Z",
+)
+```
+
+Times are UTC.
+
+## What is on the client
+
+| Namespace | Methods |
+|:----------|:--------|
+| `client.posts` | `list`, `iter`, `iter_pages`, `get`, `create`, `update`, `delete`, `publish`, `cancel`, `retry`, `preflight`, `deliveries` |
+| `client.accounts` | `list`, `get`, `health` |
+| `client.workspaces` | `list`, `get` |
+| `client.labels` | `list` |
+| `client.ai` | `credits`, `generate_caption`, `rewrite`, `repurpose_url` |
+
+`client.posts.iter()` walks every page for you, so you do not hand-roll a
+pagination loop to sweep a workspace.
+
+<Callout type="warn">
+On `client.ai`, only `credits` and `generate_caption` work with an API key
+today. `rewrite` and `repurpose_url` reach endpoints that require a dashboard
+session and will answer `401`. Use the composer for those until a later
+release.
+</Callout>
+
+## Errors
+
+Failed requests raise a typed exception carrying the status and the API's
+`error` code. A `402` means AI credits ran out and should not be retried; a
+`429` carries the seconds to wait.
+
+## Next
+
+<Cards>
+  <Card title="API Reference" href="/api/overview" />
+  <Card title="TypeScript SDK" href="/sdks/typescript" />
+  <Card title="Webhooks" href="/api/webhooks" />
+</Cards>

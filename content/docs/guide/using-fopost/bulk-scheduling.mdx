@@ -1,0 +1,62 @@
+---
+title: Bulk Scheduling
+description: Import a spreadsheet of posts, validate it, and roll it back if it is wrong.
+icon: layers
+---
+
+Planning a month in a spreadsheet is a reasonable way to work. Import it rather than retyping it.
+
+## The file
+
+CSV or TSV, up to 500 rows and 2 MB.
+
+| Column | Required | Notes |
+|:-------|:---------|:------|
+| `content` | Yes | The post text |
+| `schedule_at` | No | ISO 8601, or `YYYY-MM-DD HH:mm` in the workspace timezone |
+| `accounts` | No | Comma-separated account names or network names |
+| `labels` | No | Comma-separated labels |
+| `media_url` | No | A URL to attach |
+| `caption_<network>` | No | Overrides the text for one network, for example `caption_twitter` |
+
+Accounts and labels are given by name, so the spreadsheet stays readable and does not need ids pasted into it.
+
+## Validate first
+
+Upload and the file is checked without creating anything. You get a row-by-row report: a name that matches no account, a date in the past, content over a network's limit.
+
+Fix the file and upload again. Nothing has happened yet.
+
+## Then commit
+
+Commit creates one scheduled post per row, all stamped with a batch id.
+
+It is all or nothing. If any row fails on the second check, nothing is created and the failing rows come back. You never end up with half a campaign queued and no clear idea which half.
+
+## Roll it back
+
+Wrong file, wrong month, wrong client? Delete the batch and every post in it that has not published yet is removed and unqueued.
+
+Once any post in the batch has published, rollback is refused. That half is public, and pretending otherwise would be worse than the error message.
+
+## What it is good for
+
+- A month of content planned offline, with someone who does not use the dashboard
+- A backlog migrated from another tool
+- The same announcement with a native caption per network, written in columns
+
+## What it is not
+
+An import is a schedule, not an automation. For content that should publish itself when something new appears, use [Automations](./automations); for resurfacing evergreen posts, use [Recycling](./recycling).
+
+## From code
+
+The same three steps are [API endpoints](/api/scheduling#bulk-import): validate, commit, delete by batch.
+
+## Next
+
+<Cards>
+  <Card title="The Calendar" href="./calendar" />
+  <Card title="Automations" href="./automations" />
+  <Card title="Labels" href="./labels" />
+</Cards>

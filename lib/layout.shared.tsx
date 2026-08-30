@@ -1,7 +1,7 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { Globe, LayoutDashboard } from 'lucide-react';
 import Image from 'next/image';
 import { BRAND } from '@/lib/brand';
+import { GlobeIcon, LayoutIcon } from '@/components/icons';
 
 /**
  * Shared layout configurations
@@ -14,14 +14,25 @@ export function baseOptions(): BaseLayoutProps {
     nav: {
       title: (
         <>
+          {/* Both marks render and `dark:` picks one before paint, so the
+              theme never flashes the wrong logo. Black mark on light, white
+              mark on dark, the same pair the marketing header uses. */}
           <Image
             src={BRAND.logo}
-            alt={`${BRAND.name} Logo`}
+            alt={`${BRAND.name} logo`}
             width={28}
             height={28}
-            className="rounded-lg"
+            className="size-7 rounded-lg dark:hidden"
           />
-          {BRAND.name} Docs
+          <Image
+            src={BRAND.logoDark}
+            alt=""
+            aria-hidden
+            width={28}
+            height={28}
+            className="hidden size-7 rounded-lg dark:block"
+          />
+          <span className="font-semibold tracking-[-0.32px]">{BRAND.name} Docs</span>
         </>
       ),
     },
@@ -30,7 +41,7 @@ export function baseOptions(): BaseLayoutProps {
         type: 'icon',
         label: 'Website',
         text: 'Website',
-        icon: <Globe size={16} />,
+        icon: <GlobeIcon className="text-base" />,
         url: BRAND.websiteUrl,
         external: true,
       },
@@ -38,7 +49,7 @@ export function baseOptions(): BaseLayoutProps {
         type: 'icon',
         label: 'Dashboard',
         text: 'Dashboard',
-        icon: <LayoutDashboard size={16} />,
+        icon: <LayoutIcon className="text-base" />,
         url: BRAND.appUrl,
         external: true,
       },

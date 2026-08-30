@@ -2,7 +2,7 @@
  * Brand identity for this docs deployment.
  *
  * The docs site is built once per brand, so the name, domain, and logo are
- * build-time configuration. Prose in `content/**` keeps writing "OwlStack";
+ * build-time configuration. Prose in `content/**` keeps writing "FoPost";
  * the remark plugin in `lib/remark-brand.mjs` rewrites it during the build.
  * Anything in TypeScript reads from here instead.
  *
@@ -12,15 +12,29 @@
  */
 const pick = (value: string | undefined, fallback: string) => value?.trim() || fallback;
 
+/**
+ * Must match `basePath` in next.config.mjs. Next applies it to routes, but not
+ * to a `next/image` src it passes through unoptimised (every SVG) nor to a
+ * `metadata.icons` href, so brand assets are prefixed here instead.
+ */
+export const BASE_PATH = '/docs';
+
+/** Root-relative asset paths get the basePath; absolute URLs are left alone. */
+const asset = (value: string) =>
+  value.startsWith('/') && !value.startsWith(`${BASE_PATH}/`) ? `${BASE_PATH}${value}` : value;
+
 export const BRAND = {
-  name: pick(process.env.NEXT_PUBLIC_BRAND_NAME, 'OwlStack'),
-  slug: pick(process.env.NEXT_PUBLIC_BRAND_SLUG, 'owlstack'),
-  domain: pick(process.env.NEXT_PUBLIC_BRAND_DOMAIN, 'owlstack.app'),
-  logo: pick(process.env.NEXT_PUBLIC_BRAND_LOGO, '/brand/owlstack/logo.png'),
-  favicon: pick(process.env.NEXT_PUBLIC_BRAND_FAVICON, '/brand/owlstack/favicon.ico'),
-  appleTouchIcon: pick(process.env.NEXT_PUBLIC_BRAND_APPLE_TOUCH_ICON, ''),
-  websiteUrl: pick(process.env.NEXT_PUBLIC_WEBSITE_URL, 'https://owlstack.app'),
-  appUrl: pick(process.env.NEXT_PUBLIC_APP_URL, 'https://app.owlstack.app'),
-  apiUrl: pick(process.env.NEXT_PUBLIC_API_URL, 'https://api.owlstack.app'),
-  docsUrl: pick(process.env.NEXT_PUBLIC_DOCS_URL, 'https://owlstack.app/docs'),
+  name: pick(process.env.NEXT_PUBLIC_BRAND_NAME, 'FoPost'),
+  slug: pick(process.env.NEXT_PUBLIC_BRAND_SLUG, 'fopost'),
+  domain: pick(process.env.NEXT_PUBLIC_BRAND_DOMAIN, 'fopost.com'),
+  logo: asset(pick(process.env.NEXT_PUBLIC_BRAND_LOGO, '/brand/fopost/mark.svg')),
+  logoDark: asset(pick(process.env.NEXT_PUBLIC_BRAND_LOGO_DARK, '/brand/fopost/mark-dark.svg')),
+  favicon: asset(pick(process.env.NEXT_PUBLIC_BRAND_FAVICON, '/brand/fopost/favicon.ico')),
+  appleTouchIcon: asset(
+    pick(process.env.NEXT_PUBLIC_BRAND_APPLE_TOUCH_ICON, '/brand/fopost/apple-touch-icon.png'),
+  ),
+  websiteUrl: pick(process.env.NEXT_PUBLIC_WEBSITE_URL, 'https://fopost.com'),
+  appUrl: pick(process.env.NEXT_PUBLIC_APP_URL, 'https://app.fopost.com'),
+  apiUrl: pick(process.env.NEXT_PUBLIC_API_URL, 'https://api.fopost.com'),
+  docsUrl: pick(process.env.NEXT_PUBLIC_DOCS_URL, 'https://fopost.com/docs'),
 } as const;

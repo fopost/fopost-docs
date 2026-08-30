@@ -1,0 +1,85 @@
+---
+title: MCP Server
+description: Connect Claude, Cursor, or any MCP client to your FoPost workspace.
+icon: tech-mcp
+---
+
+`@fopost/mcp` exposes FoPost as a set of tools any MCP-aware assistant can call: Claude Desktop, Claude Code, Cursor, Continue, and anything else that speaks the Model Context Protocol. It runs over stdio and needs no install step.
+
+Source and issues: [github.com/fopost/fopost-mcp](https://github.com/fopost/fopost-mcp). MIT licensed. Needs Node 18 or newer.
+
+<Callout type="warn">
+This is a 0.x release. Tool names and arguments may change between minor
+versions. Pin an exact version if that matters to you.
+</Callout>
+
+## Set it up
+
+First, create an API key at **Settings → API Keys** in the dashboard with the scopes you need. `posts`, `accounts`, and `workspaces` cover most of it; add `ai` only if you want the assistant to spend credits.
+
+### Claude Desktop
+
+Edit `claude_desktop_config.json`, at `~/Library/Application Support/Claude/` on macOS or `%APPDATA%\Claude\` on Windows:
+
+```json
+{
+  "mcpServers": {
+    "fopost": {
+      "command": "npx",
+      "args": ["-y", "@fopost/mcp"],
+      "env": {
+        "FOPOST_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+Restart the app and the tools appear.
+
+### Claude Code
+
+```bash
+claude mcp add fopost --env FOPOST_API_KEY=your-api-key -- npx -y @fopost/mcp
+```
+
+### Cursor, Continue, and others
+
+Same command, `npx -y @fopost/mcp`, with `FOPOST_API_KEY` in the environment.
+
+## Tools
+
+| Tool | What it does |
+|:-----|:-------------|
+| `list_posts` | List posts in a workspace, filtered by status |
+| `get_post` | Fetch one post |
+| `schedule_post` | Create a post as a draft, scheduled, or published now |
+| `edit_post` | Update an existing post |
+| `cancel_post` | Cancel a scheduled post |
+| `delete_post` | Delete a post permanently |
+| `list_post_deliveries` | Per-account delivery status for a post |
+| `list_accounts` | List connected accounts |
+| `get_account_health` | Token freshness and rate-limit headroom |
+| `list_workspaces` | Workspaces the key can reach |
+| `generate_caption` | Write or improve a caption. Spends credits |
+| `get_ai_credits` | Current credit balance |
+
+<Callout type="warn">
+`rewrite_for_platforms` and `repurpose_url` are present in 0.2.0 but reach
+endpoints that require a dashboard session, so they answer `401` with an API
+key. Everything else in the table works.
+</Callout>
+
+## What it can and cannot do
+
+The server is your API key wearing a different interface. It inherits the key's scopes and its workspace binding exactly, so an assistant cannot reach a workspace you did not grant, and cannot publish with a key that has no `publish` scope.
+
+Give the key the narrowest scopes that do the job. An assistant with `posts` but not `publish` can draft all day and cannot put anything in front of your audience.
+
+## Next
+
+<Cards>
+  <Card title="Authentication" href="/api/authentication" />
+  <Card title="TypeScript SDK" href="/sdks/typescript" />
+  <Card title="FoPost Agent" href="/guide/using-fopost/agent" />
+</Cards>

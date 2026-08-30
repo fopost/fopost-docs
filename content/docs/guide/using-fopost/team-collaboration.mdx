@@ -1,0 +1,62 @@
+---
+title: Team Collaboration
+description: Invite people, set roles, and require approval before anything ships.
+icon: users
+---
+
+## Inviting someone
+
+1. **Settings → Team**
+2. **Invite Member**
+3. Their email, their role, and which workspaces they get
+4. Send
+
+They get an email invitation. Access begins when they accept, not when you send it.
+
+## Roles
+
+| Role | Can |
+|:-----|:----|
+| **Owner** | Everything, including billing and deleting the workspace |
+| **Admin** | Manage the team, connect accounts, publish, approve |
+| **Editor** | Create, edit, and schedule. Posts go for approval when the workspace requires it |
+| **Viewer** | Read posts, the calendar, and analytics. Change nothing |
+
+Roles are per workspace, so the same person can be an admin on one client and a viewer on another. That is what makes a single account workable for an agency with contractors.
+
+## Approvals
+
+A workspace can require approval before scheduled posts from editors go out. Turn it on in the workspace settings.
+
+With it on: an editor writes and schedules, the post is held, an admin approves or sends it back. Nothing an editor writes reaches an audience unreviewed.
+
+Leave it off for a team where everyone publishes. Turn it on the first time someone new joins.
+
+The agent's drafts go through the same queue, so an AI-written post is reviewed exactly like a human-written one.
+
+## Seats
+
+| Plan | Seats |
+|:-----|:------|
+| Starter | 1 |
+| Pro | 3 |
+| Business | 10 |
+
+Extra seats are $8/mo each on Pro and Business. Starter's single seat is a hard cap: to add anyone, move to Pro.
+
+## Workspaces are the stronger boundary
+
+A role limits what someone can do. A [workspace](./workspaces) limits what they can see. For an agency, put each client in its own workspace and grant membership per client, rather than relying on people to be careful in a shared one.
+
+## Removing someone
+
+Remove them from **Settings → Team**. Access ends immediately. Their posts and history stay: the work belongs to the workspace, not the person.
+
+Revoke any [API keys](/api/authentication) they created separately. Removing a member does not revoke a key.
+
+## Next
+
+<Cards>
+  <Card title="Workspaces" href="./workspaces" />
+  <Card title="Plans" href="/guide/plans/overview" />
+</Cards>

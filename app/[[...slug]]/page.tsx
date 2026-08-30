@@ -1,28 +1,36 @@
-import { source } from '@/lib/source';
-import {
-  DocsBody,
-  DocsPage,
-  DocsTitle,
-} from 'fumadocs-ui/page';
+import { getPageByUrl, source } from '@/lib/source';
+import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import { getMDXComponents } from '@/mdx-components';
-import { BRAND } from '@/lib/brand';
+import { PageActions } from '@/components/page-actions';
+import { BASE_PATH, BRAND } from '@/lib/brand';
+import { urlToParams } from '@/lib/page-url';
 
 export default async function Page(props: PageProps<'/[[...slug]]'>) {
   const params = await props.params;
-  const page = source.getPage(params.slug);
+  const page = getPageByUrl(params.slug);
   if (!page) notFound();
 
   const MDXContent = page.data.body;
+  const path = page.url === '/' ? '/index' : page.url;
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
+    <DocsPage
+      toc={page.data.toc}
+      full={page.data.full}
+      /* The section tab, the highlighted sidebar item and the title already
+         say where the reader is; a crumb above the title only repeats one. */
+      breadcrumb={{ enabled: false }}
+      tableOfContent={{ style: 'clerk' }}
+    >
       <DocsTitle>{page.data.title}</DocsTitle>
-      <div className="mb-8 text-sm text-fd-muted-foreground">
-        {page.data.description}
-      </div>
+      <DocsDescription className="mb-6">{page.data.description}</DocsDescription>
+      <PageActions
+        markdownUrl={`${BASE_PATH}${path}.md`}
+        pageUrl={`${BRAND.docsUrl}${page.url === '/' ? '' : page.url}`}
+      />
       <DocsBody>
         <MDXContent
           components={getMDXComponents({
@@ -36,14 +44,14 @@ export default async function Page(props: PageProps<'/[[...slug]]'>) {
 }
 
 export async function generateStaticParams() {
-  return source.generateParams();
+  return source.getPages().map((page) => ({ slug: urlToParams(page.url) }));
 }
 
 export async function generateMetadata(
   props: PageProps<'/[[...slug]]'>,
 ): Promise<Metadata> {
   const params = await props.params;
-  const page = source.getPage(params.slug);
+  const page = getPageByUrl(params.slug);
   if (!page) notFound();
 
   return {

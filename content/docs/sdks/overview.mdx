@@ -1,47 +1,97 @@
 ---
-title: Frameworks & SDKs Overview
-description: OwlStack SDKs and integrations for every language and framework.
+title: SDKs Overview
+description: Every official FoPost client, what it covers, and how to pick one.
+icon: book-closed
 ---
 
-# Frameworks & SDKs
-
-OwlStack provides official SDKs and framework integrations so developers can integrate social media publishing into any application.
-
-## Available SDKs
-
-These SDKs are ready to use today:
-
-| Package | Language | Type | Status |
-|:--------|:---------|:-----|:-------|
-| [OwlStack Core (PHP)](/sdks/laravel/installation) | PHP | Core SDK | v1.0 — Available |
-| [OwlStack Laravel](/sdks/laravel/installation) | PHP / Laravel | Native Integration | v2.0 — Available |
-| [OwlStack WordPress](/sdks/wordpress/installation) | PHP / WordPress | Native Plugin | v1.0 — Available |
-
-## Coming Soon
-
-We're actively developing SDKs for more languages and frameworks:
-
-| Package | Language | Type | Status |
-|:--------|:---------|:-----|:-------|
-| [OwlStack Node.js](/sdks/nodejs) | JavaScript / TypeScript | Cloud SDK | Coming Soon |
-| [OwlStack Python](/sdks/python) | Python | Cloud SDK | Coming Soon |
-| [OwlStack Go](/sdks/golang) | Go | Cloud SDK | Coming Soon |
-| [OwlStack Ruby](/sdks/ruby) | Ruby | Cloud SDK | Coming Soon |
-| [OwlStack Rust](/sdks/rust) | Rust | Cloud SDK | Coming Soon |
-
-## How SDKs Work
-
-All OwlStack SDKs are thin API clients that communicate with the OwlStack cloud service. The heavy lifting — platform API calls, content formatting, rate limiting, retries, and AI — happens on OwlStack's servers.
+Every client here is a thin wrapper over the [REST API](/api/overview). The platform APIs, formatting, media handling, retries, and scheduling all run on our side, so an SDK stays small and gains new networks without you upgrading anything.
 
 ```
-Your App → OwlStack SDK → api.owlstack.app → Social Platforms
+Your app  →  SDK  →  api.fopost.com  →  the networks
 ```
 
-This means:
-- **Lightweight** — SDKs are small and have minimal dependencies
-- **Consistent** — the same features work across all languages
-- **Always up to date** — new platforms and features are added server-side
+## Cloud clients
 
-## Want an SDK for Your Language?
+These talk to your FoPost account with an API key.
 
-If you need an SDK for a language not listed here, [let us know](https://owlstack.app/contact) and we'll prioritize it based on community demand. You can also use the [REST API](/api/overview) directly from any language.
+| Package | Language | Install |
+|:--------|:---------|:--------|
+| [`@fopost/sdk`](/sdks/typescript) | TypeScript, Node.js 18+ | `npm install @fopost/sdk` |
+| [`fopost`](/sdks/python) | Python 3.10+ | `pip install fopost` |
+| [`fopost/sdk`](/sdks/php) | PHP 8.1+ | `composer require fopost/sdk` |
+| [`fopost`](/sdks/ruby) | Ruby 3.1+ | `bundle add fopost` |
+| [`fopost-go`](/sdks/go) | Go 1.22+ | `go get github.com/fopost/fopost-go` |
+| [`fopost`](/sdks/rust) | Rust 1.85+ | `cargo add fopost` |
+| [`fopost-java`](/sdks/java) | Java 17+ | `com.fopost:fopost-java` |
+| [`FoPost.Sdk`](/sdks/dotnet) | .NET 8+ | `dotnet add package FoPost.Sdk` |
+| [`FoPost`](/sdks/swift) | Swift 5.9+, iOS 15 / macOS 12 | SwiftPM, `github.com/fopost/fopost-swift` |
+| [`fopost-kotlin`](/sdks/kotlin) | Kotlin, JVM 11+ and Android 26+ | `com.fopost:fopost-kotlin` |
+| [`fopost`](/sdks/dart) | Dart 3.4+, Flutter | `dart pub add fopost` |
+| [`fopost`](/sdks/elixir) | Elixir 1.15+ | `{:fopost, "~> 0.1"}` |
+
+All of them are MIT licensed and open source. All are 0.x, so pin an exact version if a breaking minor would hurt.
+
+## Framework integrations
+
+Each one wraps the client for its language and adds the wiring that framework expects: configuration, dependency injection, background jobs, console commands, and a signature-verified webhook endpoint. None of them adds to the API surface, so the language SDK's page stays the reference for resources and errors.
+
+| Integration | For | Install |
+|:------------|:----|:--------|
+| [Laravel](/sdks/laravel) | Laravel 10, 11, 12 | `composer require fopost/laravel` |
+| [Symfony](/sdks/symfony) | Symfony 6.4 LTS, 7.x | `composer require fopost/symfony-bundle` |
+| [Rails](/sdks/rails) | Rails 7.0+ | `bundle add fopost-rails` |
+| [Django](/sdks/django) | Django 4.2 to 5.2 | `pip install fopost-django` |
+| [FastAPI](/sdks/fastapi) | FastAPI 0.110+ | `pip install fopost-fastapi` |
+| [Spring Boot](/sdks/spring) | Spring Boot 3, Java 17 | `com.fopost:fopost-spring-boot-starter` |
+| [ASP.NET Core](/sdks/aspnet) | .NET 8, .NET 9 | `dotnet add package FoPost.AspNetCore` |
+| [Next.js](/sdks/nextjs) | Next 14, 15 | `npm install @fopost/next` |
+| [WordPress](/sdks/wordpress) | WordPress 6.4+ | Plugin install |
+| [WooCommerce](/sdks/woocommerce) | WooCommerce 8.0+ | Plugin install |
+
+## Automation & tooling
+
+For publishing from somewhere that is not your application code.
+
+| Tool | For | Install |
+|:-----|:----|:--------|
+| [CLI](/sdks/cli) | Your terminal and shell scripts | `brew install fopost/tap/fopost` |
+| [GitHub Action](/sdks/github-action) | A GitHub workflow | `uses: fopost/fopost-github-action@v0` |
+| [Terraform Provider](/sdks/terraform) | Workspaces, labels, webhooks, automations as code | `fopost/fopost` |
+| [Zapier](/sdks/zapier) | Zapier Zaps | Private app |
+| [n8n](/sdks/n8n) | n8n workflows | `n8n-nodes-fopost` |
+| [Make](/sdks/make) | Make scenarios | Private app |
+| [Browser extension](/sdks/browser-extension) | Networks with no write API | Chrome Web Store |
+| [`@fopost/mcp`](/sdks/mcp) | Any MCP client | `npx -y @fopost/mcp` |
+
+Zapier and Make review custom apps by hand before they appear in a public directory, and both integrations are private apps until that happens. Their pages say how to install one today.
+
+## Another language
+
+The REST API is plain JSON over HTTPS with one header, so a language with no official client is still one request away:
+
+```bash
+curl -X POST https://api.fopost.com/v1/posts \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "accounts": ["3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10"],
+    "content": [{ "text": "Hello from anywhere." }]
+  }'
+```
+
+The [OpenAPI spec](https://api.fopost.com/v1/openapi.json) generates a usable client in most languages. If you want an official one for a language that is missing, [tell us which](https://fopost.com/contact); demand is how the order gets decided.
+
+## Not the self-hosted library
+
+There is a separate, free PHP library that talks to each network from your own server with your own app credentials. It is not part of the Cloud and is documented in its own repository; everything on this page publishes through your FoPost account instead.
+
+## Next
+
+<Cards>
+  <Card title="API Reference" href="/api/overview" />
+  <Card title="TypeScript SDK" href="/sdks/typescript" />
+  <Card title="Python SDK" href="/sdks/python" />
+  <Card title="CLI" href="/sdks/cli" />
+  <Card title="Next.js" href="/sdks/nextjs" />
+</Cards>

@@ -1,91 +1,50 @@
 ---
-title: AI API
-description: API endpoints for AI-powered features.
+title: AI
+description: What an API key can do with AI, and where the rest of the AI features live.
+icon: sparkles
 ---
 
-# AI API
+Most AI in FoPost runs inside the dashboard and the [FoPost Agent](/guide/using-fopost/agent), where a person is in the loop. Two endpoints are reachable with an API key, both under the `ai` scope.
 
-**Pro + AI**
+The `ai` scope is deliberately separate from every other scope, because it is the only one that spends money. A key that can publish cannot generate unless you also grant `ai`.
 
-## Generate content
-
-```http
-POST /v1/ai/generate
-```
-
-**Request body:**
-
-```json
-{
-  "topic": "PHP 8.3 features",
-  "platforms": ["twitter", "linkedin"],
-  "tone": "professional",
-  "max_variants": 2
-}
-```
-
-**Response:**
-
-```json
-{
-  "data": {
-    "generations": [
-      {
-        "platform": "twitter",
-        "variants": [
-          "PHP 8.3 brings typed class constants and json_validate(). Here's what matters for your next project →",
-          "Big news for PHP developers: v8.3 is packed with features. Typed constants, json_validate(), and more 🚀"
-        ]
-      },
-      {
-        "platform": "linkedin",
-        "variants": [
-          "PHP 8.3 was released with several exciting features..."
-        ]
-      }
-    ]
-  }
-}
-```
-
-## Optimize content
+## Generate a caption
 
 ```http
-POST /v1/ai/optimize
+POST /v1/ai/generate-caption
 ```
 
-**Request body:**
-
-```json
-{
-  "content": "We released a new version of our product.",
-  "platforms": ["twitter", "linkedin"],
-  "goal": "engagement"
-}
+```bash
+curl -X POST https://api.fopost.com/v1/ai/generate-caption \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "content": "Notes from our launch week retro" }'
 ```
 
-## Suggest hashtags
+Writes or improves a caption. It costs AI credits.
+
+## Credit balance
 
 ```http
-POST /v1/ai/hashtags
+GET /v1/ai/credits
 ```
 
-**Request body:**
+What is left in the current period. Read it before a batch job so you fail early instead of halfway through.
 
-```json
-{
-  "content": "New blog post about microservices architecture",
-  "platform": "twitter",
-  "max_hashtags": 10
-}
-```
+## Running out
 
-**Response:**
+An AI call with no credits left answers `402`, with an `upgrade_url` in the body. It is not a rate limit, so do not retry it with backoff. Either top up, or degrade to publishing without generation.
 
-```json
-{
-  "data": {
-    "hashtags": ["microservices", "architecture", "webdev", "coding", "tech", "distributed", "backend", "devops"]
-  }
-}
-```
+Credits reset with the billing period. One-time top-ups do not expire with it and are spent after the monthly allowance. See [Plans](/guide/plans/overview).
+
+## Everything else
+
+Rewriting for each platform, hashtags, turning a URL into posts, voice notes, alt text, and image and video generation are dashboard and agent features and are not exposed to API keys. They are documented in the [guide](/guide), not here.
+
+## Next
+
+<Cards>
+  <Card title="FoPost Agent" href="/guide/using-fopost/agent" />
+  <Card title="AI Content" href="/guide/using-fopost/ai-content" />
+  <Card title="Plans" href="/guide/plans/overview" />
+</Cards>

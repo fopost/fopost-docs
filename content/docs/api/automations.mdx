@@ -1,0 +1,92 @@
+---
+title: Automations
+description: Trigger and pipeline workflows that publish without a human in the loop.
+icon: lightning
+---
+
+An automation is a trigger plus an ordered pipeline of steps. A new item arrives, the pipeline shapes it for each network and sends it, optionally spacing the sends out. These endpoints need the `automations` scope.
+
+## Create one
+
+```http
+POST /v1/automations
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/automations \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "name": "Blog to social",
+    "triggerType": "rss_feed",
+    "triggerConfig": { "url": "https://yourbrand.com/blog/feed.xml" },
+    "steps": [
+      { "actionType": "transform", "actionConfig": { "platform": "linkedin" } },
+      { "actionType": "publish",   "actionConfig": { "accounts": ["3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10"] } },
+      { "actionType": "delay",     "actionConfig": { "minutes": 120 } },
+      { "actionType": "publish",   "actionConfig": { "accounts": ["b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4"] } }
+    ]
+  }'
+```
+
+| Field | Required | Description |
+|:------|:---------|:------------|
+| `workspaceId` | Yes | Workspace the automation belongs to |
+| `name` | Yes | What it is called in the dashboard |
+| `triggerType` | Yes | `rss_feed`, `api_webhook`, `cross_post`, or `schedule` |
+| `triggerConfig` | No | Trigger settings, such as the feed URL |
+| `steps` | Yes | 1 to 20 steps, run in order |
+| `active` | No | Default `true` |
+
+Steps take an `actionType` of `publish`, `delay`, or `transform`, plus an `actionConfig`.
+
+For an `api_webhook` trigger, the response carries a `secret`. It is returned **only** on creation, so store it then. It is what you sign your calls to the trigger URL with.
+
+## Triggers
+
+| Trigger | Fires when |
+|:--------|:-----------|
+| `rss_feed` | A new item appears in the feed |
+| `api_webhook` | You call the automation's trigger URL |
+| `cross_post` | A post publishes to one account, so it can fan out to others |
+| `schedule` | A time you set comes around |
+
+## Manage
+
+| Endpoint | What it does |
+|:---------|:-------------|
+| `GET /v1/automations` | List them |
+| `GET /v1/automations/{id}` | One, with its steps |
+| `PUT /v1/automations/{id}` | Update it |
+| `POST /v1/automations/{id}/toggle` | Pause or resume without deleting |
+| `DELETE /v1/automations/{id}` | Delete it |
+| `GET /v1/automations/stats` | Run counts across the workspace |
+
+## Run history
+
+```http
+GET /v1/automations/{id}/runs
+GET /v1/automations/{id}/runs/{runId}
+```
+
+Every firing is recorded with what came in, what each step did, and what came out. When an automation posts something you did not expect, this is where you find out why.
+
+## Fire it yourself
+
+```http
+POST /v1/automations/{id}/trigger
+```
+
+The webhook entry point for an `api_webhook` automation. It authenticates with the trigger secret rather than your API key, so you can hand the URL to a system that has no FoPost credentials.
+
+## Guard rails
+
+An automation that starts failing trips its own circuit breaker and stops rather than retrying into a rate limit. A rule that would publish faster than the cadence you set is held instead of firing. The run log records both, so a paused automation is never a mystery.
+
+## Next
+
+<Cards>
+  <Card title="Automations guide" href="/guide/using-fopost/automations" />
+  <Card title="Webhooks" href="/api/webhooks" />
+</Cards>

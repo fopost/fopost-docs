@@ -1,10 +1,10 @@
 {
   "title": "Plans & Pricing",
-  "icon": "CreditCard",
+  "icon": "credit-card",
   "pages": [
     "overview",
     "starter",
     "pro",
-    "pro-plus"
+    "business"
   ]
 }

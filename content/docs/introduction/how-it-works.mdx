@@ -1,111 +1,76 @@
 ---
 title: How It Works
-description: Understand how OwlStack works under the hood.
-icon: Zap
+description: What happens between hitting publish and the post appearing.
+icon: route
 ---
 
-# How It Works
-
-OwlStack simplifies social media publishing by acting as a unified layer between you and 11+ social platforms.
-
----
-
-## The Architecture
+Whether the request comes from the composer, the [API](/api/overview), an [SDK](/sdks/overview), or the [agent](/guide/using-fopost/agent), the path is the same.
 
 ```
-You → OwlStack → 11+ Social Platforms
+You  →  FoPost  →  30 networks
 ```
 
-Whether you use the **dashboard**, the **REST API**, or an **SDK**, the flow is the same:
+## The vocabulary
 
-1. **You create content** — text, images, videos, or rich media
-2. **You choose platforms** — select which social networks to publish to
-3. **OwlStack processes it** — formats content for each platform, handles media uploads, and respects platform-specific limits
-4. **OwlStack delivers it** — publishes to all selected platforms simultaneously (or on schedule)
-5. **You get notified** — via dashboard, webhooks, or API polling
+**Account.** One connected profile on one network. A workspace can hold several on the same network, so posts target accounts, not network names.
 
----
+**Post.** Content plus the accounts it targets. One post, many destinations.
 
-## Key Concepts
+**Delivery.** One post reaching one account. Deliveries succeed and fail independently, which is why a post can be partially failed.
 
-### Platforms
+**Workspace.** The boundary everything lives inside. Accounts, posts, media, analytics, and team. Nothing crosses.
 
-A platform is a social network that OwlStack can publish to. Each platform has unique rules — character limits, media formats, thread support, etc. OwlStack handles all of this automatically.
+## Publishing
 
-### Accounts
+1. **You create a post** and pick the accounts
+2. **Preflight checks it** against each network: content over a limit, a media type that will be refused, a missing required field. Blockers stop it here, where a fix costs nothing
+3. **Each account is queued** as its own delivery
+4. **Each network is called** with content formatted for it and media resized for it
+5. **Results come back** per account, with a link to the live item, or a reason it failed
+6. **You hear about it** in the dashboard, or through a [webhook](/api/webhooks)
 
-An account is your connected social profile on a platform (e.g., your Twitter account or LinkedIn company page). You can connect multiple accounts per platform.
+Deliveries are independent throughout. One network being down does not hold up the other four.
 
-### Posts
+## Scheduling
 
-A post is a piece of content you want to publish. A single post can target multiple platforms — OwlStack formats it appropriately for each one.
+A scheduled post sits until its time, then enters the same pipeline. It runs on our servers, so nothing depends on your browser.
 
-### Scheduling
+If the queue loses its connection, orphaned deliveries are recovered and re-queued rather than silently dropped.
 
-Posts can be published immediately or scheduled for a specific date and time. OwlStack's scheduler handles timezone conversion and queue management.
+## Retries
 
-### Webhooks
+Transient failures are retried automatically with a growing gap. A rate limit or a brief outage recovers without you.
 
-Webhooks notify your application in real-time when events happen — post published, post failed, account disconnected, etc.
+Permanent failures are not retried, because they would fail identically forever: an expired token, content over the limit, a rejected media type. Those wait for you, with the reason stated.
 
----
+## Formatting
 
-## Publishing Flow
+Per network, and automatic:
 
-### From the Dashboard
+- Character limits, cut on a word boundary
+- Threads where the network supports them
+- Markup converted to whatever that network parses
+- Hashtags placed in the network's convention
+- Links formatted and counted correctly, including networks that wrap every URL to a fixed width
+- Media resized and cropped to the network's aspect ratios
 
-1. Click **New Post**
-2. Write your content (or use AI to generate it)
-3. Attach media if needed
-4. Select target platforms and accounts
-5. Choose **Publish Now** or **Schedule**
-6. OwlStack delivers to all platforms
+Override anything per network in the composer. What you do not touch follows the main draft.
 
-### From the API / SDK
+## Networks with no write API
 
-1. Authenticate with your API key
-2. Send a publish request with content and platforms
-3. OwlStack queues and processes the request
-4. Receive a response with the post ID and status
-5. Get webhook notifications on delivery or failure
+Some networks have no supported way for a server to post for you, and driving a headless browser at one breaks their terms. For those, FoPost stages the post and the [browser extension](/sdks/browser-extension) publishes it from your own logged-in session, in one click.
 
----
+An extension delivery is still a delivery: same calendar, same history, same analytics.
 
-## Content Formatting
+## Tokens
 
-OwlStack automatically adapts your content for each platform:
+Networks issue tokens that expire. They are refreshed in the background before they do, and when one cannot be refreshed the account is flagged and you are told, rather than a scheduled post failing quietly a week later.
 
-| Platform | Formatting |
-|:---------|:-----------|
-| Twitter/X | Splits long content into threads, respects 280-char limit |
-| Instagram | Formats for feed posts, carousels, reels, or stories |
-| LinkedIn | Adapts for personal or company page formatting |
-| Telegram | Supports Markdown, media groups, and channel posts |
-| Discord | Converts to rich embeds with attachments |
-| Reddit | Formats as self posts or link posts with flair |
-| Pinterest | Targets specific boards and sections |
-| Slack | Converts to Block Kit messages |
-| Facebook | Formats for page publishing |
-| Tumblr | Uses NPF content blocks |
-| WhatsApp | Formats as template messages |
-
----
-
-## What Happens Behind the Scenes
-
-1. **Validation** — Content is validated against each platform's requirements
-2. **Media processing** — Images and videos are optimized for each platform's specs
-3. **Rate limiting** — OwlStack respects platform API rate limits and queues accordingly
-4. **Retry logic** — Failed deliveries are automatically retried with exponential backoff
-5. **Event dispatching** — Success/failure events are dispatched via webhooks
-
----
-
-## Next Steps
+## Next
 
 <Cards>
   <Card title="Quick Start" href="/quick-start" />
-  <Card title="Dashboard Guide" href="/guide/using-owlstack/dashboard" />
+  <Card title="Creating Posts" href="/guide/using-fopost/creating-posts" />
   <Card title="API Reference" href="/api/overview" />
-  <Card title="View SDKs" href="/sdks/overview" />
+  <Card title="Supported Platforms" href="/introduction/platforms" />
 </Cards>

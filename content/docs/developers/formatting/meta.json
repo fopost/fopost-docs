@@ -1,9 +1,0 @@
-{
-  "title": "Formatting",
-  "icon": "Hash",
-  "pages": [
-    "platform-formatters",
-    "character-limits",
-    "hashtag-extraction"
-  ]
-}
