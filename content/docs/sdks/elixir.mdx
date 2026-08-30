@@ -1,0 +1,149 @@
+---
+title: Elixir SDK
+description: The official Elixir client for the FoPost API, built on Req.
+icon: box
+---
+
+`fopost` is the official Elixir package. It needs Elixir 1.15 or newer and talks to the API through [Req](https://hexdocs.pm/req), which pools connections through the Finch instance Req starts with its own application — nothing has to be added to your supervision tree.
+
+```elixir
+# mix.exs
+defp deps do
+  [{:fopost, "~> 0.1"}]
+end
+```
+
+<Callout type="warn">
+This is a 0.x release. The surface is still settling and a minor version may
+break something. Pin an exact version if that matters to you.
+</Callout>
+
+Source and issues: [github.com/fopost/fopost-elixir](https://github.com/fopost/fopost-elixir). MIT licensed.
+
+## Quick start
+
+```elixir
+client = FoPost.new(api_key: "fp_...")
+
+{:ok, workspaces} = FoPost.Workspaces.list(client)
+workspace = hd(workspaces)
+
+{:ok, accounts} = FoPost.Accounts.list(client, workspace_id: workspace.id)
+
+{:ok, post} =
+  FoPost.Posts.create(client,
+    workspace_id: workspace.id,
+    content: "Hello from Elixir",
+    accounts: Enum.map(accounts, & &1.id)
+  )
+
+{:ok, _result} = FoPost.Posts.publish(client, post.id)
+```
+
+A client is plain data. There is no global client and no process state, so build one and pass it around, or hold it in your own application config — either way it is safe to share between processes.
+
+Create a key at **Settings → API Keys** in the dashboard. It travels as the `X-API-Key` header.
+
+## Results
+
+Every function answers `{:ok, result}` or `{:error, %FoPost.Error{}}`, and every one has a bang variant that returns the result or raises the same error:
+
+```elixir
+post = FoPost.Posts.create!(client, workspace_id: id, content: "Hello")
+```
+
+`publish` returns once delivery is **queued**, not once the post is live. Read the deliveries or subscribe to [webhooks](/api/webhooks) for the outcome.
+
+## Resources
+
+`FoPost.Posts`, `FoPost.Workspaces`, `FoPost.Accounts`, `FoPost.Communities`, `FoPost.Labels`, `FoPost.Webhooks`, `FoPost.Analytics`, `FoPost.Automations`, `FoPost.Media`.
+
+Responses come back as structs with snake_case fields — `FoPost.Post`, `FoPost.Account`, `FoPost.Workspace` and the rest — each keeping the decoded body on `:raw`, so a field added server side stays reachable from an older client.
+
+## Pagination
+
+A paginated list is a `FoPost.Page`: the rows on `:data`, the counters (`current_page`, `per_page`, `total`, `last_page`, `from`, `to`) on `:meta`. `FoPost.Posts.stream/2` walks every page for you and is lazy, so `Enum.take/2` stops fetching:
+
+```elixir
+{:ok, page} = FoPost.Posts.list(client, workspace_id: workspace.id, per_page: 50)
+IO.puts("#{page.meta.total} posts")
+
+client
+|> FoPost.Posts.stream(workspace_id: workspace.id)
+|> Stream.filter(&(&1.status == "failed"))
+|> Enum.take(10)
+```
+
+## Configuration
+
+```elixir
+FoPost.new(
+  api_key: "fp_...",                       # or config :fopost, :api_key, or FOPOST_API_KEY
+  base_url: "https://api.fopost.com/v1",   # or config, or FOPOST_BASE_URL
+  timeout: 30_000,                         # milliseconds, per request
+  max_retries: 2,                          # retries after the first attempt
+  user_agent: "acme/2.0",
+  req_options: [finch: MyApp.Finch]        # merged last, so it wins over everything above
+)
+```
+
+Explicit options beat application config, which beats the environment. Without a key anywhere, `FoPost.new/1` raises `ArgumentError` at build time rather than failing on the first call.
+
+`:req_options` is the escape hatch for a custom pool, a proxy, custom TLS, or a test stub — it is merged last, so it overrides even the retry policy.
+
+A `429`, a `5xx`, and a transport failure are retried; nothing else is, because the request itself is what needs changing. Backoff is exponential from 500 ms capped at 60 s, and a `429` waits for the interval the API asks for in `Retry-After`, capped the same way.
+
+## Errors
+
+There is one error struct, not one exception module per status. The status is on the struct and the predicates cover the cases callers actually branch on:
+
+```elixir
+case FoPost.Posts.publish(client, post.id) do
+  {:ok, result} ->
+    result
+
+  {:error, %FoPost.Error{} = error} ->
+    cond do
+      FoPost.Error.rate_limited?(error) -> retry_in(error.retry_after)
+      FoPost.Error.payment_required?(error) -> send_to(error.upgrade_url)
+      true -> Logger.error(Exception.message(error))
+    end
+end
+```
+
+| Predicate | True for |
+|:----------|:---------|
+| `validation?/1` | 400, 422 |
+| `unauthorized?/1` | 401 |
+| `payment_required?/1` | 402, and `:upgrade_url` carries where to send the user |
+| `forbidden?/1` | 403 |
+| `not_found?/1` | 404 |
+| `rate_limited?/1` | 429, and `:retry_after` holds the wait in seconds |
+| `server_error?/1` | any 5xx |
+| `transport_error?/1` | the request never produced a response |
+
+`:code` and `:message` come from the API's `{"error": ..., "message": ...}` envelope and `:body` keeps the decoded body as it arrived. A transport failure is the same struct with `status: nil` and `code: "transport_error"`, so a caller never has to match on two shapes. The struct is also an exception, so `raise error` and the bang variants work the way they do elsewhere in Elixir.
+
+## Escape hatch
+
+Anything the SDK does not wrap yet is one call away, with the same auth, retries, and error handling:
+
+```elixir
+{:ok, body} = FoPost.request(client, :get, "/platforms")
+{:ok, body} = FoPost.request(client, :get, "/posts", params: [per_page: 5])
+{:ok, body} = FoPost.request(client, :post, "/posts/#{id}/publish", json: %{})
+```
+
+Options are Req options, so `:params`, `:json`, and `:form_multipart` all work. The decoded body comes back exactly as the API sent it, envelope included; pass `unwrap: true` to peel a `{"data": ...}` wrapper off it.
+
+## Verifying webhooks
+
+FoPost signs the raw bytes of each delivery with HMAC-SHA256, keyed on that webhook's secret, and sends the hex digest as `X-FoPost-Signature: sha256=<digest>`. The SDK verifies it with a constant-time comparison — verify before parsing, since re-encoding the body changes the bytes that were signed.
+
+## Next
+
+<Cards>
+  <Card title="API Reference" href="/api/overview" />
+  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Ruby SDK" href="/sdks/ruby" />
+</Cards>
