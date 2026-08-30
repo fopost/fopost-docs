@@ -20,6 +20,11 @@ These talk to your FoPost account with an API key.
 | [`fopost`](/sdks/python) | Python 3.10+ | `pip install fopost` |
 | [`fopost/sdk`](/sdks/php) | PHP 8.1+ | `composer require fopost/sdk` |
 | [`fopost/laravel`](/sdks/laravel) | Laravel 10, 11, 12 | `composer require fopost/laravel` |
+| [`fopost`](/sdks/ruby) | Ruby 3.1+ | `bundle add fopost` |
+| [`fopost-go`](/sdks/go) | Go 1.22+ | `go get github.com/fopost/fopost-go` |
+| [`fopost`](/sdks/rust) | Rust 1.85+ | `cargo add fopost` |
+| [`fopost-java`](/sdks/java) | Java 17+ | `com.fopost:fopost-java` |
+| [`FoPost.Sdk`](/sdks/dotnet) | .NET 8+ | `dotnet add package FoPost.Sdk` |
 | [`@fopost/mcp`](/sdks/mcp) | Any MCP client | `npx -y @fopost/mcp` |
 
 All of them are MIT licensed and open source. All are 0.x, so pin an exact version if a breaking minor would hurt.
@@ -35,7 +40,7 @@ All of them are MIT licensed and open source. All are 0.x, so pin an exact versi
 
 ## Another language
 
-Java, .NET, Rust and Go clients are in development. They get a page when they ship and not before, so nothing here links to one. Until then the REST API is plain JSON over HTTPS with one header, and works from any language:
+The REST API is plain JSON over HTTPS with one header, so a language with no official client is still one request away:
 
 ```bash
 curl -X POST https://api.fopost.com/v1/posts \
@@ -61,4 +66,5 @@ There is a separate, free PHP library that talks to each network from your own s
   <Card title="TypeScript SDK" href="/sdks/typescript" />
   <Card title="Python SDK" href="/sdks/python" />
   <Card title="PHP SDK" href="/sdks/php" />
+  <Card title="Go SDK" href="/sdks/go" />
 </Cards>

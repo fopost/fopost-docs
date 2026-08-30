@@ -1,0 +1,192 @@
+---
+title: Rust SDK
+description: The official Rust client for the FoPost API, async and built on reqwest.
+icon: tech-rust
+---
+
+`fopost` is the official Rust client. It is async, built on `reqwest`, and needs Rust 1.85 or newer.
+
+```toml
+[dependencies]
+fopost = "0.1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+```
+
+<Callout type="warn">
+This is a 0.x release. The surface is still settling and a minor version may
+break something. Pin an exact version if that matters to you.
+</Callout>
+
+Source and issues: [github.com/fopost/fopost-rust](https://github.com/fopost/fopost-rust). API docs on [docs.rs](https://docs.rs/fopost). MIT licensed.
+
+## Quick start
+
+```rust
+use fopost::{models::CreatePost, Client};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::from_env()?; // reads FOPOST_API_KEY
+
+    // Everything is scoped to a workspace.
+    let workspaces = client.workspaces().list().await?;
+    let workspace = &workspaces[0];
+
+    let accounts = client.accounts().list(Some(&workspace.id)).await?;
+    let ids: Vec<_> = accounts.iter().map(|a| a.id.clone()).collect();
+
+    // Create a post, then publish it immediately.
+    let post = client
+        .posts()
+        .create(&CreatePost::text(&workspace.id, "Hello from Rust").accounts(ids.clone()))
+        .await?;
+    client.posts().publish(&post.id, &Default::default()).await?;
+
+    // Or schedule it for later.
+    client
+        .posts()
+        .create(
+            &CreatePost::text(&workspace.id, "Scheduled with the SDK")
+                .accounts(ids)
+                .schedule_at("2026-09-01T10:00:00Z"),
+        )
+        .await?;
+
+    Ok(())
+}
+```
+
+Times are UTC. `publish` returns once delivery is queued, not once it is live — read `posts().deliveries()` or subscribe to [webhooks](/api/webhooks) for the result.
+
+## Configuration
+
+```rust
+use std::time::Duration;
+
+let client = fopost::Client::builder()
+    .api_key(std::env::var("FOPOST_API_KEY")?)
+    .base_url("https://api.fopost.com/v1") // override for another deployment
+    .timeout(Duration::from_secs(30))
+    .max_retries(3)                        // 1 disables retrying
+    .build()?;
+```
+
+| Env var | Used for |
+|:--------|:---------|
+| `FOPOST_API_KEY` | The API key `Client::from_env()` reads |
+
+A key carries only the scopes granted at creation and may be bound to a single workspace, in which case naming any other workspace answers `403`.
+
+## Publishing safely
+
+`preflight`, and `publish` in dry-run mode, both report what would happen without sending anything:
+
+```rust
+use fopost::models::{PublishOptions, PublishOutcome};
+
+// Hard blockers per account, plus advisory content signals.
+let check = client.posts().preflight(post_id).await?;
+if !check.ready {
+    for account in &check.accounts {
+        for issue in &account.issues {
+            println!("{}: {issue}", account.platform.as_deref().unwrap_or("?"));
+        }
+    }
+}
+
+// Or run the publish path itself without anything leaving the building.
+let outcome = client.posts().publish(post_id, &PublishOptions::new().dry_run()).await?;
+assert!(matches!(outcome, PublishOutcome::DryRun(_)));
+```
+
+## Media
+
+Media upload and bulk CSV import post multipart bodies, which the `multipart` feature covers. It is on by default.
+
+```rust
+use fopost::models::{ContentBlock, CreatePost, MediaItem, MediaType, MediaUpload};
+
+let bytes = std::fs::read("card.png").unwrap();
+let uploaded = client
+    .media()
+    .upload(workspace_id, [MediaUpload::new("card.png", "image/png", bytes)])
+    .await?;
+
+let block = ContentBlock::text("Ship it").with_media([MediaItem::new(
+    MediaType::Image,
+    &uploaded[0].name,
+    &uploaded[0].url,
+)
+.alt("A product screenshot")]);
+
+client.posts().create(&CreatePost::new(workspace_id, [block])).await?;
+```
+
+## What is on the client
+
+| Namespace | Methods |
+|:----------|:--------|
+| `posts()` | `list`, `list_all`, `get`, `create`, `update`, `delete`, `duplicate`, `publish`, `retry`, `cancel`, `preflight`, `deliveries`, `publish_runs`, `analytics`, `bulk`, `validate_import`, `commit_import`, `rollback_import` |
+| `accounts()` | `list`, `get`, `create`, `delete`, `toggle_primary`, `validate`, `health`, `health_summary`, `refresh_token`, `analytics`, `communities`, `sync_communities`, `search_communities`, `add_community`, `remove_community` |
+| `workspaces()` | `list`, `get`, `create`, `update`, `delete`, `analytics` |
+| `labels()` | `list`, `get`, `create`, `update`, `delete` |
+| `webhooks()` | `list`, `create`, `update`, `delete`, `test` |
+| `automations()` | `list`, `get`, `create`, `update`, `delete`, `toggle`, `runs`, `get_run`, `stats`, `trigger` |
+| `analytics()` | `overview`, `time_series`, `top_posts`, `labels`, `posts_table`, `posting_streak`, `demographics`, `collect` |
+| `media()` | `list`, `upload`, `delete` |
+
+Anything not yet wrapped is reachable through `client.request(method, path, query, body)`, which gets the same auth, retries, and error handling.
+
+## Cargo features
+
+| Feature | Default | What it does |
+|:--------|:--------|:-------------|
+| `rustls-tls` | yes | TLS through rustls, needing no system OpenSSL |
+| `native-tls` | no | TLS through the platform's own stack |
+| `multipart` | yes | Media upload and bulk CSV import |
+
+To use `native-tls` instead, turn the defaults off and name what you want back:
+
+```toml
+fopost = { version = "0.1", default-features = false, features = ["native-tls", "multipart"] }
+```
+
+## Errors
+
+Every call returns `Result<T, fopost::Error>`. A non-2xx response becomes `Error::Api`, carrying the status, the API's machine-readable code, and the whole body.
+
+```rust
+use fopost::Error;
+
+match client.posts().publish(post_id, &Default::default()).await {
+    Ok(outcome) => println!("{} deliveries queued", outcome.deliveries().len()),
+    Err(Error::Api(err)) if err.is_payment_required() => {
+        println!("Upgrade at {:?}", err.upgrade_url());
+    }
+    Err(Error::Api(err)) if err.is_rate_limited() => {
+        println!("Rate limited, retry in {:?}s", err.retry_after);
+    }
+    Err(err) => eprintln!("{err}"),
+}
+```
+
+Requests are rate limited per key, per minute. A `429` is retried automatically, waiting for the interval the API asks for in `Retry-After`, up to `max_retries` attempts.
+
+## Forward compatibility
+
+Response types ignore fields they do not know, and every enum keeps an `Other(String)` variant, so a platform or status added server-side parses on an older SDK instead of failing the whole response.
+
+```rust
+use fopost::models::Platform;
+
+assert_eq!(Platform::InstagramBusiness.as_str(), "instagram-business");
+assert_eq!(Platform::from("brand-new"), Platform::Other("brand-new".into()));
+```
+
+## Next
+
+<Cards>
+  <Card title="API Reference" href="/api/overview" />
+  <Card title="Go SDK" href="/sdks/go" />
+  <Card title="Webhooks" href="/api/webhooks" />
+</Cards>

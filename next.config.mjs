@@ -91,9 +91,9 @@ const config = {
       { source: '/sdks/wordpress/:path+', destination: '/', permanent: true },
       { source: '/sdks/nodejs', destination: '/sdks/typescript', permanent: true },
       { source: '/sdks/python-sdk', destination: '/sdks/python', permanent: true },
-      { source: '/sdks/golang', destination: '/sdks/overview', permanent: true },
-      { source: '/sdks/ruby', destination: '/sdks/overview', permanent: true },
-      { source: '/sdks/rust', destination: '/sdks/overview', permanent: true },
+      { source: '/sdks/golang', destination: '/sdks/go', permanent: true },
+      { source: '/sdks/csharp', destination: '/sdks/dotnet', permanent: true },
+      { source: '/sdks/net', destination: '/sdks/dotnet', permanent: true },
       // Competitor comparisons live on the marketing site, where the data is
       // one source shared with the pricing and feature pages. The docs copies
       // had drifted into claims the product does not make.

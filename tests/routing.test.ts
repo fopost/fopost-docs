@@ -45,7 +45,17 @@ describe('No wildcard redirect swallows the path it sits under', () => {
   });
 
   it('does not redirect a URL that is a real page', () => {
-    const pages = ['/sdks/wordpress', '/sdks/php', '/sdks/laravel', '/sdks/typescript'];
+    const pages = [
+      '/sdks/wordpress',
+      '/sdks/php',
+      '/sdks/laravel',
+      '/sdks/typescript',
+      '/sdks/ruby',
+      '/sdks/go',
+      '/sdks/rust',
+      '/sdks/java',
+      '/sdks/dotnet',
+    ];
     const caught = pages.filter((page) => redirects.some((rule) => rule.source === page));
 
     expect(caught).toEqual([]);
