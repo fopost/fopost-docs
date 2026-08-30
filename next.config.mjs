@@ -1,19 +1,8 @@
 import { createMDX } from 'fumadocs-mdx/next';
-import { readdirSync } from 'node:fs';
 
 const withMDX = createMDX();
 
-/* The introduction section is served a level up from where it lives, so
-   /platforms renders content/docs/introduction/platforms.mdx. The list is read
-   off disk rather than typed out: a hand-maintained copy is how /platforms
-   ended up 404ing after the page was added to the section but not here. */
-const INTRODUCTION_SLUGS = readdirSync(new URL('./content/docs/introduction', import.meta.url))
-  .filter((file) => file.endsWith('.mdx') && file !== 'index.mdx')
-  .map((file) => file.replace(/\.mdx$/, ''));
-
-// The marketing site these redirects point at is per-brand. The pre-rebrand
-// /what-is-owlstack, /why-owlstack and /guide/using-owlstack/* slugs are kept
-// as redirect sources only, so external links to them keep resolving.
+// The marketing site these redirects point at is per-brand.
 const WEBSITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL?.trim() || 'https://fopost.com';
 
 /** @type {import('next').NextConfig} */
@@ -26,16 +15,8 @@ const config = {
       beforeFiles: [
         // Any page, as Markdown, by appending .md — the convention AI clients
         // and crawlers look for. `/index.md` is the site root, which has no
-        // slug of its own. Kept ahead of the page rewrites so it wins.
+        // slug of its own.
         { source: '/:slug(.*)\\.md', destination: '/md/:slug' },
-        { source: '/', destination: '/introduction' },
-        ...INTRODUCTION_SLUGS.map((slug) => ({
-          source: `/${slug}`,
-          destination: `/introduction/${slug}`,
-        })),
-        // Pre-rebrand slugs, still linked to from outside.
-        { source: '/what-is-owlstack', destination: '/introduction/what-is-fopost' },
-        { source: '/why-owlstack', destination: '/introduction/why-fopost' },
       ],
     };
   },
@@ -53,13 +34,8 @@ const config = {
       { source: '/guide/plans/enterprise', destination: '/guide/plans/overview', permanent: true },
       // AI Studio was replaced by the agent.
       { source: '/guide/using-fopost/ai-studio', destination: '/guide/using-fopost/agent', permanent: true },
-      { source: '/guide/using-owlstack/ai-studio', destination: '/guide/using-fopost/agent', permanent: true },
-      // The agent page dropped the retired brand's "Owl" name.
+      // The agent page was renamed when the retired brand's name went.
       { source: '/guide/using-fopost/owl-agent', destination: '/guide/using-fopost/agent', permanent: true },
-      { source: '/guide/using-owlstack/owl-agent', destination: '/guide/using-fopost/agent', permanent: true },
-      // The using-owlstack family was renamed to using-fopost in the rebrand.
-      { source: '/guide/using-owlstack/:path+', destination: '/guide/using-fopost/:path+', permanent: true },
-      { source: '/guide/using-owlstack', destination: '/guide/using-fopost', permanent: true },
       // The guide/ai and guide/pro families folded into using-fopost.
       { source: '/guide/ai/content-generation', destination: '/guide/using-fopost/ai-content', permanent: true },
       { source: '/guide/ai/post-optimization', destination: '/guide/using-fopost/ai-content', permanent: true },
