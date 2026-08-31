@@ -1,5 +1,6 @@
 import '@/app/global.css';
-import { RootProvider } from 'fumadocs-ui/provider/next';
+import { DocsRootProvider } from '@/components/root-provider';
+import { searchSuggestions } from '@/lib/search-suggestions';
 import { DocsLayout } from 'fumadocs-ui/layouts/notebook';
 import { baseOptions } from '@/lib/layout.shared';
 import { SidebarFooterArea } from '@/components/sidebar-footer-area';
@@ -15,7 +16,7 @@ import { source } from '@/lib/source';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import type { Metadata } from 'next';
-import { BASE_PATH, BRAND } from '@/lib/brand';
+import { BRAND } from '@/lib/brand';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BRAND.docsUrl),
@@ -34,14 +35,7 @@ export default function Layout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
       <body className={`${GeistSans.className} flex flex-col min-h-screen`}>
-        <RootProvider
-          /* The search client builds its URL from the origin, so it misses the
-             basePath and 404s on /api/search unless it is spelled out. */
-          search={{ options: { api: `${BASE_PATH}/api/search` } }}
-          theme={{
-            enabled: true,
-          }}
-        >
+        <DocsRootProvider links={searchSuggestions()}>
           {/* One sidebar, Vercel-docs style: a flat root list of the sections
               that slides sideways into the selected section's page list. The
               default page tree is swapped out through the components slot; the
@@ -66,7 +60,7 @@ export default function Layout({ children }: LayoutProps<'/'>) {
               {children}
             </DocsLayout>
           </SlideNavProvider>
-        </RootProvider>
+        </DocsRootProvider>
       </body>
     </html>
   );
