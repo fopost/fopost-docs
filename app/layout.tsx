@@ -7,7 +7,7 @@ import { source } from '@/lib/source';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import type { Metadata } from 'next';
-import { BRAND } from '@/lib/brand';
+import { BASE_PATH, BRAND } from '@/lib/brand';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BRAND.docsUrl),
@@ -26,6 +26,9 @@ export default function Layout({ children }: LayoutProps<'/'>) {
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
       <body className={`${GeistSans.className} flex flex-col min-h-screen`}>
         <RootProvider
+          /* The search client builds its URL from the origin, so it misses the
+             basePath and 404s on /api/search unless it is spelled out. */
+          search={{ options: { api: `${BASE_PATH}/api/search` } }}
           theme={{
             enabled: true,
           }}
