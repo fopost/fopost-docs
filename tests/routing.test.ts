@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import config from '../next.config.mjs';
 import { pageUrl, urlToParams } from '../lib/page-url';
+import { BASE_PATH } from '../lib/brand';
 
 const INTRODUCTION = fileURLToPath(new URL('../content/docs/introduction', import.meta.url));
 
@@ -100,5 +101,16 @@ describe('No route rule carries the retired brand', () => {
       .filter((value) => /owlstack/i.test(value));
 
     expect(named).toEqual([]);
+  });
+});
+
+/**
+ * The search dialog fetches its API from the origin, not through Next's
+ * router, so the basePath has to be spelled out. It went missing once and the
+ * dialog returned nothing in production while every local check passed.
+ */
+describe('The search API path survives the basePath', () => {
+  it('matches next.config', () => {
+    expect(BASE_PATH).toBe(config.basePath);
   });
 });
