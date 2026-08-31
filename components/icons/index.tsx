@@ -121,9 +121,21 @@ export const ChevronLeftSmallIcon = (props: IconProps) => (
   </svg>
 );
 
+export const ChevronLeftIcon = (props: IconProps) => (
+  <svg {...ICON_BASE} viewBox="0 0 16 16" {...props}>
+    <path fillRule="evenodd" clipRule="evenodd" d="M10.5 14.0607L9.96963 13.5303L5.14641 8.7071C4.75589 8.31658 4.75589 7.68341 5.14641 7.29289L9.96963 2.46966L10.5 1.93933L11.5607 2.99999L11.0303 3.53032L6.56062 7.99999L11.0303 12.4697L11.5607 13L10.5 14.0607Z" fill="currentColor"/>
+  </svg>
+);
+
 export const ChevronRightSmallIcon = (props: IconProps) => (
   <svg {...ICON_BASE} viewBox="0 0 16 16" {...props}>
     <path fillRule="evenodd" clipRule="evenodd" d="M6.74999 3.93933L7.28032 4.46966L10.1035 7.29288C10.4941 7.68341 10.4941 8.31657 10.1035 8.7071L7.28032 11.5303L6.74999 12.0607L5.68933 11L6.21966 10.4697L8.68933 7.99999L6.21966 5.53032L5.68933 4.99999L6.74999 3.93933Z" fill="currentColor"/>
+  </svg>
+);
+
+export const ChevronRightIcon = (props: IconProps) => (
+  <svg {...ICON_BASE} viewBox="0 0 16 16" {...props}>
+    <path fillRule="evenodd" clipRule="evenodd" d="M5.49999 1.93933L6.03032 2.46966L10.8536 7.29288C11.2441 7.68341 11.2441 8.31657 10.8536 8.7071L6.03032 13.5303L5.49999 14.0607L4.43933 13L4.96966 12.4697L9.43933 7.99999L4.96966 3.53032L4.43933 2.99999L5.49999 1.93933Z" fill="currentColor"/>
   </svg>
 );
 
