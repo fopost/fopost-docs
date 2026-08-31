@@ -34,7 +34,7 @@ export const BRAND = {
     pick(process.env.NEXT_PUBLIC_BRAND_APPLE_TOUCH_ICON, '/brand/fopost/apple-touch-icon.png'),
   ),
   websiteUrl: pick(process.env.NEXT_PUBLIC_WEBSITE_URL, 'https://fopost.com'),
-  appUrl: pick(process.env.NEXT_PUBLIC_APP_URL, 'https://app.fopost.com'),
+  appUrl: pick(process.env.NEXT_PUBLIC_APP_URL, 'https://fopost.com/dashboard'),
   apiUrl: pick(process.env.NEXT_PUBLIC_API_URL, 'https://api.fopost.com'),
   docsUrl: pick(process.env.NEXT_PUBLIC_DOCS_URL, 'https://fopost.com/docs'),
 } as const;
