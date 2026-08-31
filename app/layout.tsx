@@ -2,7 +2,15 @@ import '@/app/global.css';
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import { DocsLayout } from 'fumadocs-ui/layouts/notebook';
 import { baseOptions } from '@/lib/layout.shared';
-import { SidebarFooter } from '@/components/sidebar-footer';
+import { SidebarFooterArea } from '@/components/sidebar-footer-area';
+import {
+  SlideNavFolder,
+  SlideNavItem,
+  SlideNavProvider,
+  SlideNavSeparator,
+  SlideSidebarSearch,
+} from '@/components/slide-sidebar';
+import { buildNavTree } from '@/lib/nav-tree';
 import { source } from '@/lib/source';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
@@ -21,6 +29,7 @@ export const metadata: Metadata = {
 
 export default function Layout({ children }: LayoutProps<'/'>) {
   const { nav, ...options } = baseOptions();
+  const { nodes, slot } = buildNavTree(source.pageTree);
 
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
@@ -33,22 +42,30 @@ export default function Layout({ children }: LayoutProps<'/'>) {
             enabled: true,
           }}
         >
-          <DocsLayout
-            tree={source.pageTree}
-            {...options}
-            /* The four sections sit in the navbar instead of behind a dropdown,
-               so a reader sees the whole product at once and the sidebar below
-               is free to show one section's tree in full. The header spans the
-               full width, above the sidebar, the way the marketing site does. */
-            nav={{ ...nav, mode: 'top' }}
-            tabMode="navbar"
-            sidebar={{
-              defaultOpenLevel: 1,
-              footer: <SidebarFooter />,
-            }}
-          >
-            {children}
-          </DocsLayout>
+          {/* One sidebar, Vercel-docs style: a flat root list of the sections
+              that slides sideways into the selected section's page list. The
+              default page tree is swapped out through the components slot; the
+              full-width navbar and the mobile drawer stay the layout's own. */}
+          <SlideNavProvider nodes={nodes} slot={slot}>
+            <DocsLayout
+              tree={source.pageTree}
+              {...options}
+              nav={{ ...nav, mode: 'top' }}
+              searchToggle={{ enabled: false }}
+              sidebar={{
+                banner: <SlideSidebarSearch />,
+                footer: SidebarFooterArea,
+                tabs: false,
+                components: {
+                  Folder: SlideNavFolder,
+                  Item: SlideNavItem,
+                  Separator: SlideNavSeparator,
+                },
+              }}
+            >
+              {children}
+            </DocsLayout>
+          </SlideNavProvider>
         </RootProvider>
       </body>
     </html>

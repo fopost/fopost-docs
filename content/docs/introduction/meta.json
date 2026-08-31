@@ -1,7 +1,6 @@
 {
   "title": "Introduction",
   "description": "Overview & getting started",
-  "root": true,
   "icon": "home",
   "pages": [
     "index",

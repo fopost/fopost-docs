@@ -1,7 +1,6 @@
 {
   "title": "API Reference",
   "description": "REST API documentation",
-  "root": true,
   "icon": "api",
   "pages": [
     "overview",
