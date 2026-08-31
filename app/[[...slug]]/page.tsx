@@ -7,6 +7,7 @@ import { getMDXComponents } from '@/mdx-components';
 import { PageActions } from '@/components/page-actions';
 import { PageFooter } from '@/components/page-footer';
 import { RelatedDocs } from '@/components/related-docs';
+import { Feedback } from '@/components/feedback';
 import { relatedPages } from '@/lib/related';
 import { BASE_PATH, BRAND } from '@/lib/brand';
 import { urlToParams } from '@/lib/page-url';
@@ -46,6 +47,7 @@ export default async function Page(props: PageProps<'/[[...slug]]'>) {
       </DocsBody>
       <RelatedDocs pages={await relatedPages(page)} />
       <PageFooter tree={source.pageTree} url={page.url} />
+      <Feedback path={page.url} />
     </DocsPage>
   );
 }
