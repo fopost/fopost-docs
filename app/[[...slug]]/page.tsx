@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import { getMDXComponents } from '@/mdx-components';
 import { PageActions } from '@/components/page-actions';
+import { PageFooter } from '@/components/page-footer';
 import { BASE_PATH, BRAND } from '@/lib/brand';
 import { urlToParams } from '@/lib/page-url';
 
@@ -23,6 +24,8 @@ export default async function Page(props: PageProps<'/[[...slug]]'>) {
       /* The section tab, the highlighted sidebar item and the title already
          say where the reader is; a crumb above the title only repeats one. */
       breadcrumb={{ enabled: false }}
+      /* Replaced below with the labelled Previous / Next style. */
+      footer={{ enabled: false }}
       tableOfContent={{ style: 'clerk' }}
     >
       <DocsTitle>{page.data.title}</DocsTitle>
@@ -39,6 +42,7 @@ export default async function Page(props: PageProps<'/[[...slug]]'>) {
           })}
         />
       </DocsBody>
+      <PageFooter tree={source.pageTree} url={page.url} />
     </DocsPage>
   );
 }
