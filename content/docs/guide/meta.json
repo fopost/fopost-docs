@@ -1,7 +1,6 @@
 {
   "title": "Guide",
   "description": "For creators and teams",
-  "root": true,
   "icon": "book-open",
   "pages": [
     "index",

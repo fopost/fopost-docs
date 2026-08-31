@@ -22,6 +22,9 @@ export const docs = defineDocs({
       order: z.number().optional(),
       title: branded,
       description: branded.optional(),
+      /* Hand-picked "Related documentation" page URLs, overriding the
+         computed siblings-plus-links list. */
+      related: z.array(z.string()).optional(),
     }),
   },
   meta: {

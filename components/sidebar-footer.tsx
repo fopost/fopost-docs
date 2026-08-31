@@ -7,7 +7,7 @@ import { AcronymMarkdownIcon, ArrowUpRightIcon } from '@/components/icons';
  */
 export function SidebarFooter() {
   return (
-    <div className="flex items-center gap-2 border-t pt-3">
+    <div className="flex items-center gap-2">
       <a
         href={BRAND.appUrl}
         className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-md bg-fd-primary px-3 text-[13px] font-medium text-fd-primary-foreground no-underline transition-opacity hover:opacity-90"

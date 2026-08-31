@@ -1,7 +1,6 @@
 {
   "title": "SDKs",
   "description": "Clients & integrations",
-  "root": true,
   "icon": "box",
   "pages": [
     "index",
