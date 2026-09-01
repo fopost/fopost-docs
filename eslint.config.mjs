@@ -56,6 +56,9 @@ export default [
       "build/**",
       "next-env.d.ts",
       ".source/**",
+      // Vendored copy of the monorepo's shared footer (npm run sync-footer);
+      // linted at its source, and any local edit would be overwritten anyway.
+      "components/marketing-footer/**",
     ],
   },
 ];

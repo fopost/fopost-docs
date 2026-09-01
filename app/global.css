@@ -2,6 +2,8 @@
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
 @import './geist.css';
+/* Shared footer styles, vendored with its source (npm run sync-footer). */
+@import '../components/marketing-footer/styles.css';
 
 /* Fumadocs toggles dark with a class on <html>, so the variant has to be
    class-based here the way it is on the marketing site. Without this every
@@ -158,16 +160,4 @@ samp {
 #nd-toc a[data-active='true'] {
   color: var(--ds-gray-1000);
   font-weight: 500;
-}
-
-/* ─── Site footer wordmark ───
-   Outlined oversized brand name closing the footer, ported from the
-   marketing site. The glyphs are filled in the page background and painted
-   stroke-first, so the fill hides the seams where a glyph's contours
-   overlap and leaves an even hairline outside. */
-.footer-wordmark span {
-  color: var(--color-fd-background);
-  paint-order: stroke fill;
-  -webkit-text-stroke: 2px color-mix(in oklab, var(--color-fd-foreground) 26%, transparent);
-  user-select: none;
 }
