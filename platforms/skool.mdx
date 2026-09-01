@@ -1,0 +1,32 @@
+---
+title: Skool
+description: Community posts in your Skool group.
+---
+
+Skool has no official API, so FoPost publishes the way the Skool app itself does: it signs in with your credentials and creates the post in your community.
+
+## Connecting
+
+**Accounts → Connect → Skool**, enter your Skool email, password, and the community — its slug or URL.
+
+Because this is a sign-in rather than an API grant, Skool occasionally challenges an automated login. When that happens the post fails with a clear message; retrying usually succeeds. Skool changing how its app works can also break publishing until FoPost catches up — that is the honest cost of a network with no API.
+
+## What you can publish
+
+| Limit | Value |
+|:------|:------|
+| Body | 50,000 characters |
+| Title | 200 characters — from the post title, or the first line of the body |
+| Media, links, tags | Not supported |
+
+## Analytics and deletion
+
+No analytics — Skool exposes no metrics to read. Deleting the post in FoPost does delete it in the community.
+
+## Next
+
+<Cards>
+  <Card title="Connecting Accounts" href="/guide/using-fopost/connecting-accounts" />
+  <Card title="Creating Posts" href="/guide/using-fopost/creating-posts" />
+  <Card title="All Platforms" href="/platforms" />
+</Cards>
