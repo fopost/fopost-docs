@@ -52,6 +52,27 @@ function firstPageUrl(nodes: PageTree.Node[]): string | undefined {
   return undefined;
 }
 
+/**
+ * A separator starts a group holding everything until the next separator, so
+ * a labelled run renders as one collapsible unit instead of a static heading
+ * over a flat list. Rows before the first separator stay ungrouped.
+ */
+function groupBySeparators(nodes: NavNode[]): NavNode[] {
+  const out: NavNode[] = [];
+  let current: NavGroup | null = null;
+  for (const node of nodes) {
+    if (node.kind === 'separator') {
+      current = { kind: 'group', name: node.name, items: [] };
+      out.push(current);
+    } else if (current) {
+      current.items.push(node);
+    } else {
+      out.push(node);
+    }
+  }
+  return out;
+}
+
 function mapNode(node: PageTree.Node): NavNode {
   if (node.type === 'separator') return { kind: 'separator', name: node.name };
   if (node.type === 'folder') {
@@ -71,7 +92,7 @@ function mapNode(node: PageTree.Node): NavNode {
       name: node.name,
       icon: node.icon,
       url: node.index?.url ?? firstPageUrl(node.children),
-      items,
+      items: groupBySeparators(items),
     };
   }
   return { kind: 'page', name: node.name, url: node.url, icon: node.icon };
