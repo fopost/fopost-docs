@@ -2,9 +2,23 @@
   "title": "Documentation",
   "description": "FoPost Documentation",
   "pages": [
+    "---Start---",
     "introduction",
+    "getting-started",
+    "---Using FoPost---",
     "guide",
+    "platforms",
+    "---Build---",
+    "api",
     "sdks",
-    "api"
+    "cli",
+    "mcp",
+    "webhooks",
+    "---Account---",
+    "security",
+    "pricing",
+    "billing",
+    "---Reference---",
+    "glossary"
   ]
 }
