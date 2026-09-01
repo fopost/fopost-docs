@@ -91,16 +91,23 @@ function findActiveSection(nodes: NavNode[], url: string): number | null {
 function SlideNav() {
   const { nodes } = useNavTree();
   const pathname = normalize(usePathname());
-  const active = findActiveSection(nodes, pathname);
-  const [view, setView] = useState<number | null>(active);
-  const [lastActive, setLastActive] = useState(active);
+  // The docs home shows the whole root list; Introduction owns '/' but only
+  // claims the panel when entered by click or from one of its deeper pages.
+  const derived = pathname === '/' ? null : findActiveSection(nodes, pathname);
+  const [override, setOverride] = useState<{ path: string; view: number | null } | null>(null);
+  const [lastPathname, setLastPathname] = useState(pathname);
 
-  // The URL decides the visible level on load and after every navigation;
-  // the back row only touches local state, so it survives until the next move.
-  if (lastActive !== active) {
-    setLastActive(active);
-    setView(active);
+  // The URL decides the visible level on load and after every navigation; a
+  // click's override wins at the pathname it targeted (entering Introduction
+  // lands on '/', whose URL-derived default is the root list) and expires as
+  // soon as the pathname moves somewhere else.
+  if (lastPathname !== pathname) {
+    setLastPathname(pathname);
+    if (override && override.path !== pathname) setOverride(null);
   }
+  const view = override && override.path === pathname ? override.view : derived;
+  const showView = (target: number | null, url?: string) =>
+    setOverride({ path: url ? normalize(url) : pathname, view: target });
 
   // A deep link into a long section should land with its row in view.
   const navRef = useRef<HTMLElement>(null);
@@ -114,7 +121,12 @@ function SlideNav() {
     <nav ref={navRef} aria-label="Documentation" className="relative overflow-x-clip">
       <Panel active={view === null} exit="start">
         {nodes.map((node, i) => (
-          <RootRow key={i} node={node} pathname={pathname} onEnter={() => setView(i)} />
+          <RootRow
+            key={i}
+            node={node}
+            pathname={pathname}
+            onEnter={() => showView(i, node.kind === 'group' ? node.url : undefined)}
+          />
         ))}
       </Panel>
       {nodes.map((node, i) =>
@@ -122,7 +134,7 @@ function SlideNav() {
           <Panel key={i} active={view === i} exit="end">
             <button
               type="button"
-              onClick={() => setView(null)}
+              onClick={() => showView(null)}
               className={cn(
                 rowClass,
                 'sticky top-0 z-10 mb-2 w-full bg-fd-background font-medium text-fd-foreground',
@@ -235,43 +247,53 @@ function SeparatorRow({ name }: { name: ReactNode }) {
   );
 }
 
-/** A nested folder inside a section: an accordion at this level, not a slide. */
+/**
+ * A group inside a section — a separator-labelled run or a real nested folder,
+ * both wearing the same collapsible row: label, chevron, animated height.
+ * Every group starts open; collapsing is the reader's own move.
+ */
 function AccordionGroup({ group, pathname }: { group: NavGroup; pathname: string }) {
   const active = containsUrl(group, pathname);
   const [override, setOverride] = useState<boolean | null>(null);
   const [lastActive, setLastActive] = useState(active);
-  const open = override ?? active;
+  const open = override ?? true;
 
-  // Navigating into or out of the group beats a stale manual toggle.
+  // Navigating into a collapsed group reopens it; a stale toggle never hides
+  // the row the reader just landed on.
   if (lastActive !== active) {
     setLastActive(active);
     setOverride(null);
   }
 
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="mt-5 flex flex-col gap-0.5 first:mt-1">
       <button
         type="button"
         onClick={() => setOverride(!open)}
         aria-expanded={open}
-        className={cn(rowClass, 'w-full')}
+        className="flex h-8 w-full items-center gap-2 rounded-md px-2 text-[12px] font-medium text-fd-muted-foreground transition-colors hover:text-fd-accent-foreground [&_svg]:shrink-0"
       >
         {group.icon}
         <span className="flex-1 truncate text-start">{group.name}</span>
         <ChevronDownIcon
           className={cn(
-            'text-xs transition-transform motion-reduce:transition-none',
+            'text-xs transition-transform duration-200 motion-reduce:transition-none',
             !open && '-rotate-90',
           )}
         />
       </button>
-      {open && (
-        <div className="ms-[15px] flex flex-col gap-0.5 border-s border-fd-border ps-2">
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none',
+          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+        )}
+      >
+        <div inert={!open} className="flex min-h-0 flex-col gap-0.5 overflow-hidden">
           {group.items.map((child, i) => (
             <SectionRow key={i} node={child} pathname={pathname} />
           ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }
