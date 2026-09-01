@@ -1,0 +1,56 @@
+---
+title: Billing
+description: When the card is charged, how invoices work, and what the free credit covers.
+icon: credit-card
+---
+
+FoPost bills like a utility: usage is metered daily, credited monthly, and charged to the card on file. What you pay for is on the [Pricing](/pricing) page; this page is about when and how the money actually moves.
+
+## The billing account
+
+Charges land on one billing account — yours, or the workspace owner's when someone else pays. Everything on this page is per billing account: an agency's workspaces and members share one allowance, one free credit, one invoice. The billing email and payment method live at **Settings → Usage**, and past invoices are in the billing portal there.
+
+## Daily metering
+
+Each day, every connected account is metered as one account-day into a usage ledger — one line per workspace per day. The graduated rate applies to your total account count, and the cost is split across workspaces in proportion, which is why the invoice can itemize by workspace.
+
+Metering daily is what makes proration automatic: connect an account on the 20th and you pay for the days from the 20th; disconnect one and it stops accruing that day. There is nothing to cancel and no partial-month arithmetic to request.
+
+AI usage joins the same ledger in dollars as you use it, so one bill covers everything.
+
+## The free credit
+
+Every billing account gets a **$15 usage credit each month**. It is not a separate AI wallet — it is applied to the invoice, against everything metered, before anything is charged. It refreshes each calendar month and does not roll over.
+
+Two free connected accounts plus the monthly credit is why light usage never produces a charge at all: an invoice that comes to $0 after credit is simply waived.
+
+## The card gate
+
+Your first **2 connected accounts need no card**. Connecting a third asks you to save a payment method first — the request answers with `payment_method_required` until one is on file. Saving the card is a setup step through our payment processing provider; nothing is charged at that moment, and card details never touch FoPost's own systems.
+
+## When the card is charged
+
+Two triggers, both automatic:
+
+- **Monthly close.** On the 1st, the previous month's ledger becomes an itemized invoice — account-days and AI usage per workspace, minus the free credit — and the remainder is charged to the card on file
+- **Mid-month threshold.** As protection against fraud and surprise balances, accrued usage past a threshold is charged when it accrues rather than waiting for month-end. The threshold starts at **$10** and doubles with each successfully paid charge (up to $500), so established accounts see fewer, larger charges; a failed payment resets it to $10
+
+If a charge fails, the invoice is retried at the next monthly close. Fix the card in the billing portal and it clears itself.
+
+## AI spending controls
+
+AI is postpaid like everything else once a card is on file, but you hold the ceiling: a monthly **AI spend cap** in settings stops AI usage at the amount you chose. With no card on file, AI works until the free credit is exhausted.
+
+When AI is declined — cap reached, or no card and no credit left — the API answers `402`. It is not a rate limit: add a card, raise the cap, or wait for the credit to refresh. See [AI in the API](/api/ai).
+
+## Leftover credit packs
+
+Credit packs are no longer sold. If you bought packs before the usage model, their value was converted into a prepaid dollar balance that never expires and is applied to invoices after the free credit, until it runs out.
+
+## Next
+
+<Cards>
+  <Card title="Pricing" href="/pricing" />
+  <Card title="Rate Limits" href="/api/rate-limits" />
+  <Card title="AI in the API" href="/api/ai" />
+</Cards>
