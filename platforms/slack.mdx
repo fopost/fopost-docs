@@ -8,8 +8,8 @@ Slack connects two ways, and the way you pick decides what the connection can do
 
 ## Connecting
 
-- **Incoming webhook** — paste a webhook URL in **Accounts → Connect → Slack**. Simplest, write-only: it can post messages and nothing else.
-- **OAuth** — install the FoPost app into the workspace and pick a channel. This unlocks file uploads, thread replies, deletion, and reading reactions back.
+- **Incoming webhook**: paste a webhook URL in **Accounts → Connect → Slack**. Simplest, write-only: it can post messages and nothing else.
+- **OAuth**: install the FoPost app into the workspace and pick a channel. This unlocks file uploads, thread replies, deletion, and reading reactions back.
 
 Either way you need permission to add integrations in the workspace.
 
@@ -17,23 +17,23 @@ Either way you need permission to add integrations in the workspace.
 
 | Limit | Value |
 |:------|:------|
-| Message length | 40,000 characters — Slack silently truncates beyond its own display limits rather than erroring |
-| Files | Up to 10 — images, MP4, or PDF, 20 MB each (OAuth connection only) |
+| Message length | 40,000 characters; Slack silently truncates beyond its own display limits rather than erroring |
+| Files | Up to 10: images, MP4, or PDF, 20 MB each (OAuth connection only) |
 
 Messages render in Slack formatting: a bold title, the body, and a **Read more** link when the post has one. On an OAuth connection, thread blocks publish as replies in the message's thread; a webhook cannot thread.
 
 ## Analytics
 
-On an OAuth connection, FoPost reads back reactions and reply counts per message. A webhook connection reports nothing — it is write-only.
+On an OAuth connection, FoPost reads back reactions and reply counts per message. A webhook connection reports nothing; it is write-only.
 
 ## Deleting
 
-Deleting the post in FoPost deletes the message — OAuth connection only. A webhook cannot delete what it posted.
+Deleting the post in FoPost deletes the message, on an OAuth connection only. A webhook cannot delete what it posted.
 
 ## Next
 
 <Cards>
-  <Card title="Connecting Accounts" href="/guide/using-fopost/connecting-accounts" />
-  <Card title="Creating Posts" href="/guide/using-fopost/creating-posts" />
+  <Card title="Connecting Accounts" href="/guide/connecting-accounts" />
+  <Card title="Creating Posts" href="/guide/creating-posts" />
   <Card title="All Platforms" href="/platforms" />
 </Cards>

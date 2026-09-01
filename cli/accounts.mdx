@@ -4,7 +4,7 @@ description: Inspect connected accounts, their health, and your workspaces.
 icon: users
 ---
 
-`fopost accounts` reads connected social accounts; `fopost workspaces` manages the workspaces they live in. Connecting an account itself happens in the dashboard — a network's authorisation screen needs a browser.
+`fopost accounts` reads connected social accounts; `fopost workspaces` manages the workspaces they live in. Connecting an account itself happens in the dashboard: a network's authorisation screen needs a browser.
 
 ## Accounts
 
@@ -23,7 +23,7 @@ fopost accounts health acc_9f2c4a7b     # one account
 fopost accounts health acc_9f2c4a7b --refresh   # re-check live, not the stored result
 ```
 
-The summary lists each account's stored health plus totals — healthy, degraded, expired, revoked, unknown. `--refresh` applies to the single-account form only.
+The summary lists each account's stored health plus totals: healthy, degraded, expired, revoked, unknown. `--refresh` applies to the single-account form only.
 
 ```bash
 # Every account whose credentials have gone stale.
@@ -38,7 +38,7 @@ fopost accounts validate acc_9f2c4a7b   # check the stored credentials against t
 fopost accounts refresh acc_9f2c4a7b    # renew the OAuth token, prints the new expiry
 ```
 
-`validate` exits non-zero when the credentials are no longer valid — after printing the result — so it slots straight into a monitoring script. Reconnecting a dead account happens in the dashboard.
+`validate` exits non-zero when the credentials are no longer valid (after printing the result), so it slots straight into a monitoring script. Reconnecting a dead account happens in the dashboard.
 
 ## Workspaces
 
@@ -59,7 +59,7 @@ fopost ws list --json | jq -r '.[0].id'
 ## Next
 
 <Cards>
-  <Card title="Connecting Accounts" href="/guide/using-fopost/connecting-accounts" />
+  <Card title="Connecting Accounts" href="/guide/connecting-accounts" />
   <Card title="Accounts API" href="/api/accounts" />
   <Card title="Workspaces API" href="/api/workspaces" />
 </Cards>

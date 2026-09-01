@@ -44,7 +44,7 @@ Create a key at **Settings → API Keys** in the dashboard. Call `close()` when 
 
 ## Flutter
 
-Add the dependency to `pubspec.yaml` and use it exactly as above — nothing in this package imports `dart:io` on a path the web can reach.
+Add the dependency to `pubspec.yaml` and use it exactly as above; nothing in this package imports `dart:io` on a path the web can reach.
 
 ```yaml
 dependencies:
@@ -162,9 +162,9 @@ final client = FoPost(
 );
 ```
 
-Both environment variables are read through `dart:io` and are simply absent on the web. A client you pass in with `httpClient` is never closed by `close()` — close it where you created it.
+Both environment variables are read through `dart:io` and are simply absent on the web. A client you pass in with `httpClient` is never closed by `close()`; close it where you created it.
 
-Only a `429`, a `5xx`, and a transport error are retried. Everything else, including a `400` or a `404`, throws on the first response, because the request itself is what needs changing. Backoff between attempts is exponential — 500 ms, then 1 s, capped at 60 s — and a `429` waits for the interval `Retry-After` asks for.
+Only a `429`, a `5xx`, and a transport error are retried. Everything else, including a `400` or a `404`, throws on the first response, because the request itself is what needs changing. Backoff between attempts is exponential (500 ms, then 1 s, capped at 60 s), and a `429` waits for the interval `Retry-After` asks for.
 
 ## Errors
 

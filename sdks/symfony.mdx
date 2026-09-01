@@ -4,7 +4,7 @@ description: The FoPost PHP client as a Symfony bundle, with autowiring, console
 icon: tech-php
 ---
 
-`fopost/symfony-bundle` is a thin wrapper over the [PHP SDK](/sdks/php). Every request, retry, model, and error type lives there; the bundle wires it into Symfony — one configured client for autowiring, two console commands, and a webhook endpoint that turns deliveries into Symfony events.
+`fopost/symfony-bundle` is a thin wrapper over the [PHP SDK](/sdks/php). Every request, retry, model, and error type lives there; the bundle wires it into Symfony: one configured client for autowiring, two console commands, and a webhook endpoint that turns deliveries into Symfony events.
 
 Needs PHP 8.1 or newer and Symfony 6.4 LTS or 7.x.
 
@@ -154,7 +154,7 @@ One class per event, all extending `FopostWebhookEvent`:
 | `delivery.delayed` | `FopostDeliveryDelayedEvent` |
 | `account.health_changed` | `FopostAccountHealthChangedEvent` |
 
-Every delivery is dispatched twice — once under its own class, once under `FopostWebhookEvent` — so listening on the base class catches everything, including an event this bundle does not know yet. Listeners run inside the request, so keep them quick or hand the work to Messenger.
+Every delivery is dispatched twice (once under its own class, once under `FopostWebhookEvent`), so listening on the base class catches everything, including an event this bundle does not know yet. Listeners run inside the request, so keep them quick or hand the work to Messenger.
 
 ## Errors
 

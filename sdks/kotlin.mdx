@@ -49,7 +49,7 @@ FoPost("fp_...").use { client ->          // or set FOPOST_API_KEY
 }
 ```
 
-`FoPost` owns a connection pool, so `close()` it when you are done — `use { }` does that for you. A client you pass your own `OkHttpClient` to leaves that client alone, because it is still yours to shut down. Instances are safe to share across coroutines, so build one and keep it.
+`FoPost` owns a connection pool, so `close()` it when you are done; `use { }` does that for you. A client you pass your own `OkHttpClient` to leaves that client alone, because it is still yours to shut down. Instances are safe to share across coroutines, so build one and keep it.
 
 ## Content
 
@@ -119,7 +119,7 @@ android {
 }
 ```
 
-Keep the API key off the device. An app that ships a key ships it to everyone who installs it — call FoPost from your own backend and let the app talk to that.
+Keep the API key off the device. An app that ships a key ships it to everyone who installs it, so call FoPost from your own backend and let the app talk to that.
 
 ## Scheduling
 
@@ -135,7 +135,7 @@ client.posts.create(
 )
 ```
 
-`publish` returns once delivery is **queued**, not once the post is live — watch the deliveries or a [webhook](/webhooks) for that. Before publishing, `preflight` reports the per-account blockers and advisory signals without sending anything, and `PublishParams(dryRun = true)` rehearses the whole thing:
+`publish` returns once delivery is **queued**, not once the post is live. Watch the deliveries or a [webhook](/webhooks) for that. Before publishing, `preflight` reports the per-account blockers and advisory signals without sending anything, and `PublishParams(dryRun = true)` rehearses the whole thing:
 
 ```kotlin
 val check = client.posts.preflight(post.id!!)
@@ -180,7 +180,7 @@ val platforms: List<String> = client.requestAs("GET", "/platforms")
 
 ## Webhooks
 
-The signing secret is returned by the create call and never shown again — store it then.
+The signing secret is returned by the create call and never shown again, so store it then.
 
 ```kotlin
 val hook = client.webhooks.create(

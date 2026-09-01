@@ -40,7 +40,7 @@ A key can be scoped to a single workspace. A workspace-scoped key only ever sees
 |:-------|:-----|:-------------|
 | Watch published posts | Polling | Emits a bundle for each post that reaches the `published` status |
 | Watch failed posts | Polling | Emits a bundle for each post that failed to publish |
-| Watch events | Instant (webhook) | Fires the moment FoPost sends a subscribed event — a delivery going live, failing, or being delayed, a post finishing, or an account's health changing. Registers and removes its own webhook |
+| Watch events | Instant (webhook) | Fires the moment FoPost sends a subscribed event: a delivery going live, failing, or being delayed, a post finishing, or an account's health changing. Registers and removes its own webhook |
 
 ## Actions and searches
 
@@ -70,12 +70,12 @@ Workspace, account, and label pickers are filled live by remote procedure calls,
 
 Creating a post and publishing it are two steps:
 
-1. **Create a post** stores the post as a `draft`, or as `scheduled` with a **Schedule at** date — in which case FoPost publishes it for you and no further module is needed.
+1. **Create a post** stores the post as a `draft`, or as `scheduled` with a **Schedule at** date, in which case FoPost publishes it for you and no further module is needed.
 2. **Publish a post** hands a draft to the delivery queue. It returns as soon as delivery is **queued**, not once the post is live on the network.
 
 To know the outcome, use **Watch events**, which arrives within seconds, or the polling **Watch published posts** and **Watch failed posts** triggers.
 
-Media referenced by a post must already be reachable by URL — run **Upload a media file** first and map the returned URL into the content block.
+Media referenced by a post must already be reachable by URL, so run **Upload a media file** first and map the returned URL into the content block.
 
 ## Errors
 

@@ -4,7 +4,7 @@ description: The FoPost Python client wired into FastAPI, with settings, depende
 icon: tech-python
 ---
 
-`fopost-fastapi` is a thin wrapper over the [Python SDK](/sdks/python). Every request, model, retry, and error type lives there; this package wires that client into FastAPI's idioms — settings, dependency injection, a webhook receiver, and an exception handler.
+`fopost-fastapi` is a thin wrapper over the [Python SDK](/sdks/python). Every request, model, retry, and error type lives there; this package wires that client into FastAPI's idioms: settings, dependency injection, a webhook receiver, and an exception handler.
 
 Needs Python 3.10 or newer, FastAPI 0.110 or newer, and pydantic v2.
 
@@ -36,7 +36,7 @@ def workspaces(fopost: FoPostDep):
     return fopost.workspaces.list()
 ```
 
-`FoPostDep` is `Annotated[Fopost, Depends(get_client)]`. The client is built **once** when the app starts and shared by every request — the dependency looks it up, it never constructs one.
+`FoPostDep` is `Annotated[Fopost, Depends(get_client)]`. The client is built **once** when the app starts and shared by every request: the dependency looks it up, it never constructs one.
 
 If your app already has its own lifespan, `setup_fopost` wraps it rather than replacing it. To wire FoPost through the lifespan directly instead:
 
@@ -115,7 +115,7 @@ def failed(event: WebhookEvent) -> None:      # a `def` handler runs in a worker
 
 Point a [webhook](/webhooks) at `https://<your host>/fopost/webhooks` and put its secret in `FOPOST_WEBHOOK_SECRET`.
 
-FoPost signs each delivery with HMAC-SHA256 over the **raw** request body using that webhook's secret, and sends it as `X-FoPost-Signature: sha256=<hex>` alongside `X-FoPost-Event` and `X-FoPost-Delivery`. The router reads the raw bytes before any parsing, compares with `hmac.compare_digest`, and answers `401` on a mismatch or a missing header — no handler runs. With no secret configured at all it answers `500` rather than accepting unverifiable traffic.
+FoPost signs each delivery with HMAC-SHA256 over the **raw** request body using that webhook's secret, and sends it as `X-FoPost-Signature: sha256=<hex>` alongside `X-FoPost-Event` and `X-FoPost-Delivery`. The router reads the raw bytes before any parsing, compares with `hmac.compare_digest`, and answers `401` on a mismatch or a missing header, so no handler runs. With no secret configured at all it answers `500` rather than accepting unverifiable traffic.
 
 Events: `post.published`, `post.failed`, `post.partially_failed`, `delivery.published`, `delivery.failed`, `delivery.delayed`, `account.health_changed`. `@on_event()` with no argument subscribes to all of them.
 
@@ -140,7 +140,7 @@ app.include_router(router, prefix="/fopost")
 | `PaymentRequiredError` (402) | 402, body keeps `upgrade_url` |
 | `RateLimitError` (429) | 429 with a `Retry-After` header |
 | any other 4xx | the same status |
-| any 5xx or transport failure | 502 — your app is fine, its dependency is not |
+| any 5xx or transport failure | 502 (your app is fine, its dependency is not) |
 
 The body is the API's own envelope: `{"error": "<machine code>", "message": "<human text>"}`.
 
@@ -148,7 +148,7 @@ Retries are the SDK's job, not this package's: a `429` is retried up to `max_ret
 
 ## The rest of the API
 
-Everything you can call on the injected client — `posts`, `accounts`, `workspaces`, `labels`, `ai`, and the `request()` escape hatch for endpoints the SDK does not wrap — is on the [Python SDK page](/sdks/python). This package adds no resources of its own and stores nothing.
+Everything you can call on the injected client (`posts`, `accounts`, `workspaces`, `labels`, `ai`, and the `request()` escape hatch for endpoints the SDK does not wrap) is on the [Python SDK page](/sdks/python). This package adds no resources of its own and stores nothing.
 
 ## Next
 

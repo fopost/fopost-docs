@@ -4,13 +4,13 @@ description: Connect Claude, Cursor, or any MCP client to your FoPost workspace.
 icon: tech-mcp
 ---
 
-`@fopost/mcp` exposes FoPost as a set of tools any MCP-aware assistant can call: Claude Desktop, Claude Code, Cursor, Continue, and anything else that speaks the Model Context Protocol. It runs over stdio and needs no install step — `npx -y @fopost/mcp` is the whole invocation. Needs Node 18 or newer.
+`@fopost/mcp` exposes FoPost as a set of tools any MCP-aware assistant can call: Claude Desktop, Claude Code, Cursor, Continue, and anything else that speaks the Model Context Protocol. It runs over stdio and needs no install step: `npx -y @fopost/mcp` is the whole invocation. Needs Node 18 or newer.
 
 Source and issues: [github.com/fopost/fopost-mcp](https://github.com/fopost/fopost-mcp). MIT licensed.
 
 <Callout type="warn">
 This is a 0.x release. Tool names and arguments may change between minor
-versions. Pin an exact version if that matters to you — 0.2.1 or newer, since
+versions. Pin an exact version if that matters to you: 0.2.1 or newer, since
 0.2.0 shipped with a broken API path.
 </Callout>
 
@@ -22,7 +22,7 @@ The server reads two environment variables, once at startup:
 
 | Variable | Required | Default |
 |:---------|:---------|:--------|
-| `FOPOST_API_KEY` | Yes — the server exits without it | — |
+| `FOPOST_API_KEY` | Yes (the server exits without it) | none |
 | `FOPOST_API_URL` | No | `https://api.fopost.com` |
 
 ### Claude Desktop
@@ -57,7 +57,7 @@ Same command, `npx -y @fopost/mcp`, with `FOPOST_API_KEY` in the environment.
 
 ## The tools
 
-Fourteen tools across posts, accounts, and AI — listing, scheduling, publishing, delivery status, account health, captions, and the credit balance. Each one is a thin wrapper over the same [REST API](/api/overview) the dashboard uses.
+Fourteen tools across posts, accounts, and AI: listing, scheduling, publishing, delivery status, account health, captions, and the credit balance. Each one is a thin wrapper over the same [REST API](/api/overview) the dashboard uses.
 
 <Cards>
   <Card title="Tools Reference" href="/mcp/tools" description="Every tool, its parameters, and its caveats." />
@@ -67,12 +67,12 @@ Fourteen tools across posts, accounts, and AI — listing, scheduling, publishin
 
 The server is your API key wearing a different interface. It inherits the key's scopes and its workspace binding exactly, so an assistant cannot reach a workspace you did not grant, and a tool whose scope the key lacks answers `403`.
 
-Give the key the narrowest scopes that do the job — a key without `ai` cannot spend a single credit — and remember that every call is one attempt: the server adds no retries, so a rate-limited request surfaces to the assistant as an error it has to handle.
+Give the key the narrowest scopes that do the job (a key without `ai` cannot spend a single credit), and remember that every call is one attempt: the server adds no retries, so a rate-limited request surfaces to the assistant as an error it has to handle.
 
 ## Next
 
 <Cards>
   <Card title="Tools Reference" href="/mcp/tools" />
   <Card title="Authentication" href="/api/authentication" />
-  <Card title="FoPost Agent" href="/guide/using-fopost/agent" />
+  <Card title="FoPost Agent" href="/guide/agent" />
 </Cards>

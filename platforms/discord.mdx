@@ -4,7 +4,7 @@ title: Discord
 description: Posts delivered to a channel through its webhook.
 ---
 
-Discord delivery goes through a **channel webhook** — no bot to invite, no OAuth. Anything FoPost publishes appears in that one channel.
+Discord delivery goes through a **channel webhook**: no bot to invite, no OAuth. Anything FoPost publishes appears in that one channel.
 
 ## Connecting
 
@@ -15,9 +15,9 @@ In Discord, open the channel's settings → **Integrations → Webhooks**, creat
 | Limit | Value |
 |:------|:------|
 | Message length | 2,000 characters |
-| Attachments | Up to 10 — images (JPEG, PNG, GIF, WebP) or MP4, 10 MB each |
+| Attachments | Up to 10: images (JPEG, PNG, GIF, WebP) or MP4, 10 MB each |
 
-A plain post arrives as a normal message. A post with a **title** or a **link** arrives as an embed instead — title, link, description, the first image, and tags in the footer. Attached files are delivered to the channel alongside it.
+A plain post arrives as a normal message. A post with a **title** or a **link** arrives as an embed instead: title, link, description, the first image, and tags in the footer. Attached files are delivered to the channel alongside it.
 
 The 10 MB ceiling is Discord's own webhook upload limit. Reply chains are not possible through a webhook, so thread blocks are not supported on Discord.
 
@@ -28,7 +28,7 @@ Webhooks are write-only, so there are **no analytics**. Deleting the post in FoP
 ## Next
 
 <Cards>
-  <Card title="Connecting Accounts" href="/guide/using-fopost/connecting-accounts" />
-  <Card title="Creating Posts" href="/guide/using-fopost/creating-posts" />
+  <Card title="Connecting Accounts" href="/guide/connecting-accounts" />
+  <Card title="Creating Posts" href="/guide/creating-posts" />
   <Card title="All Platforms" href="/platforms" />
 </Cards>

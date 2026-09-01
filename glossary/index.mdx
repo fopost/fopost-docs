@@ -16,11 +16,11 @@ The credential for programmatic access, sent in the `X-API-Key` header. Created 
 
 ## Approval
 
-A review step for teams: a post in `pending_approval` waits until a teammate approves or rejects it, and nothing reaches a platform before that. See [Team Collaboration](/guide/using-fopost/team-collaboration).
+A review step for teams: a post in `pending_approval` waits until a teammate approves or rejects it, and nothing reaches a platform before that. See [Team Collaboration](/guide/team-collaboration).
 
 ## Automation
 
-A rule that does publishing work on a trigger — on a schedule, from a feed, or when something calls its API webhook. Each run is recorded, so you can see what an automation did and when. See [Automations](/guide/using-fopost/automations).
+A rule that does publishing work on a trigger: on a schedule, from a feed, or when something calls its API webhook. Each run is recorded, so you can see what an automation did and when. See [Automations](/guide/automations).
 
 ## Billing account
 
@@ -28,19 +28,19 @@ Who pays. Workspaces, members, connected accounts, the free allowance, and the m
 
 ## Brand
 
-The whole identity a workspace publishes under — voice and tone for writing, plus colors, fonts, and tagged assets for visuals. One brand per workspace is the default; the agent and AI features fold the brand into what they produce. Called a brand voice in the API. See [Brands](/guide/using-fopost/brand-voices).
+The whole identity a workspace publishes under: voice and tone for writing, plus colors, fonts, and tagged assets for visuals. One brand per workspace is the default; the agent and AI features fold the brand into what they produce. Called a brand voice in the API. See [Brands](/guide/brand-voices).
 
 ## Bulk scheduling
 
-Creating many scheduled posts at once from a spreadsheet import instead of one at a time in the composer. See [Bulk Scheduling](/guide/using-fopost/bulk-scheduling).
+Creating many scheduled posts at once from a spreadsheet import instead of one at a time in the composer. See [Bulk Scheduling](/guide/bulk-scheduling).
 
 ## Connected account
 
-One social account on one network, connected through that network's own authorisation. It is the unit [pricing](/pricing) meters, and the thing a post's deliveries target. See [Connecting Accounts](/guide/using-fopost/connecting-accounts).
+One social account on one network, connected through that network's own authorisation. It is the unit [pricing](/pricing) meters, and the thing a post's deliveries target. See [Connecting Accounts](/guide/connecting-accounts).
 
 ## Delivery
 
-The per-account copy of a post. One post targeting five accounts has five deliveries, each with its own status, retries, error, and live URL — which is why a post can be `partially_failed`. See [Publishing](/api/publishing).
+The per-account copy of a post. One post targeting five accounts has five deliveries, each with its own status, retries, error, and live URL, which is why a post can be `partially_failed`. See [Publishing](/api/publishing).
 
 ## Draft
 
@@ -48,23 +48,23 @@ A post that exists but has no schedule and has not been published. Drafts never 
 
 ## FoPost Agent
 
-The chat surface inside the dashboard: describe what you want in plain language, review the drafts it produces, approve what ships. It can use every capability the product has, and never publishes without your say-so. See [FoPost Agent](/guide/using-fopost/agent).
+The chat surface inside the dashboard: describe what you want in plain language, review the drafts it produces, approve what ships. It can use every capability the product has, and never publishes without your say-so. See [FoPost Agent](/guide/agent).
 
 ## Inbox
 
-Comments and mentions from your connected accounts, gathered into one stream you can read and reply from. See [Inbox](/guide/using-fopost/inbox).
+Comments and mentions from your connected accounts, gathered into one stream you can read and reply from. See [Inbox](/guide/inbox).
 
 ## Label
 
-A tag on posts — campaign, client, content pillar — and the unit analytics rolls up on, so labelling at publish time is what makes campaign reporting possible later. See [Labels](/guide/using-fopost/labels).
+A tag on posts (campaign, client, content pillar) and the unit analytics rolls up on, so labelling at publish time is what makes campaign reporting possible later. See [Labels](/guide/labels).
 
 ## Link in Bio
 
-A hosted page of your links, one URL for the bio field of every network. See [Link in Bio](/guide/using-fopost/link-in-bio).
+A hosted page of your links, one URL for the bio field of every network. See [Link in Bio](/guide/link-in-bio).
 
 ## Media library
 
-The workspace's store of images and video. Uploads, imports from connected sources, and generated images all land here, and everything here is reusable across posts. See [Media Library](/guide/using-fopost/media-library).
+The workspace's store of images and video. Uploads, imports from connected sources, and generated images all land here, and everything here is reusable across posts. See [Media Library](/guide/media-library).
 
 ## Preflight
 
@@ -72,20 +72,20 @@ The pre-publish check: each target account reports `ready` or `blocked` with the
 
 ## Recycling
 
-Re-scheduling evergreen posts automatically so proven content keeps working without being re-entered. See [Recycling](/guide/using-fopost/recycling).
+Re-scheduling evergreen posts automatically so proven content keeps working without being re-entered. See [Recycling](/guide/recycling).
 
 ## Scope
 
-A permission on an API key — `posts`, `accounts`, `webhooks`, and so on. A key only reaches endpoints its scopes cover. See [Authentication](/api/authentication).
+A permission on an API key: `posts`, `accounts`, `webhooks`, and so on. A key only reaches endpoints its scopes cover. See [Authentication](/api/authentication).
 
 ## Source
 
-An external media provider connected to the library — a design tool or cloud drive — so assets import in place and can be re-pulled when they change upstream. See [Sources](/guide/using-fopost/sources).
+An external media provider connected to the library (a design tool or cloud drive) so assets import in place and can be re-pulled when they change upstream. See [Sources](/guide/sources).
 
 ## Webhook
 
-A URL of yours that FoPost `POST`s signed events to — publish outcomes, delivery failures, account health changes — so you hear what happened without polling. See [Webhooks](/webhooks).
+A URL of yours that FoPost `POST`s signed events to (publish outcomes, delivery failures, account health changes) so you hear what happened without polling. See [Webhooks](/webhooks).
 
 ## Workspace
 
-The isolation boundary everything lives inside: accounts, posts, media, brands, and members with roles. Data never crosses between workspaces, which is what makes one workspace per client safe. See [Workspaces](/guide/using-fopost/workspaces).
+The isolation boundary everything lives inside: accounts, posts, media, brands, and members with roles. Data never crosses between workspaces, which is what makes one workspace per client safe. See [Workspaces](/guide/workspaces).

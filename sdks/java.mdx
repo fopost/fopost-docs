@@ -45,7 +45,7 @@ Post post = client.posts().create(
 client.posts().publish(post.id());
 ```
 
-`publish` returns once delivery is queued, not once it is live — read `posts().deliveries()` or subscribe to [webhooks](/webhooks) for the result.
+`publish` returns once delivery is queued, not once it is live. Read `posts().deliveries()` or subscribe to [webhooks](/webhooks) for the result.
 
 ## Threads and scheduling
 
@@ -109,7 +109,7 @@ client.posts().create(CreatePostParams.of(workspace.id())
 
 ## Webhooks
 
-The signing secret is returned by the create call and never shown again — store it then.
+The signing secret is returned by the create call and never shown again, so store it then.
 
 ```java
 Webhook hook = client.webhooks().create(

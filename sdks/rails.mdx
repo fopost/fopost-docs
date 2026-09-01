@@ -4,7 +4,7 @@ description: The FoPost Ruby client wired into Rails, with credentials, ActiveJo
 icon: tech-ruby
 ---
 
-`fopost-rails` is a thin wrapper over the [Ruby SDK](/sdks/ruby). Every request, retry, model, and error class lives there; what this gem adds is Rails wiring — `config.fopost` and Rails credentials, a memoized thread-safe client, an install generator, ActiveJob jobs so publishing never blocks a request, and a mountable engine that verifies incoming webhooks.
+`fopost-rails` is a thin wrapper over the [Ruby SDK](/sdks/ruby). Every request, retry, model, and error class lives there; what this gem adds is Rails wiring: `config.fopost` and Rails credentials, a memoized thread-safe client, an install generator, ActiveJob jobs so publishing never blocks a request, and a mountable engine that verifies incoming webhooks.
 
 Needs Ruby 3.1 or newer and Rails 7.0 or newer.
 
@@ -46,7 +46,7 @@ Or in the environment:
 FOPOST_API_KEY=fp_your_key_here
 ```
 
-Every setting resolves the same way — what you set explicitly wins, then Rails credentials under `fopost:`, then the environment, then the default.
+Every setting resolves the same way: what you set explicitly wins, then Rails credentials under `fopost:`, then the environment, then the default.
 
 | Setting | Credentials key | Environment | Default |
 |:--------|:----------------|:------------|:--------|

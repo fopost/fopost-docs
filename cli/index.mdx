@@ -4,7 +4,7 @@ description: Schedule, publish, and inspect FoPost content from your terminal, a
 icon: lightning
 ---
 
-`fopost` is the official command-line interface. It is a single static binary with no runtime to install, and every command speaks to the API through the [Go SDK](/sdks/go) — the CLI adds the flags, tables, and exit codes, and nothing else.
+`fopost` is the official command-line interface. It is a single static binary with no runtime to install, and every command speaks to the API through the [Go SDK](/sdks/go): the CLI adds the flags, tables, and exit codes, and nothing else.
 
 <Callout type="warn">
 This is a 0.x release. The command surface is still settling and a minor
@@ -51,7 +51,7 @@ fopost auth status     # which key is in effect, and where it came from
 fopost auth logout     # remove it
 ```
 
-The key is stored at `~/.config/fopost/config.json` with mode `0600`, and `$XDG_CONFIG_HOME` is honoured. It is never printed back — `auth status` shows only a masked prefix, and verbose output never contains it. `auth logout --all` also clears the saved workspace and base URL, and `auth status` exits non-zero when no key resolves, so a script can use it as an "am I signed in?" check.
+The key is stored at `~/.config/fopost/config.json` with mode `0600`, and `$XDG_CONFIG_HOME` is honoured. It is never printed back: `auth status` shows only a masked prefix, and verbose output never contains it. `auth logout --all` also clears the saved workspace and base URL, and `auth status` exits non-zero when no key resolves, so a script can use it as an "am I signed in?" check.
 
 Three sources, in order of precedence:
 
@@ -63,7 +63,7 @@ Three sources, in order of precedence:
 
 In CI, set `FOPOST_API_KEY` as a secret and skip `auth login` entirely.
 
-`fopost auth login --workspace ws_123` saves a default workspace, so workspace-scoped commands need no `--workspace` flag. With exactly one reachable workspace, login picks it for you. There is no environment variable for the workspace — it comes from the `--workspace` flag or the saved default only.
+`fopost auth login --workspace ws_123` saves a default workspace, so workspace-scoped commands need no `--workspace` flag. With exactly one reachable workspace, login picks it for you. There is no environment variable for the workspace: it comes from the `--workspace` flag or the saved default only.
 
 ## Global flags
 
@@ -71,9 +71,9 @@ Accepted on every command:
 
 | Flag | Default | What it does |
 |:-----|:--------|:-------------|
-| `--api-key` | — | API key for this call, overriding env and config |
-| `--base-url` | — | API base URL, overriding `FOPOST_BASE_URL` |
-| `--workspace` | — | Workspace id to act on, overriding the saved default |
+| `--api-key` | none | API key for this call, overriding env and config |
+| `--base-url` | none | API base URL, overriding `FOPOST_BASE_URL` |
+| `--workspace` | none | Workspace id to act on, overriding the saved default |
 | `--timeout` | `30s` | Per-request timeout, in Go duration syntax (`90s`, `2m`) |
 | `--json` | off | Print indented JSON instead of a table |
 | `--quiet` | off | Suppress human output; `--json` still prints |

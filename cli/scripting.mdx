@@ -25,7 +25,7 @@ POST_ID=$(fopost posts create --account acc_1 --text "..." --draft --json | jq -
 fopost posts publish "$POST_ID" --json | jq '.deliveries[] | {accountId, status}'
 ```
 
-`--quiet` silences the human-facing output while keeping the exit code, and `--json` still prints under `--quiet` — the machine output is not chatter. Colour is dropped when `NO_COLOR` is set, when `--no-color` is passed, or when output is not a terminal.
+`--quiet` silences the human-facing output while keeping the exit code, and `--json` still prints under `--quiet`: the machine output is not chatter. Colour is dropped when `NO_COLOR` is set, when `--no-color` is passed, or when output is not a terminal.
 
 Two shape notes worth knowing before writing `jq`:
 
@@ -38,7 +38,7 @@ Two shape notes worth knowing before writing `jq`:
 |:-----|:--------|
 | `0` | success |
 | `1` | an error that has no more specific code |
-| `2` | bad invocation: a missing flag, a contradictory pair, a cancelled prompt — also `auth status` when signed out, a failed `preflight`, and a failed `validate` |
+| `2` | bad invocation: a missing flag, a contradictory pair, a cancelled prompt (also `auth status` when signed out, a failed `preflight`, and a failed `validate`) |
 | `3` | `401`, no key or the key is invalid |
 | `4` | `402`, the account cannot cover this; the message carries the upgrade URL |
 | `5` | `403`, the key lacks the scope or workspace access |
@@ -52,7 +52,7 @@ Errors print one line to stderr, never to stdout, so a failed run never contamin
 
 ## CI
 
-Set `FOPOST_API_KEY` as a secret and pass `--workspace` explicitly — there is no environment variable for the workspace, and CI has no saved config:
+Set `FOPOST_API_KEY` as a secret and pass `--workspace` explicitly. There is no environment variable for the workspace, and CI has no saved config:
 
 ```bash
 FOPOST_API_KEY=$FOPOST_API_KEY fopost posts create \

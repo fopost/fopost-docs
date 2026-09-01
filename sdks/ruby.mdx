@@ -36,7 +36,7 @@ post = client.posts.create(
 client.posts.publish(post.id)
 ```
 
-`accounts` takes account ids, the `Fopost::SocialAccount` objects themselves, or hashes with an `id`. `publish` returns once delivery is queued, not once it is live — read `client.posts.deliveries` or subscribe to [webhooks](/webhooks) for the result.
+`accounts` takes account ids, the `Fopost::SocialAccount` objects themselves, or hashes with an `id`. `publish` returns once delivery is queued, not once it is live. Read `client.posts.deliveries` or subscribe to [webhooks](/webhooks) for the result.
 
 ## Threads and scheduling
 
@@ -177,7 +177,7 @@ end
 
 ## Testing your integration
 
-The default transport is `net/http`. Anything that responds to `call(method:, url:, headers:, body:)` and returns a `Fopost::HTTP::Response` can replace it — useful for a shared connection pool, custom instrumentation, or stubbing the network in tests.
+The default transport is `net/http`. Anything that responds to `call(method:, url:, headers:, body:)` and returns a `Fopost::HTTP::Response` can replace it, which is useful for a shared connection pool, custom instrumentation, or stubbing the network in tests.
 
 ```ruby
 class LoggingTransport

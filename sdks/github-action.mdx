@@ -28,11 +28,11 @@ There is nothing to install. Reference the action by tag from any workflow:
 
 `@v0` is a floating major tag moved to each release, so it always points at the newest release on that major. Pin a commit SHA instead for the strictest supply-chain posture.
 
-The action is not listed in the GitHub Marketplace yet — that listing is a one-time manual step on a release and is still pending. Referencing the repository by tag works today either way; a Marketplace listing only changes how people discover it.
+The action is not listed in the GitHub Marketplace yet: that listing is a one-time manual step on a release and is still pending. Referencing the repository by tag works today either way; a Marketplace listing only changes how people discover it.
 
 ## Getting an API key
 
-Create one at **Settings → API Keys** in the dashboard. It needs the `posts` scope, plus `media` if you attach local files. Store it as a repository secret named `FOPOST_API_KEY` and reference it as `${{ secrets.FOPOST_API_KEY }}` — never paste the key into the workflow file, and never into a `run:` step.
+Create one at **Settings → API Keys** in the dashboard. It needs the `posts` scope, plus `media` if you attach local files. Store it as a repository secret named `FOPOST_API_KEY` and reference it as `${{ secrets.FOPOST_API_KEY }}`. Never paste the key into the workflow file, and never into a `run:` step.
 
 The action calls `core.setSecret` on the key before it does anything else, so the runner masks it in every log line, including the ones this action writes.
 
@@ -120,7 +120,7 @@ with:
 
 ## Check a workflow without posting
 
-`dry-run` validates every input, resolves the accounts, and prints what would go out — without creating, uploading, or publishing anything.
+`dry-run` validates every input, resolves the accounts, and prints what would go out, without creating, uploading, or publishing anything.
 
 ```yaml
 with:
@@ -134,16 +134,16 @@ with:
 
 | Input | Required | Default | Description |
 |:------|:---------|:--------|:------------|
-| `api-key` | yes | — | FoPost API key. Always from a secret. Masked on read |
-| `workspace-id` | no | — | Workspace to post into. Optional when the key reaches exactly one workspace |
-| `accounts` | yes | — | Accounts to post to, one per line or comma separated. An account id, a username, or `platform:username` |
-| `text` | one of | — | Post body. Mutually exclusive with `text-file` |
-| `text-file` | one of | — | Path in the checkout whose contents become the body |
-| `media` | no | — | Images or videos. A local path is uploaded; an `http(s)` URL is attached as is |
-| `schedule-at` | no | — | ISO 8601 timestamp. Implies `status: scheduled` |
+| `api-key` | yes | none | FoPost API key. Always from a secret. Masked on read |
+| `workspace-id` | no | none | Workspace to post into. Optional when the key reaches exactly one workspace |
+| `accounts` | yes | none | Accounts to post to, one per line or comma separated. An account id, a username, or `platform:username` |
+| `text` | one of | none | Post body. Mutually exclusive with `text-file` |
+| `text-file` | one of | none | Path in the checkout whose contents become the body |
+| `media` | no | none | Images or videos. A local path is uploaded; an `http(s)` URL is attached as is |
+| `schedule-at` | no | none | ISO 8601 timestamp. Implies `status: scheduled` |
 | `status` | no | `draft` | `draft` or `scheduled`. Defaults to `scheduled` when `schedule-at` is set |
 | `publish` | no | `false` | Publish right after creating. Delivery is queued, so success means accepted, not yet live |
-| `labels` | no | — | Labels to attach, one per line or comma separated |
+| `labels` | no | none | Labels to attach, one per line or comma separated |
 | `fail-on-error` | no | `true` | Set to `false` to log a warning and keep the step green |
 | `dry-run` | no | `false` | Validate and print without creating, uploading, or publishing |
 
@@ -162,11 +162,11 @@ Every run also writes a job summary with the post's status, the accounts it went
 
 Failures come back as one actionable line, never a stack trace and never a response header:
 
-- **401** — the key is missing or revoked; check `api-key`.
-- **402** — the plan does not cover the request; the message carries the upgrade URL.
-- **403** — the key's scopes or workspace access do not reach this workspace.
-- **429** — rate limited, with when to retry.
-- **5xx** — transient; re-run the job.
+- **401**: the key is missing or revoked; check `api-key`.
+- **402**: the plan does not cover the request; the message carries the upgrade URL.
+- **403**: the key's scopes or workspace access do not reach this workspace.
+- **429**: rate limited, with when to retry.
+- **5xx**: transient; re-run the job.
 
 Set `fail-on-error: false` to downgrade all of these to a warning, which is the right call for a scheduled digest that should not turn a repository's checks red.
 

@@ -4,7 +4,7 @@ description: The FoPost Java client as a Spring Boot starter, with properties, a
 icon: tech-java
 ---
 
-`com.fopost:fopost-spring-boot-starter` is a thin wrapper over the [Java SDK](/sdks/java). Every request, retry, model, and error type lives there; the starter only wires it into Spring Boot — a configured client bean, `fopost.*` properties with IDE autocomplete, an actuator health entry, and inbound webhooks turned into application events.
+`com.fopost:fopost-spring-boot-starter` is a thin wrapper over the [Java SDK](/sdks/java). Every request, retry, model, and error type lives there; the starter only wires it into Spring Boot: a configured client bean, `fopost.*` properties with IDE autocomplete, an actuator health entry, and inbound webhooks turned into application events.
 
 Needs Java 17 and Spring Boot 3.
 
@@ -92,7 +92,7 @@ class Announcements {
 }
 ```
 
-Declare your own `FoPost` bean and the starter backs off, so an unusual setup — a custom transport, a proxy, one client per tenant — needs no fighting with the auto-configuration.
+Declare your own `FoPost` bean and the starter backs off, so an unusual setup (a custom transport, a proxy, one client per tenant) needs no fighting with the auto-configuration.
 
 The full resource surface (`posts`, `accounts`, `workspaces`, `labels`, `webhooks`, `analytics`, `automations`, `media`, `ai`), pagination, error types, and the `request` escape hatch are on the [Java SDK page](/sdks/java).
 
@@ -108,7 +108,7 @@ fopost:
     path: /fopost/webhooks
 ```
 
-The controller verifies `X-FoPost-Signature` — HMAC-SHA256 over the raw request body, compared in constant time — and republishes the delivery on the application event bus. A body the secret does not sign is a `401` and never reaches a listener.
+The controller verifies `X-FoPost-Signature` (HMAC-SHA256 over the raw request body, compared in constant time) and republishes the delivery on the application event bus. A body the secret does not sign is a `401` and never reaches a listener.
 
 ```java
 @Component
@@ -142,7 +142,7 @@ class Deliveries {
 | `account.health_changed` | `FoPostAccountHealthChangedEvent` |
 | anything newer | `FoPostWebhookEvent` |
 
-Listeners run synchronously on the request thread. An exception that escapes one becomes a `500` and FoPost retries the delivery — useful on purpose, but annotate the listener with `@Async` if you would rather acknowledge first. `event.getDeliveryId()` is unique per attempt, so keep your handler idempotent.
+Listeners run synchronously on the request thread. An exception that escapes one becomes a `500` and FoPost retries the delivery, which is useful on purpose, but annotate the listener with `@Async` if you would rather acknowledge first. `event.getDeliveryId()` is unique per attempt, so keep your handler idempotent.
 
 If your application uses Spring Security, permit the webhook path: FoPost signs its deliveries but does not carry a session or a bearer token.
 
