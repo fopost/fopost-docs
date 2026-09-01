@@ -1,0 +1,83 @@
+/* Self-contained footer styles. Colors read the Geist `--ds-*` variables both
+   hosts load from the same generated geist.css (light and dark values flip on
+   the host's `.dark` class), with literal light-mode fallbacks so the footer
+   still renders on a host without them. */
+
+.mf-footer {
+  font-family: var(--font-geist-sans, ui-sans-serif), sans-serif;
+}
+
+/* ─── Outlined brand wordmark ───
+   The glyphs are filled in the footer's own background and painted
+   stroke-first, so the fill hides the seams where a glyph's contours overlap
+   and leaves an even hairline outside. The stroke is therefore drawn at twice
+   the width the eye ends up seeing.
+
+   .mf-wordmark-spot is the same text inked solid and revealed through a
+   radial mask centered on the pointer, which FooterWordmark writes as
+   --mf-spot-x/-y. */
+.mf-wordmark {
+  --mf-spot-x: 50%;
+  --mf-spot-y: 50%;
+  --mf-spot-on: 0;
+  --mf-spot-radius: 22vw;
+  font-family: var(--font-geist-sans, ui-sans-serif), sans-serif;
+}
+
+.mf-wordmark span {
+  color: var(--ds-background-100, hsl(0 0% 100%));
+  paint-order: stroke fill;
+  -webkit-text-stroke: 2px color-mix(in oklab, var(--ds-gray-1000, hsl(0 0% 9%)) 26%, transparent);
+  user-select: none;
+}
+
+.mf-wordmark .mf-wordmark-spot {
+  -webkit-text-stroke-color: var(--ds-gray-1000, hsl(0 0% 9%));
+  opacity: var(--mf-spot-on);
+  transition: opacity 260ms ease;
+  -webkit-mask-image: radial-gradient(
+    circle var(--mf-spot-radius) at var(--mf-spot-x) var(--mf-spot-y),
+    #000 0%,
+    rgb(0 0 0 / 0.55) 45%,
+    transparent 75%
+  );
+  mask-image: radial-gradient(
+    circle var(--mf-spot-radius) at var(--mf-spot-x) var(--mf-spot-y),
+    #000 0%,
+    rgb(0 0 0 / 0.55) 45%,
+    transparent 75%
+  );
+}
+
+@media (hover: none) {
+  .mf-wordmark .mf-wordmark-spot {
+    display: none;
+  }
+}
+
+/* The footer clips the wordmark's bottom, so translating the text down and
+   releasing it reads as the wordmark rising out of the edge. Scroll-driven,
+   so it needs no observer and no hydration; browsers without the timeline
+   just render it in place. */
+@keyframes mf-wordmark-rise {
+  from {
+    transform: translateY(30%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .mf-wordmark-rise {
+    animation: mf-wordmark-rise linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 25vh;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mf-wordmark-rise {
+      animation: none;
+    }
+  }
+}
