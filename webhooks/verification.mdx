@@ -1,0 +1,56 @@
+---
+title: Verifying Signatures
+description: Prove a delivery came from FoPost before acting on it.
+icon: key
+---
+
+Every delivery is signed with the secret returned when the webhook was created. An endpoint that skips verification will publish whatever anyone who guesses the URL sends it — reject anything that does not verify.
+
+## The headers
+
+| Header | Contents |
+|:-------|:---------|
+| `Content-Type` | `application/json` |
+| `X-FoPost-Event` | The event name |
+| `X-FoPost-Delivery` | The delivery id — stable across retries of the same event, so it is your deduplication key |
+| `X-FoPost-Signature` | `sha256=` followed by the hex signature |
+
+## Verify
+
+The signature is an HMAC-SHA256 of the raw request body, keyed with your webhook's signing secret — the body and nothing else. Compute it over the bytes you received, before any JSON parsing, and compare with a timing-safe comparison.
+
+```javascript
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+function verify(rawBody, header, secret) {
+  const expected = 'sha256=' + createHmac('sha256', secret).update(rawBody).digest('hex');
+  const a = Buffer.from(header ?? '');
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+```
+
+```php
+function verify(string $rawBody, ?string $header, string $secret): bool
+{
+    $expected = 'sha256=' . hash_hmac('sha256', $rawBody, $secret);
+    return $header !== null && hash_equals($expected, $header);
+}
+```
+
+Three mistakes account for nearly every "signature never matches" report:
+
+- **Verifying a re-serialised body.** Frameworks that parse JSON before your handler runs hand you an object; `JSON.stringify` of that object is not guaranteed to be byte-identical to what was sent. Verify the raw bytes
+- **Comparing with `==`.** String comparison leaks timing; use your language's constant-time comparison
+- **Dropping the `sha256=` prefix on one side only.** Compare like with like
+
+The scheme has no timestamp component — the signature covers the body alone. Replay of an identical body therefore verifies, which is another reason to deduplicate on `X-FoPost-Delivery` and treat your handler as idempotent.
+
+Several framework integrations verify for you: the [Symfony](/sdks/symfony), [Rails](/sdks/rails), [Django](/sdks/django), and [FastAPI](/sdks/fastapi) packages each ship a receiver that checks the signature and dispatches a native event.
+
+## Next
+
+<Cards>
+  <Card title="Events" href="/webhooks/events" />
+  <Card title="Retries and Failures" href="/webhooks/retries" />
+</Cards>

@@ -150,7 +150,7 @@ Mount the engine:
 mount Fopost::Rails::Engine => '/fopost'
 ```
 
-That serves `POST /fopost/webhooks`. Create a [webhook](/api/webhooks) pointing at it, copy the secret it shows you once into `config.webhook_secret`, and subscribe:
+That serves `POST /fopost/webhooks`. Create a [webhook](/webhooks) pointing at it, copy the secret it shows you once into `config.webhook_secret`, and subscribe:
 
 ```ruby
 # config/initializers/fopost_webhooks.rb
@@ -194,6 +194,6 @@ Fopost::Rails.client = Fopost::Client.new(api_key: 'fp_test', transport: my_stub
 
 <Cards>
   <Card title="Ruby SDK" href="/sdks/ruby" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
   <Card title="API Reference" href="/api/overview" />
 </Cards>

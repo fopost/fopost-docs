@@ -38,7 +38,7 @@ $post = $client->posts()->create(
 $client->posts()->publish($post->id);
 ```
 
-`publish` returns once delivery is queued, not once it is live. Read `$client->posts()->deliveries($post->id)` or subscribe to [webhooks](/api/webhooks) for the result.
+`publish` returns once delivery is queued, not once it is live. Read `$client->posts()->deliveries($post->id)` or subscribe to [webhooks](/webhooks) for the result.
 
 The key falls back to `FOPOST_API_KEY`, so `new Client()` works when it is set.
 
@@ -153,5 +153,5 @@ $client = new Client('fp_test_key', Client::DEFAULT_BASE_URL, 30.0, 3, $fake);
 <Cards>
   <Card title="Laravel SDK" href="/sdks/laravel" />
   <Card title="API Reference" href="/api/overview" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
 </Cards>

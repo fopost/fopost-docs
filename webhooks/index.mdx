@@ -1,0 +1,70 @@
+---
+title: Webhooks
+description: Hear about publishing outcomes and account health without polling.
+icon: webhook
+---
+
+Delivery is asynchronous, so a `202` from the publish endpoint tells you the post was accepted, not that it is live. Webhooks are how you find out what actually happened without polling: FoPost `POST`s a signed JSON event to your endpoint when a post publishes, a delivery fails, or a connected account's credentials degrade.
+
+These endpoints need the `webhooks` scope, and work from the [API](/api/overview), the [SDKs](/sdks/overview), or the [CLI](/cli/automations#webhooks).
+
+## Subscribe
+
+```http
+POST /v1/webhooks
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/webhooks \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "url": "https://yourbrand.com/hooks/fopost",
+    "events": ["post.published", "post.partially_failed", "delivery.failed"]
+  }'
+```
+
+`workspaceId`, `url`, and at least one event are required — the names are on the [events page](/webhooks/events). Use an HTTPS URL your server exposes publicly; deliveries come from the open internet.
+
+The response carries the webhook's signing `secret`. It is returned **only** on creation and cannot be shown or rotated later — to rotate, create a new webhook and delete the old one. It is what you [verify the signature](/webhooks/verification) with.
+
+## Manage
+
+| Endpoint | What it does |
+|:---------|:-------------|
+| `GET /v1/webhooks` | List your subscriptions, with `lastTriggeredAt` and `failureCount`. Spans every workspace you belong to |
+| `PUT /v1/webhooks/{id}` | Change the URL, the events, or `active`. Setting `active: true` also resets the failure count |
+| `POST /v1/webhooks/{id}/test` | Send a test event — see [test deliveries](/webhooks/retries#test-deliveries) for how it behaves |
+| `DELETE /v1/webhooks/{id}` | Delete it |
+
+Workspace viewers can list webhooks but not create, change, or delete them.
+
+## The shape of a delivery
+
+Every event arrives as a `POST` with a three-key JSON body:
+
+```json
+{
+  "event": "delivery.published",
+  "data": { "postId": "…", "accountId": "…", "platform": "linkedin", "externalUrl": "…" },
+  "timestamp": "2026-09-01T09:00:12.000Z"
+}
+```
+
+There is no id inside the body — the delivery id travels in the `X-FoPost-Delivery` header, which is also what you deduplicate on. The full per-event `data` shapes are on the [events page](/webhooks/events).
+
+## In this section
+
+<Cards>
+  <Card title="Events" href="/webhooks/events" description="Every event that can fire, when it fires, and its payload." />
+  <Card title="Verifying Signatures" href="/webhooks/verification" description="Prove a delivery came from FoPost before acting on it." />
+  <Card title="Retries and Failures" href="/webhooks/retries" description="Timeouts, retry backoff, auto-disable, and test deliveries." />
+</Cards>
+
+## Next
+
+<Cards>
+  <Card title="Publishing" href="/api/publishing" />
+  <Card title="Automations" href="/api/automations" />
+</Cards>

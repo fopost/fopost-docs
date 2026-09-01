@@ -36,7 +36,7 @@ post = client.posts.create(
 client.posts.publish(post.id)
 ```
 
-`accounts` takes account ids, the `Fopost::SocialAccount` objects themselves, or hashes with an `id`. `publish` returns once delivery is queued, not once it is live — read `client.posts.deliveries` or subscribe to [webhooks](/api/webhooks) for the result.
+`accounts` takes account ids, the `Fopost::SocialAccount` objects themselves, or hashes with an `id`. `publish` returns once delivery is queued, not once it is live — read `client.posts.deliveries` or subscribe to [webhooks](/webhooks) for the result.
 
 ## Threads and scheduling
 
@@ -208,5 +208,5 @@ post['some_new_field']    # by either spelling
 <Cards>
   <Card title="API Reference" href="/api/overview" />
   <Card title="Python SDK" href="/sdks/python" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
 </Cards>

@@ -135,7 +135,7 @@ client.posts.create(
 )
 ```
 
-`publish` returns once delivery is **queued**, not once the post is live — watch the deliveries or a [webhook](/api/webhooks) for that. Before publishing, `preflight` reports the per-account blockers and advisory signals without sending anything, and `PublishParams(dryRun = true)` rehearses the whole thing:
+`publish` returns once delivery is **queued**, not once the post is live — watch the deliveries or a [webhook](/webhooks) for that. Before publishing, `preflight` reports the per-account blockers and advisory signals without sending anything, and `PublishParams(dryRun = true)` rehearses the whole thing:
 
 ```kotlin
 val check = client.posts.preflight(post.id!!)
@@ -243,5 +243,5 @@ try {
 <Cards>
   <Card title="API Reference" href="/api/overview" />
   <Card title="Java SDK" href="/sdks/java" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
 </Cards>

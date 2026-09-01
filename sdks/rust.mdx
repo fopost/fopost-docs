@@ -56,7 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-Times are UTC. `publish` returns once delivery is queued, not once it is live — read `posts().deliveries()` or subscribe to [webhooks](/api/webhooks) for the result.
+Times are UTC. `publish` returns once delivery is queued, not once it is live — read `posts().deliveries()` or subscribe to [webhooks](/webhooks) for the result.
 
 ## Configuration
 
@@ -188,5 +188,5 @@ assert_eq!(Platform::from("brand-new"), Platform::Other("brand-new".into()));
 <Cards>
   <Card title="API Reference" href="/api/overview" />
   <Card title="Go SDK" href="/sdks/go" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
 </Cards>

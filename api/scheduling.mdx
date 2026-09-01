@@ -75,12 +75,12 @@ Upload a CSV or TSV, up to 500 data rows and 2 MB. Columns:
 
 The scheduler queues the post, then each account is delivered independently. Transient platform failures are retried with exponential backoff. If the queue loses its connection, orphaned deliveries are recovered and re-queued rather than dropped.
 
-Watch for the result with [webhooks](/api/webhooks) rather than polling on a timer.
+Watch for the result with [webhooks](/webhooks) rather than polling on a timer.
 
 ## Next
 
 <Cards>
   <Card title="Publishing" href="/api/publishing" />
   <Card title="Automations" href="/api/automations" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
 </Cards>

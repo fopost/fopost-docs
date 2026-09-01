@@ -1,0 +1,49 @@
+---
+title: Retries and Failures
+description: Timeouts, retry backoff, auto-disable, and test deliveries.
+icon: recycle
+---
+
+Answer `2xx` within 10 seconds. Anything else — a timeout included — counts as a failed attempt. Do the real work on a queue rather than inside the request, or a slow handler turns into a retry storm.
+
+## The retry schedule
+
+A failed delivery is attempted up to **5 times in total** — the first try plus four retries — with exponential backoff starting around 5 seconds, so roughly 5s, 10s, 20s, 40s between attempts.
+
+All attempts of one event carry the same `X-FoPost-Delivery` id and an identical body. Deliveries can also arrive more than once and out of order across events, so deduplicate on that header and keep your handler idempotent.
+
+## Auto-disable
+
+Every failed **attempt** increments the webhook's `failureCount`, visible on the webhook record. At 10 it is deactivated rather than retried forever — and since one completely failed event burns 5 attempts, two dead events in a row are enough to trip it. Any successful delivery resets the count to zero, so a brief outage costs you nothing as long as the endpoint recovers.
+
+A deactivated webhook stays on the list with `active: false`. Fix the endpoint, then re-enable it:
+
+```bash
+curl -X PUT https://api.fopost.com/v1/webhooks/$WEBHOOK_ID \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "active": true }'
+```
+
+Re-enabling resets the failure count. Events that fired while it was disabled are not replayed — poll [deliveries](/api/publishing#read-the-result) to backfill anything you missed.
+
+## Test deliveries
+
+```http
+POST /v1/webhooks/{id}/test
+```
+
+Two behaviours to know before relying on it:
+
+- The test is dispatched as a `post.published` event to the workspace's active webhooks subscribed to that event — so a webhook not subscribed to `post.published` receives nothing, and the endpoint still answers with success
+- The delivery arrives with `X-FoPost-Event: post.published` and `data.test: true`, which is how your handler tells it apart from a real publish
+
+Subscribe the webhook to `post.published`, send the test, and watch your logs — it remains the cheapest way to find out your handler is behind a firewall.
+
+## Next
+
+<Cards>
+  <Card title="Events" href="/webhooks/events" />
+  <Card title="Verifying Signatures" href="/webhooks/verification" />
+  <Card title="Publishing" href="/api/publishing" />
+</Cards>
