@@ -1,0 +1,40 @@
+---
+title: Telegram
+description: Bot posting to channels and groups, with formatting and albums.
+---
+
+Telegram publishing works through a bot you own, posting into a channel or group where that bot is an admin.
+
+## Connecting
+
+Create a bot with [@BotFather](https://t.me/BotFather), make it an admin of your channel or group, then enter the bot token and the chat — `@channelname` or a numeric ID — in **Accounts → Connect → Telegram**.
+
+## What you can publish
+
+| Limit | Value |
+|:------|:------|
+| Text message | 4,096 characters |
+| Caption with media | 1,024 characters — the caption limit governs the moment media rides along |
+| Media per post | Up to 10 photos or videos, as an album |
+| Photo size | 10 MB |
+| Video size | MP4, up to 50 MB |
+
+Posts render with formatting: a bold title, the body, a **Read more** link when the post has one, and hashtags. One photo or video sends as a single captioned message; several send as an album with the caption on the first item.
+
+Per post you can send **silently** (no notification sound) and **protect content** (no forwarding or saving), the same options Telegram offers.
+
+## Analytics
+
+The Bot API exposes no per-message metrics, so post analytics are empty; the member count of the channel or group is read back as the follower number.
+
+## Deleting
+
+Deleting the post in FoPost deletes the message from the channel.
+
+## Next
+
+<Cards>
+  <Card title="Connecting Accounts" href="/guide/using-fopost/connecting-accounts" />
+  <Card title="Creating Posts" href="/guide/using-fopost/creating-posts" />
+  <Card title="All Platforms" href="/platforms" />
+</Cards>

@@ -1,0 +1,33 @@
+---
+title: Discord
+description: Posts delivered to a channel through its webhook.
+---
+
+Discord delivery goes through a **channel webhook** — no bot to invite, no OAuth. Anything FoPost publishes appears in that one channel.
+
+## Connecting
+
+In Discord, open the channel's settings → **Integrations → Webhooks**, create one, copy its URL, and paste it in **Accounts → Connect → Discord**. You need permission to manage webhooks in that server.
+
+## What you can publish
+
+| Limit | Value |
+|:------|:------|
+| Message length | 2,000 characters |
+| Attachments | Up to 10 — images (JPEG, PNG, GIF, WebP) or MP4, 10 MB each |
+
+A plain post arrives as a normal message. A post with a **title** or a **link** arrives as an embed instead — title, link, description, the first image, and tags in the footer. Attached files are delivered to the channel alongside it.
+
+The 10 MB ceiling is Discord's own webhook upload limit. Reply chains are not possible through a webhook, so thread blocks are not supported on Discord.
+
+## Analytics and deletion
+
+Webhooks are write-only, so there are **no analytics**. Deleting the post in FoPost does delete the webhook message from the channel.
+
+## Next
+
+<Cards>
+  <Card title="Connecting Accounts" href="/guide/using-fopost/connecting-accounts" />
+  <Card title="Creating Posts" href="/guide/using-fopost/creating-posts" />
+  <Card title="All Platforms" href="/platforms" />
+</Cards>
