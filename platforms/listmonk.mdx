@@ -1,0 +1,41 @@
+---
+title: Listmonk
+description: Turn a post into an email campaign on your own Listmonk instance.
+---
+
+Listmonk is a self-hosted newsletter server, and the FoPost connection turns a post into a campaign sent to one of its lists.
+
+<Callout type="warn">
+Publishing to Listmonk **sends email immediately** to everyone on the target list. There is no review step on the Listmonk side — the review is your FoPost schedule.
+</Callout>
+
+## Connecting
+
+**Accounts → Connect → Listmonk**, enter your instance address, an API user and its token, and the numeric ID of the list to send to. An optional sender override replaces the instance's default sender.
+
+## What you can publish
+
+| Limit | Value |
+|:------|:------|
+| Body | 200,000 characters, rendered to HTML email |
+| Subject | From the post title, or the first line of the body |
+| Media | Not uploaded — images must be URLs in the body |
+| Link and tags | Not supported as separate fields |
+
+Publishing creates the campaign and starts it in one motion. The post links to the campaign in your Listmonk admin.
+
+## Analytics
+
+Per campaign: views and clicks, as Listmonk tracks them. Account-level: the target list's subscriber count.
+
+## Deleting
+
+Deleting the post in FoPost deletes the campaign record from Listmonk. Email already delivered stays delivered — nothing can unsend it.
+
+## Next
+
+<Cards>
+  <Card title="Connecting Accounts" href="/guide/using-fopost/connecting-accounts" />
+  <Card title="Creating Posts" href="/guide/using-fopost/creating-posts" />
+  <Card title="All Platforms" href="/platforms" />
+</Cards>
