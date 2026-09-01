@@ -11,6 +11,7 @@ import {
   SlideNavSeparator,
   SlideSidebarSearch,
 } from '@/components/slide-sidebar';
+import { SiteFooter } from '@/components/site-footer';
 import { buildNavTree } from '@/lib/nav-tree';
 import { source } from '@/lib/source';
 import { GeistSans } from 'geist/font/sans';
@@ -60,6 +61,9 @@ export default function Layout({ children }: LayoutProps<'/'>) {
               {children}
             </DocsLayout>
           </SlideNavProvider>
+          {/* Below the docs grid, so it spans the full width under the
+              sidebar the way a normal site footer does. */}
+          <SiteFooter />
         </DocsRootProvider>
       </body>
     </html>

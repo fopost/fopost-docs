@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { BRAND } from '@/lib/brand';
+import { FaceHappyIcon, FaceSadIcon, FaceSmileIcon, FaceUnhappyIcon } from '@/components/icons';
 
 const RATINGS = [
-  { rating: 'terrible', emoji: '\u{1F62D}', label: 'Terrible' },
-  { rating: 'bad', emoji: '\u{1F641}', label: 'Bad' },
-  { rating: 'good', emoji: '\u{1F642}', label: 'Good' },
-  { rating: 'great', emoji: '\u{1F929}', label: 'Great' },
+  { rating: 'terrible', icon: FaceSadIcon, label: 'Terrible' },
+  { rating: 'bad', icon: FaceUnhappyIcon, label: 'Bad' },
+  { rating: 'good', icon: FaceHappyIcon, label: 'Good' },
+  { rating: 'great', icon: FaceSmileIcon, label: 'Great' },
 ] as const;
 
 type Rating = (typeof RATINGS)[number]['rating'];
@@ -32,7 +33,7 @@ async function post(path: string, rating: Rating, message?: string) {
 }
 
 /**
- * "Was this helpful?" at the bottom of every page. An emoji click records the
+ * "Was this helpful?" at the bottom of every page. A face click records the
  * rating immediately; a written message is a second append-only row, so a
  * reader who never presses Send still counts.
  */
@@ -56,18 +57,20 @@ export function Feedback({ path }: { path: string }) {
 
   if (sent) {
     return (
-      <div className="not-prose inline-flex h-10 items-center rounded-full px-4 text-[13px] text-fd-muted-foreground shadow-border">
-        Thanks for your feedback.
+      <div className="not-prose flex justify-center">
+        <div className="inline-flex h-10 items-center rounded-full px-4 text-[13px] text-fd-muted-foreground shadow-border">
+          Thanks for your feedback.
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="not-prose flex flex-col items-start gap-3">
+    <div className="not-prose flex flex-col items-center gap-3">
       <div className="inline-flex h-10 items-center gap-2 rounded-full ps-4 pe-2 shadow-border">
         <span className="text-[13px] text-fd-muted-foreground">Was this helpful?</span>
         <div className="flex items-center gap-0.5">
-          {RATINGS.map(({ rating: value, emoji, label }) => (
+          {RATINGS.map(({ rating: value, icon: Icon, label }) => (
             <button
               key={value}
               type="button"
@@ -76,17 +79,17 @@ export function Feedback({ path }: { path: string }) {
               onClick={() => rate(value)}
               className={`inline-flex size-8 items-center justify-center rounded-full text-base transition-colors ${
                 rating === value
-                  ? 'bg-fd-accent'
-                  : 'grayscale hover:bg-fd-muted hover:grayscale-0'
+                  ? 'bg-fd-accent text-fd-primary'
+                  : 'text-fd-muted-foreground hover:bg-fd-muted hover:text-fd-foreground'
               }`}
             >
-              {emoji}
+              <Icon />
             </button>
           ))}
         </div>
       </div>
       {rating && (
-        <div className="flex w-full max-w-md flex-col gap-2 rounded-xl p-3 shadow-border">
+        <div className="flex w-full max-w-96 flex-col gap-2 rounded-xl p-3 shadow-border">
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
