@@ -159,3 +159,15 @@ samp {
   color: var(--ds-gray-1000);
   font-weight: 500;
 }
+
+/* ─── Site footer wordmark ───
+   Outlined oversized brand name closing the footer, ported from the
+   marketing site. The glyphs are filled in the page background and painted
+   stroke-first, so the fill hides the seams where a glyph's contours
+   overlap and leaves an even hairline outside. */
+.footer-wordmark span {
+  color: var(--color-fd-background);
+  paint-order: stroke fill;
+  -webkit-text-stroke: 2px color-mix(in oklab, var(--color-fd-foreground) 26%, transparent);
+  user-select: none;
+}
