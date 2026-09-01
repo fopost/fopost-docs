@@ -1,0 +1,6 @@
+{
+  "title": "MCP",
+  "description": "FoPost for AI assistants",
+  "icon": "tech-mcp",
+  "pages": ["index", "tools"]
+}
