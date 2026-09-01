@@ -30,13 +30,11 @@
     "wordpress",
     "woocommerce",
     "---Automation & tooling---",
-    "cli",
     "github-action",
     "terraform",
     "zapier",
     "n8n",
     "make",
-    "browser-extension",
-    "mcp"
+    "browser-extension"
   ]
 }

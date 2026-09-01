@@ -1,0 +1,6 @@
+{
+  "title": "Security",
+  "description": "Access, isolation, and data handling",
+  "icon": "key",
+  "pages": ["index"]
+}

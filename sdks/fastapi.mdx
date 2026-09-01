@@ -113,7 +113,7 @@ def failed(event: WebhookEvent) -> None:      # a `def` handler runs in a worker
     ...
 ```
 
-Point a [webhook](/api/webhooks) at `https://<your host>/fopost/webhooks` and put its secret in `FOPOST_WEBHOOK_SECRET`.
+Point a [webhook](/webhooks) at `https://<your host>/fopost/webhooks` and put its secret in `FOPOST_WEBHOOK_SECRET`.
 
 FoPost signs each delivery with HMAC-SHA256 over the **raw** request body using that webhook's secret, and sends it as `X-FoPost-Signature: sha256=<hex>` alongside `X-FoPost-Event` and `X-FoPost-Delivery`. The router reads the raw bytes before any parsing, compares with `hmac.compare_digest`, and answers `401` on a mismatch or a missing header — no handler runs. With no secret configured at all it answers `500` rather than accepting unverifiable traffic.
 
@@ -154,6 +154,6 @@ Everything you can call on the injected client — `posts`, `accounts`, `workspa
 
 <Cards>
   <Card title="Python SDK" href="/sdks/python" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
   <Card title="Django" href="/sdks/django" />
 </Cards>

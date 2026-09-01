@@ -123,7 +123,7 @@ fopost:
     resource: '@FopostBundle/config/routes/webhooks.yaml'
 ```
 
-That mounts `POST /fopost/webhook`. Create a [webhook](/api/webhooks) pointing at it and copy the secret it shows once into `FOPOST_WEBHOOK_SECRET`. The controller verifies the HMAC-SHA256 signature over the raw request body, answers `401` when it does not match, and dispatches a Symfony event when it does.
+That mounts `POST /fopost/webhook`. Create a [webhook](/webhooks) pointing at it and copy the secret it shows once into `FOPOST_WEBHOOK_SECRET`. The controller verifies the HMAC-SHA256 signature over the raw request body, answers `401` when it does not match, and dispatches a Symfony event when it does.
 
 ```php
 use Fopost\Symfony\Event\FopostPostPublishedEvent;
@@ -194,5 +194,5 @@ $container->getDefinition('fopost.client')->setArgument('$transport', new Refere
 <Cards>
   <Card title="PHP SDK" href="/sdks/php" />
   <Card title="Laravel SDK" href="/sdks/laravel" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
 </Cards>

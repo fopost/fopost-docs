@@ -1,0 +1,6 @@
+{
+  "title": "Webhooks",
+  "description": "Publishing events, delivered to you",
+  "icon": "webhook",
+  "pages": ["index", "events", "verification", "retries"]
+}

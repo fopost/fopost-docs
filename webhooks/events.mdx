@@ -1,0 +1,72 @@
+---
+title: Events
+description: Every webhook event FoPost can send, when it fires, and its payload.
+icon: lightning
+---
+
+Seven events, in three families. Subscribe to `delivery.*` when you want per-account granularity, `post.*` when you only care about the overall outcome. Subscribing to both means two notifications for the same publish, which is fine as long as your handler expects it.
+
+## Post outcomes
+
+One event per post, once every account has a final status.
+
+| Event | Fires when |
+|:------|:-----------|
+| `post.published` | Every account on the post published successfully |
+| `post.partially_failed` | Some accounts published, some did not |
+| `post.failed` | No account published — failed and cancelled deliveries both count |
+
+`data` carries the post and its final status:
+
+```json
+{ "postId": "7d2b8c11-…", "status": "published" }
+```
+
+## Delivery outcomes
+
+One event per account on the post.
+
+| Event | Fires when |
+|:------|:-----------|
+| `delivery.published` | One account published. Fires once per account |
+| `delivery.failed` | One account will not publish — after its retries, or immediately when the failure is final, such as expired credentials or an error the platform will never accept |
+| `delivery.delayed` | One delivery was held by a platform rate limit and will retry at `retryAt` |
+
+`delivery.published` data:
+
+```json
+{ "postId": "…", "postAccountId": "…", "accountId": "…", "platform": "linkedin", "externalUrl": "https://…" }
+```
+
+`externalUrl` is the live post when the platform reports one, and `null` when it does not.
+
+`delivery.failed` swaps `externalUrl` for `errorCode` and `errorMessage`; `delivery.delayed` carries `reason: "platform_rate_limit"`, a `message`, and `retryAt`. Ordinary retry backoff between attempts does not emit `delivery.delayed` — only a platform rate limit does.
+
+## Account health
+
+| Event | Fires when |
+|:------|:-----------|
+| `account.health_changed` | A connected account's credential health changed — degraded, expired, revoked, or recovered |
+
+```json
+{ "accountId": "…", "platform": "instagram", "username": "yourbrand", "previousStatus": "healthy", "newStatus": "expired" }
+```
+
+This is the one worth wiring even if you skip the rest. It is how you learn a token died before a scheduled post silently fails. It fires on recovery too, so you can close the alert it opened. When the change comes from a failed token refresh rather than a health check, the payload carries a `reason` instead of a `username`.
+
+## The envelope
+
+Every delivery is the same three-key body:
+
+```json
+{ "event": "<name>", "data": { … }, "timestamp": "<ISO 8601>" }
+```
+
+`timestamp` is when the event was queued. The delivery id lives in the `X-FoPost-Delivery` header — deduplicate on that, since a retried delivery repeats the identical body. Ids in `data` are the same public ids the [API](/api/overview) uses, so a webhook payload can be followed with a `GET`.
+
+## Next
+
+<Cards>
+  <Card title="Verifying Signatures" href="/webhooks/verification" />
+  <Card title="Retries and Failures" href="/webhooks/retries" />
+</Cards>

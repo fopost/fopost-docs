@@ -36,7 +36,7 @@ post = client.posts.create(
 client.posts.publish(post.id)
 ```
 
-`publish` returns once delivery is queued, not once it is live. Read `client.posts.deliveries(post.id)` or subscribe to [webhooks](/api/webhooks) for the result.
+`publish` returns once delivery is queued, not once it is live. Read `client.posts.deliveries(post.id)` or subscribe to [webhooks](/webhooks) for the result.
 
 ## Threads and media
 
@@ -103,5 +103,5 @@ Failed requests raise a typed exception carrying the status and the API's
 <Cards>
   <Card title="API Reference" href="/api/overview" />
   <Card title="TypeScript SDK" href="/sdks/typescript" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
 </Cards>

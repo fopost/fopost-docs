@@ -45,7 +45,7 @@ Post post = client.posts().create(
 client.posts().publish(post.id());
 ```
 
-`publish` returns once delivery is queued, not once it is live — read `posts().deliveries()` or subscribe to [webhooks](/api/webhooks) for the result.
+`publish` returns once delivery is queued, not once it is live — read `posts().deliveries()` or subscribe to [webhooks](/webhooks) for the result.
 
 ## Threads and scheduling
 
@@ -196,5 +196,5 @@ A `403` where `isSubscriptionRequired()` is true means the workspace has no acti
 <Cards>
   <Card title="API Reference" href="/api/overview" />
   <Card title=".NET SDK" href="/sdks/dotnet" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
 </Cards>

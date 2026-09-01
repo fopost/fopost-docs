@@ -1,0 +1,103 @@
+---
+title: Posts
+description: Create, schedule, publish, and inspect posts from the terminal.
+icon: paper-airplane
+---
+
+Everything under `fopost posts`. All of it needs a key with the `posts` scope; publishing also needs `publish`.
+
+## Create
+
+```bash
+fopost posts create \
+  --account acc_9f2c4a7b \
+  --account acc_1ee3d5a0 \
+  --text "We shipped dark mode. Every surface, every chart, no flash on load." \
+  --media ./screenshots/dark-mode.png \
+  --schedule-at "2026-09-01 09:00"
+```
+
+| Flag | What it does |
+|:-----|:-------------|
+| `--account` | Account id to post to. Repeatable, at least one required |
+| `--text` | The post text |
+| `--text-file` | Read the text from a file, `-` for stdin. Mutually exclusive with `--text` |
+| `--media` | Local file to upload and attach. Repeatable |
+| `--schedule-at` | When to publish. Without it the post is saved as a draft |
+| `--publish` | Publish immediately after creating |
+| `--draft` | Save as a draft — already the default, so this mostly documents intent |
+| `--label` | Label id to attach. Repeatable |
+| `--title` | A title, for platforms that use one |
+
+A workspace is required — `--workspace` or the default saved by `auth login`. Files passed with `--media` are uploaded to the workspace's [media library](/guide/using-fopost/media-library) first, then attached.
+
+`--schedule-at` reads RFC 3339 (`2026-09-01T09:00:00Z`) or plain layouts like `"2026-09-01 09:00"` and `"2026-09-01"`, interpreted in your local timezone unless an offset is present. If you pass both `--draft` and `--schedule-at`, the schedule wins.
+
+Contradictory pairs — `--publish` with `--schedule-at`, `--publish` with `--draft`, `--text` with `--text-file` — are rejected before any API call, as is a create with neither text nor media.
+
+Long copy comes from a file, or a pipe:
+
+```bash
+fopost posts create --account acc_9f2c4a7b --text-file announcement.md --draft
+
+git log -1 --pretty=%s | \
+  fopost posts create --account acc_9f2c4a7b --text-file - --draft
+```
+
+Nothing reaches a platform without `--publish`, an explicit `posts publish`, or a schedule you set. If `--publish` is passed and the publish step fails, the post still exists as a draft — the CLI says so and exits non-zero.
+
+## Publish
+
+```bash
+fopost posts publish post_7d2a
+fopost posts publish post_7d2a --account acc_1ee3d5a0   # a subset of its accounts
+fopost posts publish post_7d2a --dry-run                # validate, send nothing
+```
+
+Publishing returns once the deliveries are **queued**, not once they are live. Poll `posts deliveries` or subscribe to [webhooks](/webhooks) for the outcome.
+
+## Preflight
+
+```bash
+fopost posts preflight post_7d2a
+```
+
+Checks the post against every target platform without publishing: per-account `ready` or `blocked` with the blocking issues, plus advisory signals. When any account is blocked the command exits non-zero after printing, so it works as a CI gate:
+
+```bash
+fopost posts preflight post_7d2a --json \
+  | jq -r '.accounts[] | select(.ready==false) | .issues[]'
+```
+
+## List and inspect
+
+```bash
+fopost posts list --status scheduled --from 2026-09-01 --to 2026-09-30
+fopost posts get post_7d2a
+fopost posts deliveries post_7d2a
+```
+
+`posts list` filters: `--status` (`draft`, `scheduled`, `publishing`, `published`, `partially_failed`, `failed`, `cancelled`), `--search`, `--platform`, `--label`, `--account`, `--from`/`--to` (`YYYY-MM-DD`), `--sort oldest`, and `--page`/`--per-page` or `--all` to walk every page.
+
+One `--json` gotcha: `--all` prints a bare array of posts, while a paged list prints the page envelope (`{"data": [...], "meta": {...}}`). Pick the shape your `jq` expects.
+
+`posts deliveries` shows the current per-account record: status, attempts, posted time, and the live URL once a network has one.
+
+## Cancel, delete, duplicate
+
+```bash
+fopost posts cancel post_7d2a                       # stop deliveries not yet sent
+fopost posts cancel post_7d2a --account acc_1       # just one account
+fopost posts delete post_7d2a --yes                 # permanent; prompts without --yes
+fopost posts duplicate post_7d2a                    # copy into a new draft
+```
+
+`delete` asks for confirmation unless `-y`/`--yes` is passed; in a non-interactive run without it, the command fails instead of hanging. `cancel` does not prompt.
+
+## Next
+
+<Cards>
+  <Card title="Scripting" href="/cli/scripting" />
+  <Card title="Webhooks" href="/webhooks" />
+  <Card title="Publishing API" href="/api/publishing" />
+</Cards>

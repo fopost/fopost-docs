@@ -1,0 +1,81 @@
+---
+title: Supported Platforms
+description: Every network FoPost publishes to, what each supports, and how each one is delivered.
+icon: globe
+---
+
+Every network below is connected once in the dashboard and published to from anywhere: the composer, the [API](/api/overview), the [SDKs](/sdks/overview), the [CLI](/cli), or the [FoPost Agent](/guide/using-fopost/agent). Every account gets every network — there is no tier that unlocks more of them.
+
+The limits in these tables are the ceilings FoPost enforces before a post ever leaves, so the composer flags an over-long caption or an oversized file instead of letting the network reject it.
+
+## Social
+
+| Network | Post length | Media | Analytics | Notes |
+|:--------|:------------|:------|:----------|:------|
+| X (Twitter) | 25,000 | 4 images, GIF, or video | Yes | Threads and articles. Links count as 23 characters |
+| Instagram | 2,200 | Up to 10 images or video per carousel | Yes, with demographics | Business or Creator account. Connect directly, or through a linked Facebook Page |
+| Facebook | 63,206 | Up to 10 items, video up to 1 GB | Yes | Pages |
+| LinkedIn | 3,000 | Up to 20 items, including PDF documents | Yes, with demographics | Personal profiles and company pages |
+| TikTok | 2,200 | Video up to 4 GB, or photo carousels | Yes | Video length ceiling follows your creator account |
+| YouTube | 5,000 | One video per post | Yes, with demographics | Video and Shorts |
+| Threads | 500 | Up to 20 items | Yes, with demographics | Thread chains supported |
+| Bluesky | 300 | 4 images or video | Yes | App password, any PDS — self-hosted servers work |
+| Mastodon | 500 | 4 items, audio included | Yes | Any instance; limits follow the instance's own settings |
+| Nostr | 5,000 | Referenced by URL in the note | No | Publishes to your relays; a title makes it a long-form article |
+| MeWe | 60,000 | Photos | No | |
+| Pinterest | 800 + title | One image per Pin | Yes | Pins to a board |
+
+## Communities
+
+| Network | Post length | Media | Analytics | Notes |
+|:--------|:------------|:------|:----------|:------|
+| Reddit | 40,000 | Up to 20 items, video up to 1 GB | Yes | Title and subreddit per post |
+| Discord | 2,000 | Up to 10 items | No | Delivered through a channel webhook |
+| Telegram | 4,096 | Up to 10 items; captions cap at 1,024 | Follower counts | Bot posting to channels and groups |
+| Slack | 40,000 | Up to 10 items, PDF included | Yes | Webhook or OAuth connection |
+| Lemmy | 10,000 | One image | Yes | Title and community per post |
+| Twitch | 500 | — | No | Chat messages and announcements on your channel |
+| Kick | 500 | — | No | Chat messages on your channel |
+| Whop | 10,000 | — | No | Forum posts in your community |
+| Skool | 50,000 | — | No | Community posts |
+
+## Writing and publishing
+
+| Network | Post length | Media | Analytics | Notes |
+|:--------|:------------|:------|:----------|:------|
+| Medium | 100,000 | — | No | Articles, via your integration token |
+| DEV.to | 100,000 | — | Yes | Articles, via your API key |
+| Hashnode | 100,000 | Up to 10 images | Yes | Articles to your publication |
+| Substack | — | — | No | Delivered through the [browser extension](/sdks/browser-extension) |
+| Tumblr | 4,096 | Up to 30 images or video | Yes | |
+| WordPress | 100,000 | Up to 10 images | No | Through the [FoPost plugin](/sdks/wordpress), or WordPress.com |
+
+## Other
+
+| Network | Post length | Media | Analytics | Notes |
+|:--------|:------------|:------|:----------|:------|
+| Dribbble | 4,000 | One shot image | Follower counts | Shots |
+| Google Business Profile | 1,500 | One image | No | Posts to a business location |
+| Listmonk | 200,000 | — | Campaign stats | Sends a campaign to your list — it goes out immediately |
+
+"Analytics" means FoPost can read per-post or account metrics back from the network; the [analytics guide](/guide/using-fopost/analytics) covers exactly which numbers each one reports. Instagram is one network however you connect it, and post scheduling works everywhere — scheduling is FoPost's, not the network's.
+
+## How a post is delivered
+
+Most networks publish server side through their own API. You connect once, and scheduled posts go out whether or not your browser is open.
+
+A network with no write API cannot work that way, and driving a headless browser at one is against its terms. For those, FoPost stages the post and the [browser extension](/sdks/browser-extension) publishes it from your own logged-in session, in one click. Substack is the network that goes through this today.
+
+An extension delivery is still a delivery: it shows on the calendar, in the history, and in analytics like any other.
+
+## Connecting
+
+Every network is connected in **Accounts → Connect**. Most use that network's own authorisation screen — FoPost never asks for your password there. The rest authenticate the way the network itself prescribes: an app password for Bluesky, a bot token for Telegram, a channel webhook for Discord, an API key for DEV.to and Hashnode, your own instance details for self-hosted networks like Mastodon, Lemmy, and Listmonk. See [Connecting Accounts](/guide/using-fopost/connecting-accounts) for each network's requirements.
+
+## Next
+
+<Cards>
+  <Card title="Connecting Accounts" href="/guide/using-fopost/connecting-accounts" />
+  <Card title="Creating Posts" href="/guide/using-fopost/creating-posts" />
+  <Card title="Browser Extension" href="/sdks/browser-extension" />
+</Cards>

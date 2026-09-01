@@ -46,7 +46,7 @@ await client.Posts.CreateAsync(new CreatePostOptions
 });
 ```
 
-`PublishAsync` returns once delivery is queued, not once it is live — read `Posts.DeliveriesAsync` or subscribe to [webhooks](/api/webhooks) for the result. A key is limited to the scopes granted at creation; the calls above need `posts` and `accounts`.
+`PublishAsync` returns once delivery is queued, not once it is live — read `Posts.DeliveriesAsync` or subscribe to [webhooks](/webhooks) for the result. A key is limited to the scopes granted at creation; the calls above need `posts` and `accounts`.
 
 ## Configuration
 
@@ -177,5 +177,5 @@ A `429` is retried automatically, up to `MaxRetries` attempts, waiting for the i
 <Cards>
   <Card title="API Reference" href="/api/overview" />
   <Card title="Java SDK" href="/sdks/java" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
 </Cards>

@@ -1,0 +1,6 @@
+{
+  "title": "Billing",
+  "description": "Invoices, charges, and the free credit",
+  "icon": "credit-card",
+  "pages": ["index"]
+}

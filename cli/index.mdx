@@ -1,0 +1,122 @@
+---
+title: CLI
+description: Schedule, publish, and inspect FoPost content from your terminal, as a single static binary.
+icon: lightning
+---
+
+`fopost` is the official command-line interface. It is a single static binary with no runtime to install, and every command speaks to the API through the [Go SDK](/sdks/go) — the CLI adds the flags, tables, and exit codes, and nothing else.
+
+<Callout type="warn">
+This is a 0.x release. The command surface is still settling and a minor
+version may change it.
+</Callout>
+
+Source and issues: [github.com/fopost/fopost-cli](https://github.com/fopost/fopost-cli). MIT licensed.
+
+## Install
+
+```bash
+brew install fopost/tap/fopost
+```
+
+```bash
+go install github.com/fopost/fopost-cli@latest
+```
+
+`go install` produces a binary named `fopost-cli`, because Go names it after the module. Rename it once if you want the short name:
+
+```bash
+mv "$(go env GOPATH)/bin/fopost-cli" "$(go env GOPATH)/bin/fopost"
+```
+
+Or take the archive for your platform from the [releases page](https://github.com/fopost/fopost-cli/releases), verify it against `checksums.txt`, and put `fopost` on your `PATH`:
+
+```bash
+tar -xzf fopost_0.1.0_darwin_arm64.tar.gz
+sudo mv fopost /usr/local/bin/
+fopost version
+```
+
+Prebuilt binaries cover macOS, Linux, and Windows on both amd64 and arm64. Building from source needs Go 1.22 or newer.
+
+## Authenticate
+
+Create a key at **Settings → API Keys** in the dashboard, then:
+
+```bash
+fopost auth login
+# API key: (input is hidden)
+
+fopost auth status     # which key is in effect, and where it came from
+fopost auth logout     # remove it
+```
+
+The key is stored at `~/.config/fopost/config.json` with mode `0600`, and `$XDG_CONFIG_HOME` is honoured. It is never printed back — `auth status` shows only a masked prefix, and verbose output never contains it. `auth logout --all` also clears the saved workspace and base URL, and `auth status` exits non-zero when no key resolves, so a script can use it as an "am I signed in?" check.
+
+Three sources, in order of precedence:
+
+| Source | Example |
+|:-------|:--------|
+| `--api-key` flag | `fopost posts list --api-key fp_...` |
+| `FOPOST_API_KEY` | `FOPOST_API_KEY=fp_... fopost posts list` |
+| config file | written by `fopost auth login` |
+
+In CI, set `FOPOST_API_KEY` as a secret and skip `auth login` entirely.
+
+`fopost auth login --workspace ws_123` saves a default workspace, so workspace-scoped commands need no `--workspace` flag. With exactly one reachable workspace, login picks it for you. There is no environment variable for the workspace — it comes from the `--workspace` flag or the saved default only.
+
+## Global flags
+
+Accepted on every command:
+
+| Flag | Default | What it does |
+|:-----|:--------|:-------------|
+| `--api-key` | — | API key for this call, overriding env and config |
+| `--base-url` | — | API base URL, overriding `FOPOST_BASE_URL` |
+| `--workspace` | — | Workspace id to act on, overriding the saved default |
+| `--timeout` | `30s` | Per-request timeout, in Go duration syntax (`90s`, `2m`) |
+| `--json` | off | Print indented JSON instead of a table |
+| `--quiet` | off | Suppress human output; `--json` still prints |
+| `--no-color` | off | Disable colour; `NO_COLOR` and a non-terminal do the same |
+
+`--timeout` is per request, and the SDK retries up to three times underneath, so one command can take longer than the timeout you set.
+
+## Commands
+
+```
+fopost auth          login · status · logout
+fopost workspaces    list · get · create
+fopost accounts      list · get · health · validate · refresh
+fopost posts         list · get · create · publish · cancel · delete
+                     duplicate · preflight · deliveries
+fopost media         list · upload · delete
+fopost labels        list · create · delete
+fopost analytics     overview · top-posts · time-series
+fopost automations   list · get · toggle · trigger · runs
+fopost webhooks      list · create · test · delete
+fopost completion    bash · zsh · fish · powershell
+fopost version
+```
+
+`posts`, `accounts`, `workspaces`, `labels`, `automations`, and `webhooks` also answer to their singular forms, and `workspaces` to `ws`. Run `fopost <command> --help` for the flags on any of them, or read the pages below.
+
+<Cards>
+  <Card title="Posts" href="/cli/posts" description="Create, schedule, publish, and inspect posts." />
+  <Card title="Accounts and Workspaces" href="/cli/accounts" description="Connected accounts, their health, and workspaces." />
+  <Card title="Media and Labels" href="/cli/media" description="Library uploads and campaign labels." />
+  <Card title="Analytics" href="/cli/analytics" description="Performance numbers from the terminal." />
+  <Card title="Automations and Webhooks" href="/cli/automations" description="Trigger automations and manage webhook subscriptions." />
+  <Card title="Scripting" href="/cli/scripting" description="JSON output, exit codes, and shell completion." />
+</Cards>
+
+## Retries and rate limits
+
+Handled by the SDK, not the CLI: three attempts per request, exponential backoff, retrying only `429`, `5xx`, and network failures, and honouring `Retry-After`. When the retries are exhausted the CLI prints the reason and exits `7` or `9`, so a script can back off on its own terms. The [exit codes](/cli/scripting#exit-codes) map each API failure to a distinct code.
+
+## Next
+
+<Cards>
+  <Card title="Go SDK" href="/sdks/go" />
+  <Card title="GitHub Action" href="/sdks/github-action" />
+  <Card title="API Reference" href="/api/overview" />
+</Cards>

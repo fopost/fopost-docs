@@ -36,7 +36,7 @@ const post = await owl.posts.create({
 await owl.posts.publish(post.id);
 ```
 
-`publish` returns as soon as delivery is queued. Read `owl.posts.deliveries(post.id)` or subscribe to [webhooks](/api/webhooks) for the outcome.
+`publish` returns as soon as delivery is queued. Read `owl.posts.deliveries(post.id)` or subscribe to [webhooks](/webhooks) for the outcome.
 
 ## Schedule instead
 
@@ -106,6 +106,6 @@ Failed requests throw with the status and the API's `error` code, so you can bra
 
 <Cards>
   <Card title="API Reference" href="/api/overview" />
-  <Card title="MCP Server" href="/sdks/mcp" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="MCP Server" href="/mcp" />
+  <Card title="Webhooks" href="/webhooks" />
 </Cards>

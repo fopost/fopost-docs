@@ -125,7 +125,7 @@ urlpatterns = [
 ]
 ```
 
-That serves the receiver at `/fopost/webhook/`, reversible as `reverse("fopost:webhook")`. Register that URL as a [webhook](/api/webhooks) in the dashboard, copy the secret it shows you into `FOPOST["WEBHOOK_SECRET"]`, and connect a receiver:
+That serves the receiver at `/fopost/webhook/`, reversible as `reverse("fopost:webhook")`. Register that URL as a [webhook](/webhooks) in the dashboard, copy the secret it shows you into `FOPOST["WEBHOOK_SECRET"]`, and connect a receiver:
 
 ```python
 from django.dispatch import receiver
@@ -206,6 +206,6 @@ except FopostError as exc:
 
 <Cards>
   <Card title="Python SDK" href="/sdks/python" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
   <Card title="FastAPI" href="/sdks/fastapi" />
 </Cards>

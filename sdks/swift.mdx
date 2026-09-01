@@ -91,7 +91,7 @@ let post = try await client.posts.create(
         scheduleAt: Date().addingTimeInterval(3600)))
 ```
 
-`publish` returns when delivery is **queued**, not when the post is live. Poll `client.posts.deliveries(post.id)` or subscribe to [webhooks](/api/webhooks) for the outcome. `publish(_:dryRun: true)` validates the plan without sending anything, and `preflight` reports per-account blockers and advisory content signals.
+`publish` returns when delivery is **queued**, not when the post is live. Poll `client.posts.deliveries(post.id)` or subscribe to [webhooks](/webhooks) for the outcome. `publish(_:dryRun: true)` validates the plan without sending anything, and `preflight` reports per-account blockers and advisory content signals.
 
 ## Resources
 
@@ -186,5 +186,5 @@ Pass any `Encodable` as `body`, and `unwrapData: false` when the endpoint does n
 <Cards>
   <Card title="API Reference" href="/api/overview" />
   <Card title="Kotlin SDK" href="/sdks/kotlin" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
 </Cards>

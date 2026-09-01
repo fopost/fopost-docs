@@ -63,7 +63,7 @@ curl -X POST https://api.fopost.com/v1/posts/$POST_ID/publish \
   -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
-This answers `202 Accepted` and queues delivery. It does not wait for the platforms, so a `202` means accepted, not live. Poll [deliveries](#read-the-result) or subscribe to [webhooks](/api/webhooks) for the outcome.
+This answers `202 Accepted` and queues delivery. It does not wait for the platforms, so a `202` means accepted, not live. Poll [deliveries](#read-the-result) or subscribe to [webhooks](/webhooks) for the outcome.
 
 Two options are worth knowing:
 
@@ -162,5 +162,5 @@ For importing a spreadsheet of posts, see [Scheduling](/api/scheduling#bulk-impo
   <Card title="Scheduling" href="/api/scheduling" />
   <Card title="Accounts" href="/api/accounts" />
   <Card title="Media" href="/api/media" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
 </Cards>

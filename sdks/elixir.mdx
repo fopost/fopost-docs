@@ -125,7 +125,7 @@ FoPost.Posts.create(client,
 )
 ```
 
-To send something out now, create it and call `publish/3`. Nothing reaches a platform without that call or a schedule the user set, and publishing answers when delivery is **queued**, not when the post is live — poll `FoPost.Posts.deliveries/2` or subscribe a [webhook](/api/webhooks) for the outcome.
+To send something out now, create it and call `publish/3`. Nothing reaches a platform without that call or a schedule the user set, and publishing answers when delivery is **queued**, not when the post is live — poll `FoPost.Posts.deliveries/2` or subscribe a [webhook](/webhooks) for the outcome.
 
 `publish/3` takes `:account_ids` to reach a subset of the post's accounts, and `:dry_run` to validate everything without sending anything. `preflight/2` checks a post against every platform it targets, without publishing:
 
@@ -281,6 +281,6 @@ The body comes back exactly as the API sent it, envelope included; pass `unwrap:
 
 <Cards>
   <Card title="API Reference" href="/api/overview" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
   <Card title="Ruby SDK" href="/sdks/ruby" />
 </Cards>

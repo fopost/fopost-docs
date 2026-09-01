@@ -68,7 +68,7 @@ func main() {
 }
 ```
 
-Every method takes a `context.Context` first, and the client is safe for concurrent use. `Publish` returns once delivery is queued, not once it is live — read `Posts.Deliveries` or subscribe to [webhooks](/api/webhooks) for the result.
+Every method takes a `context.Context` first, and the client is safe for concurrent use. `Publish` returns once delivery is queued, not once it is live — read `Posts.Deliveries` or subscribe to [webhooks](/webhooks) for the result.
 
 ## Threads and media
 
@@ -229,5 +229,5 @@ if _, err := client.Posts.Publish(ctx, postID, nil); err != nil {
 <Cards>
   <Card title="API Reference" href="/api/overview" />
   <Card title="Rust SDK" href="/sdks/rust" />
-  <Card title="Webhooks" href="/api/webhooks" />
+  <Card title="Webhooks" href="/webhooks" />
 </Cards>
