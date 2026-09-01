@@ -1,0 +1,14 @@
+{
+  "title": "CLI",
+  "description": "The fopost command line",
+  "icon": "lightning",
+  "pages": [
+    "index",
+    "posts",
+    "accounts",
+    "media",
+    "analytics",
+    "automations",
+    "scripting"
+  ]
+}

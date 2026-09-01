@@ -1,0 +1,91 @@
+---
+title: Scripting
+description: JSON output, exit codes, and shell completion for automation.
+icon: function-python
+---
+
+The CLI is built to sit inside scripts: structured output on stdout, errors on stderr, and a distinct exit code per failure class.
+
+## `--json`
+
+Every command takes `--json` and prints the resource instead of a table, so it composes with `jq`:
+
+```bash
+# Every account whose credentials have gone stale.
+fopost accounts health --json \
+  | jq -r '.accounts[] | select(.healthStatus != "healthy") | .id'
+
+# Re-validate each of them, stopping at the first hard failure.
+fopost accounts health --json \
+  | jq -r '.accounts[] | select(.healthStatus != "healthy") | .id' \
+  | xargs -I{} fopost accounts validate {} --quiet
+
+# The id of the post you just created, for the next step in a pipeline.
+POST_ID=$(fopost posts create --account acc_1 --text "..." --draft --json | jq -r '.post.id')
+fopost posts publish "$POST_ID" --json | jq '.deliveries[] | {accountId, status}'
+```
+
+`--quiet` silences the human-facing output while keeping the exit code, and `--json` still prints under `--quiet` — the machine output is not chatter. Colour is dropped when `NO_COLOR` is set, when `--no-color` is passed, or when output is not a terminal.
+
+Two shape notes worth knowing before writing `jq`:
+
+- `posts list --all` prints a bare array; a paged `posts list` prints the page envelope (`{"data": [...], "meta": {...}}`)
+- `posts create --json` wraps its pieces: `{"post": {...}, "media": [...], "publish": {...}}`, with the optional keys present only when they happened
+
+## Exit codes
+
+| Code | Meaning |
+|:-----|:--------|
+| `0` | success |
+| `1` | an error that has no more specific code |
+| `2` | bad invocation: a missing flag, a contradictory pair, a cancelled prompt — also `auth status` when signed out, a failed `preflight`, and a failed `validate` |
+| `3` | `401`, no key or the key is invalid |
+| `4` | `402`, the account cannot cover this; the message carries the upgrade URL |
+| `5` | `403`, the key lacks the scope or workspace access |
+| `6` | `404`, no such resource |
+| `7` | `429`, rate limited; the message says when to retry |
+| `8` | `400` or `422`, the request was rejected as invalid |
+| `9` | `5xx`, the API failed after the SDK's retries |
+| `10` | the API could not be reached, or `--timeout` expired |
+
+Errors print one line to stderr, never to stdout, so a failed run never contaminates a pipe. Confirmation prompts also live on stderr and read stdin, so a non-interactive `delete` without `--yes` fails fast instead of hanging.
+
+## CI
+
+Set `FOPOST_API_KEY` as a secret and pass `--workspace` explicitly — there is no environment variable for the workspace, and CI has no saved config:
+
+```bash
+FOPOST_API_KEY=$FOPOST_API_KEY fopost posts create \
+  --workspace "$WORKSPACE_ID" \
+  --account "$ACCOUNT_ID" \
+  --text-file release-notes.md \
+  --publish --json --quiet
+```
+
+For GitHub specifically, the [GitHub Action](/sdks/github-action) wraps this pattern.
+
+## Shell completion
+
+```bash
+source <(fopost completion bash)   # ~/.bashrc
+source <(fopost completion zsh)    # ~/.zshrc, with compinit running
+fopost completion fish | source
+fopost completion powershell | Out-String | Invoke-Expression
+```
+
+To install it permanently instead of per shell:
+
+```bash
+fopost completion zsh > "${fpath[1]}/_fopost"
+fopost completion bash > /etc/bash_completion.d/fopost
+```
+
+Homebrew installs completions for you.
+
+## Next
+
+<Cards>
+  <Card title="Posts" href="/cli/posts" />
+  <Card title="GitHub Action" href="/sdks/github-action" />
+  <Card title="API Rate Limits" href="/api/rate-limits" />
+</Cards>

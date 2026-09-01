@@ -1,0 +1,37 @@
+---
+title: Media and Labels
+description: Manage library assets and campaign labels from the terminal.
+icon: image
+---
+
+Two small command groups: `fopost media` for the workspace [media library](/guide/using-fopost/media-library), `fopost labels` for the labels that organise posts into campaigns. Both need a workspace — `--workspace` or the default saved by `auth login`.
+
+## Media
+
+```bash
+fopost media list
+fopost media upload ./a.png ./b.mp4     # several files, one call
+fopost media delete med_4c2a --yes
+```
+
+`upload` sends local files to the library, where the composer, `posts create --media`, and the API all see them. `list` shows id, type, name, size, and created time. `delete` prompts for confirmation unless `-y`/`--yes` is passed.
+
+## Labels
+
+```bash
+fopost labels list
+fopost labels create --name "Q4 Launch" --color "#e11d48"
+fopost labels delete lbl_9a1f --yes
+```
+
+`create` requires `--name`; `--color` defaults to a blue. Deleting a label unlinks it from every post carrying it — the posts stay.
+
+Labels come into their own in analytics, where `top-posts --label` rolls a whole campaign up. See [Labels](/guide/using-fopost/labels) for the concept.
+
+## Next
+
+<Cards>
+  <Card title="Analytics" href="/cli/analytics" />
+  <Card title="Media Library" href="/guide/using-fopost/media-library" />
+  <Card title="Media API" href="/api/media" />
+</Cards>

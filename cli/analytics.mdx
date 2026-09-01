@@ -1,0 +1,46 @@
+---
+title: Analytics
+description: Read cross-account performance numbers without leaving the terminal.
+icon: chart-trending-up
+---
+
+Three read-only commands under `fopost analytics`, each taking the same window flags: `--days` for a rolling window, or `--from`/`--to` (`YYYY-MM-DD`) for an explicit one, plus `--account` to narrow to one account. The workspace comes from `--workspace` or your saved default.
+
+## Overview
+
+```bash
+fopost analytics overview --days 30
+```
+
+Headline totals — accounts, followers, posts, engagement, impressions, reach, likes, comments, shares, engagement rate — plus a per-platform breakdown.
+
+## Top posts
+
+```bash
+fopost analytics top-posts --days 7 --limit 10
+fopost analytics top-posts --label lbl_launch        # one campaign, rolled up
+fopost analytics top-posts --sort recent             # by date instead of performance
+```
+
+Ranked by performance unless `--sort recent`. `--label` narrows to the posts carrying one label, which is how a campaign gets its own leaderboard.
+
+## Time series
+
+```bash
+fopost analytics time-series --from 2026-08-01 --to 2026-08-31
+```
+
+One row per day: posts, engagements, impressions, followers. With `--json` it graphs from a script:
+
+```bash
+fopost analytics time-series --days 14 --json | jq -r '.[] | [.date, .engagements] | @tsv'
+```
+
+What each network actually reports varies — see [Analytics](/guide/using-fopost/analytics) for what the numbers mean, and the [Analytics API](/api/analytics) for the shapes behind these commands.
+
+## Next
+
+<Cards>
+  <Card title="Analytics Guide" href="/guide/using-fopost/analytics" />
+  <Card title="Analytics API" href="/api/analytics" />
+</Cards>
