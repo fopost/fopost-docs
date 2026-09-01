@@ -1,0 +1,6 @@
+{
+  "title": "Platforms",
+  "description": "Every supported network",
+  "icon": "globe",
+  "pages": ["index"]
+}
