@@ -1,0 +1,6 @@
+{
+  "title": "Pricing",
+  "description": "Pay per connected account",
+  "icon": "gauge",
+  "pages": ["index"]
+}

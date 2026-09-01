@@ -4,8 +4,6 @@
   "icon": "book-open",
   "pages": [
     "index",
-    "using-fopost",
-    "---Plans---",
-    "plans"
+    "using-fopost"
   ]
 }
