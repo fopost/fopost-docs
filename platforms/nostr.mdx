@@ -4,22 +4,22 @@ title: Nostr
 description: Notes and long-form articles published to your own relays.
 ---
 
-Nostr is a protocol, not a service: a post is a signed event broadcast to relays. FoPost signs with your key and publishes to your relay list — scheduled posts go out with nobody at the keyboard because the signing happens server side.
+Nostr is a protocol, not a service: a post is a signed event broadcast to relays. FoPost signs with your key and publishes to your relay list, so scheduled posts go out with nobody at the keyboard because the signing happens server side.
 
 ## Connecting
 
-**Accounts → Connect → Nostr**, paste your private key — `nsec` or 64-character hex — and optionally your own relay list. Without one, FoPost publishes to a set of large public relays.
+**Accounts → Connect → Nostr**, paste your private key (`nsec` or 64-character hex) and optionally your own relay list. Without one, FoPost publishes to a set of large public relays.
 
 ## What you can publish
 
 | Limit | Value |
 |:------|:------|
-| Note length | 5,000 characters — a soft cap, since the protocol itself has none |
+| Note length | 5,000 characters, a soft cap, since the protocol itself has none |
 | Media | Referenced by URL inside the note, up to 4 items |
 | Title | Turns the post into a long-form article |
 | Tags | Become hashtags on the note |
 
-A plain post publishes as a standard note; give it a **title** and it publishes as a long-form article instead, with the title, summary, and tags carried as article metadata. Media is not uploaded anywhere — image and video URLs are written into the note, the way Nostr clients expect.
+A plain post publishes as a standard note; give it a **title** and it publishes as a long-form article instead, with the title, summary, and tags carried as article metadata. Media is not uploaded anywhere; image and video URLs are written into the note, the way Nostr clients expect.
 
 Thread chains are supported: blocks written as a thread publish as replies to each other.
 
@@ -27,7 +27,7 @@ A publish succeeds when at least one relay accepts the event; the post links to 
 
 ## Analytics and deletion
 
-Nostr has no central place to read metrics from, so there are no analytics. Deleting sends a deletion request event to your relays — honest Nostr behaviour is that relays *may* honour it, but none is obliged to, and copies elsewhere remain.
+Nostr has no central place to read metrics from, so there are no analytics. Deleting sends a deletion request event to your relays. Honest Nostr behaviour is that relays *may* honour it, but none is obliged to, and copies elsewhere remain.
 
 ## Next
 

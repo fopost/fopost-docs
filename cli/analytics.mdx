@@ -12,7 +12,7 @@ Three read-only commands under `fopost analytics`, each taking the same window f
 fopost analytics overview --days 30
 ```
 
-Headline totals — accounts, followers, posts, engagement, impressions, reach, likes, comments, shares, engagement rate — plus a per-platform breakdown.
+Headline totals (accounts, followers, posts, engagement, impressions, reach, likes, comments, shares, engagement rate), plus a per-platform breakdown.
 
 ## Top posts
 
@@ -36,7 +36,7 @@ One row per day: posts, engagements, impressions, followers. With `--json` it gr
 fopost analytics time-series --days 14 --json | jq -r '.[] | [.date, .engagements] | @tsv'
 ```
 
-What each network actually reports varies — see [Analytics](/guide/using-fopost/analytics) for what the numbers mean, and the [Analytics API](/api/analytics) for the shapes behind these commands.
+What each network actually reports varies. See [Analytics](/guide/using-fopost/analytics) for what the numbers mean, and the [Analytics API](/api/analytics) for the shapes behind these commands.
 
 ## Next
 

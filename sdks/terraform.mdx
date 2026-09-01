@@ -31,7 +31,7 @@ terraform {
 ```
 
 <Callout type="warn">
-The registry listing is not live yet — the first publish is a manual, one-time
+The registry listing is not live yet: the first publish is a manual, one-time
 onboarding step and it is still pending. Until it lands, build the provider from
 source and point Terraform at your build with a `dev_overrides` block in
 `~/.terraformrc`.
@@ -129,7 +129,7 @@ Every resource supports `terraform import` by its identifier.
 
 ## Errors, retries, and drift
 
-Transport is the Go SDK's, unchanged: a 30-second timeout, three attempts, exponential backoff on `429` and `5xx`, and `Retry-After` honoured. The provider translates what is left into a diagnostic that names the failed action, the HTTP status, and the API's own error code — never the API key.
+Transport is the Go SDK's, unchanged: a 30-second timeout, three attempts, exponential backoff on `429` and `5xx`, and `Retry-After` honoured. The provider translates what is left into a diagnostic that names the failed action, the HTTP status, and the API's own error code, never the API key.
 
 Reads treat a `404` as gone upstream: the object is removed from state and planned for re-creation rather than failing the run.
 

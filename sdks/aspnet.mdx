@@ -4,7 +4,7 @@ description: The FoPost .NET client wired into ASP.NET Core, with the options pa
 icon: tech-dotnet
 ---
 
-`FoPost.AspNetCore` is a thin wrapper over the [.NET SDK](/sdks/dotnet). It adds nothing to the API surface — no models, no HTTP, no retries, no error types. What it adds is the wiring an ASP.NET Core app expects: `AddFoPost(…)` with options validated at startup, an `IHttpClientFactory` client underneath, `MapFoPostWebhook(…)` with raw-body signature verification, and a health check that never mentions your key.
+`FoPost.AspNetCore` is a thin wrapper over the [.NET SDK](/sdks/dotnet). It adds nothing to the API surface: no models, no HTTP, no retries, no error types. What it adds is the wiring an ASP.NET Core app expects: `AddFoPost(…)` with options validated at startup, an `IHttpClientFactory` client underneath, `MapFoPostWebhook(…)` with raw-body signature verification, and a health check that never mentions your key.
 
 Needs .NET 8 or .NET 9.
 
@@ -64,7 +64,7 @@ app.Run();
 | `MaxRetries` | `3` | Attempts for a rate limited request, honouring `Retry-After` |
 | `WebhookSecret` | none | Verifies `X-FoPost-Signature`. Required only for `MapFoPostWebhook` |
 
-Never commit the key. Use user-secrets in development and an environment variable in production — `FoPost__ApiKey`, or the SDK's own `FOPOST_API_KEY`, which is consulted when nothing is configured.
+Never commit the key. Use user-secrets in development and an environment variable in production: `FoPost__ApiKey`, or the SDK's own `FOPOST_API_KEY`, which is consulted when nothing is configured.
 
 The options are validated with `ValidateDataAnnotations().ValidateOnStart()`, so a missing key or a malformed base URL fails the host at startup rather than on the first request.
 
@@ -121,13 +121,13 @@ builder.Services
     .AddHttpMessageHandler<MyTracingHandler>();
 ```
 
-Because `FoPostClient` is a singleton it holds its `HttpClient` for the life of the process, which would defeat the factory's handler rotation. So the registration turns rotation off and sets `SocketsHttpHandler.PooledConnectionLifetime` to two minutes instead — connections are recycled and DNS changes are picked up, which is what the rotation was for.
+Because `FoPostClient` is a singleton it holds its `HttpClient` for the life of the process, which would defeat the factory's handler rotation. So the registration turns rotation off and sets `SocketsHttpHandler.PooledConnectionLifetime` to two minutes instead: connections are recycled and DNS changes are picked up, which is what the rotation was for.
 
 ## Receiving webhooks
 
 FoPost signs every delivery with HMAC-SHA256 over the raw request body and sends it as `X-FoPost-Signature: sha256=<hex>`, alongside `X-FoPost-Event` and `X-FoPost-Delivery`.
 
-`MapFoPostWebhook` reads the raw bytes before anything can re-encode them, compares the digest in constant time, and answers `401` when it does not match — no handler runs. The endpoint is anonymous by design: the signature is its authentication.
+`MapFoPostWebhook` reads the raw bytes before anything can re-encode them, compares the digest in constant time, and answers `401` when it does not match, so no handler runs. The endpoint is anonymous by design: the signature is its authentication.
 
 ```csharp
 builder.Services.AddFoPostWebhookHandler<PublishedPostHandler>();
@@ -149,7 +149,7 @@ internal sealed class PublishedPostHandler : IFoPostWebhookHandler
 }
 ```
 
-Handlers are scoped, so they may take a `DbContext` or anything else scoped, and they run in registration order. Throwing surfaces as a `500`, which FoPost retries with backoff — so throw when the work should be retried and swallow when it should not. `DeliveryId` is unique per send and is what to key on for idempotency.
+Handlers are scoped, so they may take a `DbContext` or anything else scoped, and they run in registration order. Throwing surfaces as a `500`, which FoPost retries with backoff, so throw when the work should be retried and swallow when it should not. `DeliveryId` is unique per send and is what to key on for idempotency.
 
 Events: `post.published`, `post.failed`, `post.partially_failed`, `delivery.published`, `delivery.failed`, `delivery.delayed`, `account.health_changed`, all on `FoPostWebhookEvents`.
 
@@ -164,7 +164,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 });
 ```
 
-The check lists the workspaces the credential can see — the cheapest authenticated call the API offers, so it proves reachability and the credential in one request. A `429` reports `Degraded`; anything else reports the registered failure status. Descriptions never include the key, the base URL, or a raw provider message.
+The check lists the workspaces the credential can see: the cheapest authenticated call the API offers, so it proves reachability and the credential in one request. A `429` reports `Degraded`; anything else reports the registered failure status. Descriptions never include the key, the base URL, or a raw provider message.
 
 ## Errors and the rest of the API
 

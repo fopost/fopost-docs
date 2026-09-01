@@ -25,9 +25,9 @@ curl -X POST https://api.fopost.com/v1/webhooks \
   }'
 ```
 
-`workspaceId`, `url`, and at least one event are required — the names are on the [events page](/webhooks/events). Use an HTTPS URL your server exposes publicly; deliveries come from the open internet.
+`workspaceId`, `url`, and at least one event are required; the names are on the [events page](/webhooks/events). Use an HTTPS URL your server exposes publicly; deliveries come from the open internet.
 
-The response carries the webhook's signing `secret`. It is returned **only** on creation and cannot be shown or rotated later — to rotate, create a new webhook and delete the old one. It is what you [verify the signature](/webhooks/verification) with.
+The response carries the webhook's signing `secret`. It is returned **only** on creation and cannot be shown or rotated later. To rotate, create a new webhook and delete the old one. It is what you [verify the signature](/webhooks/verification) with.
 
 ## Manage
 
@@ -35,7 +35,7 @@ The response carries the webhook's signing `secret`. It is returned **only** on 
 |:---------|:-------------|
 | `GET /v1/webhooks` | List your subscriptions, with `lastTriggeredAt` and `failureCount`. Spans every workspace you belong to |
 | `PUT /v1/webhooks/{id}` | Change the URL, the events, or `active`. Setting `active: true` also resets the failure count |
-| `POST /v1/webhooks/{id}/test` | Send a test event — see [test deliveries](/webhooks/retries#test-deliveries) for how it behaves |
+| `POST /v1/webhooks/{id}/test` | Send a test event. See [test deliveries](/webhooks/retries#test-deliveries) for how it behaves |
 | `DELETE /v1/webhooks/{id}` | Delete it |
 
 Workspace viewers can list webhooks but not create, change, or delete them.
@@ -52,7 +52,7 @@ Every event arrives as a `POST` with a three-key JSON body:
 }
 ```
 
-There is no id inside the body — the delivery id travels in the `X-FoPost-Delivery` header, which is also what you deduplicate on. The full per-event `data` shapes are on the [events page](/webhooks/events).
+There is no id inside the body: the delivery id travels in the `X-FoPost-Delivery` header, which is also what you deduplicate on. The full per-event `data` shapes are on the [events page](/webhooks/events).
 
 ## In this section
 

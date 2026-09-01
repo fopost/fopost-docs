@@ -10,20 +10,20 @@ WordPress publishing creates a post on your site, with the body rendered to clea
 
 Two ways in:
 
-- **Self-hosted site** — install the [FoPost plugin](/sdks/wordpress) and connect with the token it issues. The plugin is the supported path for self-hosted sites.
-- **WordPress.com** — **Accounts → Connect → WordPress**, approve on WordPress.com, and pick the site there. The token is scoped to that one site and does not expire.
+- **Self-hosted site**: install the [FoPost plugin](/sdks/wordpress) and connect with the token it issues. The plugin is the supported path for self-hosted sites.
+- **WordPress.com**: **Accounts → Connect → WordPress**, approve on WordPress.com, and pick the site there. The token is scoped to that one site and does not expire.
 
 ## What you can publish
 
 | Limit | Value |
 |:------|:------|
-| Body | 100,000 characters, rendered to HTML — headings, lists, quotes, code, and inline images all carry over |
+| Body | 100,000 characters, rendered to HTML: headings, lists, quotes, code, and inline images all carry over |
 | Title | From the post title, or the start of the body |
 | Images | Up to 10 (JPEG, PNG, GIF, or WebP), 64 MB each |
 | Link | Appended to the post body |
 | Tags and categories | Not supported today |
 
-The first attached image is uploaded to the site's media library and set as the post's **featured image**; images placed in the body render inline. Per post you can publish live (the default) or as a **draft**. On a plugin connection, the site's own policy can downgrade a publish to a draft — the post's status reflects what the site actually did.
+The first attached image is uploaded to the site's media library and set as the post's **featured image**; images placed in the body render inline. Per post you can publish live (the default) or as a **draft**. On a plugin connection, the site's own policy can downgrade a publish to a draft. The post's status reflects what the site actually did.
 
 ## Inbox
 
@@ -31,7 +31,7 @@ Approved comments on the site land in the [inbox](/guide/using-fopost/inbox), an
 
 ## Analytics
 
-None — a stock WordPress site has no metrics API to read.
+None: a stock WordPress site has no metrics API to read.
 
 ## Deleting
 

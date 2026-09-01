@@ -4,7 +4,7 @@ title: Substack
 description: Staged for the browser extension and published from your own logged-in session.
 ---
 
-Substack has no write API, so FoPost does not publish to it server side — there is no supported way for a server to post on your behalf, and driving a headless browser at it is against Substack's terms. Instead, a post targeting Substack is staged, and the [browser extension](/sdks/browser-extension) publishes it from your own logged-in session in one click.
+Substack has no write API, so FoPost does not publish to it server side: there is no supported way for a server to post on your behalf, and driving a headless browser at it is against Substack's terms. Instead, a post targeting Substack is staged, and the [browser extension](/sdks/browser-extension) publishes it from your own logged-in session in one click.
 
 An extension delivery is still a delivery: it shows on the calendar, in the history, and in the post's per-account status like any other.
 
@@ -29,11 +29,11 @@ These bounds are what the composer enforces when staging the post; Substack itse
 
 Schedule as normal. When the post is due it is staged instead of sent, the extension badge tells you, and one click publishes it from your session. The delivery is recorded once you mark it done.
 
-Because a person clicks the final button, a Substack post cannot go out with nobody at the browser — that is the point of the flow, not a limitation FoPost can remove.
+Because a person clicks the final button, a Substack post cannot go out with nobody at the browser. That is the point of the flow, not a limitation FoPost can remove.
 
 ## Analytics and deletion
 
-FoPost cannot read metrics back from Substack or delete a published Substack post — both would need an API that does not exist. Manage published posts from your Substack dashboard.
+FoPost cannot read metrics back from Substack or delete a published Substack post: both would need an API that does not exist. Manage published posts from your Substack dashboard.
 
 ## Next
 

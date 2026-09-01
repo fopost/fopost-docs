@@ -15,7 +15,7 @@ fopost automations toggle auto_42       # flip active on or off
 fopost automations runs auto_42         # run history, with --page / --per-page
 ```
 
-`toggle` is the only switch — there is no separate enable and disable pair.
+`toggle` is the only switch: there is no separate enable and disable pair.
 
 ### Trigger
 
@@ -39,9 +39,9 @@ fopost webhooks test wh_7f3e
 fopost webhooks delete wh_7f3e --yes
 ```
 
-`create` requires a workspace, `--url`, and at least one `--event` — the event names are listed in [Webhook Events](/webhooks/events). The signing secret is printed **once**, at creation. Store it then; it cannot be shown again.
+`create` requires a workspace, `--url`, and at least one `--event`. The event names are listed in [Webhook Events](/webhooks/events). The signing secret is printed **once**, at creation. Store it then; it cannot be shown again.
 
-`list` shows each subscription's URL, events, active state, and failure count. `test` sends a sample delivery — see [how test deliveries behave](/webhooks/retries#test-deliveries) before relying on it.
+`list` shows each subscription's URL, events, active state, and failure count. `test` sends a sample delivery. See [how test deliveries behave](/webhooks/retries#test-deliveries) before relying on it.
 
 ## Next
 

@@ -14,7 +14,7 @@ One event per post, once every account has a final status.
 |:------|:-----------|
 | `post.published` | Every account on the post published successfully |
 | `post.partially_failed` | Some accounts published, some did not |
-| `post.failed` | No account published — failed and cancelled deliveries both count |
+| `post.failed` | No account published (failed and cancelled deliveries both count) |
 
 `data` carries the post and its final status:
 
@@ -29,7 +29,7 @@ One event per account on the post.
 | Event | Fires when |
 |:------|:-----------|
 | `delivery.published` | One account published. Fires once per account |
-| `delivery.failed` | One account will not publish — after its retries, or immediately when the failure is final, such as expired credentials or an error the platform will never accept |
+| `delivery.failed` | One account will not publish, after its retries, or immediately when the failure is final, such as expired credentials or an error the platform will never accept |
 | `delivery.delayed` | One delivery was held by a platform rate limit and will retry at `retryAt` |
 
 `delivery.published` data:
@@ -40,13 +40,13 @@ One event per account on the post.
 
 `externalUrl` is the live post when the platform reports one, and `null` when it does not.
 
-`delivery.failed` swaps `externalUrl` for `errorCode` and `errorMessage`; `delivery.delayed` carries `reason: "platform_rate_limit"`, a `message`, and `retryAt`. Ordinary retry backoff between attempts does not emit `delivery.delayed` — only a platform rate limit does.
+`delivery.failed` swaps `externalUrl` for `errorCode` and `errorMessage`; `delivery.delayed` carries `reason: "platform_rate_limit"`, a `message`, and `retryAt`. Ordinary retry backoff between attempts does not emit `delivery.delayed`; only a platform rate limit does.
 
 ## Account health
 
 | Event | Fires when |
 |:------|:-----------|
-| `account.health_changed` | A connected account's credential health changed — degraded, expired, revoked, or recovered |
+| `account.health_changed` | A connected account's credential health changed: degraded, expired, revoked, or recovered |
 
 ```json
 { "accountId": "…", "platform": "instagram", "username": "yourbrand", "previousStatus": "healthy", "newStatus": "expired" }
@@ -62,7 +62,7 @@ Every delivery is the same three-key body:
 { "event": "<name>", "data": { … }, "timestamp": "<ISO 8601>" }
 ```
 
-`timestamp` is when the event was queued. The delivery id lives in the `X-FoPost-Delivery` header — deduplicate on that, since a retried delivery repeats the identical body. Ids in `data` are the same public ids the [API](/api/overview) uses, so a webhook payload can be followed with a `GET`.
+`timestamp` is when the event was queued. The delivery id lives in the `X-FoPost-Delivery` header. Deduplicate on that, since a retried delivery repeats the identical body. Ids in `data` are the same public ids the [API](/api/overview) uses, so a webhook payload can be followed with a `GET`.
 
 ## Next
 

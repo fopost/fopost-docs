@@ -42,13 +42,13 @@ FOPOST = {
 |:----|:--------|:-------------|:-------------|
 | `API_KEY` | none, **required** | `FOPOST_API_KEY` | Your API key |
 | `BASE_URL` | the hosted API | `FOPOST_BASE_URL` | API root |
-| `TIMEOUT` | `30.0` | — | Seconds to wait for one request |
-| `MAX_RETRIES` | `3` | — | Attempts for a rate limited request |
+| `TIMEOUT` | `30.0` | (none) | Seconds to wait for one request |
+| `MAX_RETRIES` | `3` | (none) | Attempts for a rate limited request |
 | `DEFAULT_WORKSPACE_ID` | `None` | `FOPOST_WORKSPACE_ID` | Workspace the management commands use when `--workspace` is left out |
 | `WEBHOOK_SECRET` | `None` | `FOPOST_WEBHOOK_SECRET` | Secret the webhook receiver verifies signatures against |
-| `HTTP_CLIENT` | `None` | — | Advanced: an `httpx.Client` to send through, for a proxy or a test transport |
+| `HTTP_CLIENT` | `None` | (none) | Advanced: an `httpx.Client` to send through, for a proxy or a test transport |
 
-The whole dict is optional as long as `FOPOST_API_KEY` is in the environment. Django refuses to start without a key — an `ImproperlyConfigured` at boot beats a `401` in a customer's request — and `manage.py check` warns about the softer misconfigurations: a webhook URL wired up with no secret, a plaintext base URL, an API key hardcoded into settings.
+The whole dict is optional as long as `FOPOST_API_KEY` is in the environment. Django refuses to start without a key (an `ImproperlyConfigured` at boot beats a `401` in a customer's request), and `manage.py check` warns about the softer misconfigurations: a webhook URL wired up with no secret, a plaintext base URL, an API key hardcoded into settings.
 
 ## Quick start
 
@@ -79,7 +79,7 @@ from fopost_django import get_client
 get_client().posts.list(workspace_id=workspace_id, status="scheduled")
 ```
 
-The client is built once per process, on first use, behind a lock, and rebuilt automatically if `settings.FOPOST` changes — which is what `override_settings` does in your tests.
+The client is built once per process, on first use, behind a lock, and rebuilt automatically if `settings.FOPOST` changes, which is what `override_settings` does in your tests.
 
 ## Management commands
 
@@ -155,7 +155,7 @@ Connect them from your app config's `ready()`, the usual way.
 | `account_health_changed` | `account.health_changed` |
 | `webhook_received` | every verified delivery, whatever the event |
 
-Every receiver gets the same keyword arguments: `event`, `data`, `payload` (the whole envelope, with its `timestamp`), `request`, and `delivery_id` — the `X-FoPost-Delivery` header, which stays the same across retries and so makes a good idempotency key.
+Every receiver gets the same keyword arguments: `event`, `data`, `payload` (the whole envelope, with its `timestamp`), `request`, and `delivery_id`, the `X-FoPost-Delivery` header, which stays the same across retries and so makes a good idempotency key.
 
 FoPost signs the raw request body with HMAC-SHA256, keyed on the webhook secret, and sends the hex digest as `X-FoPost-Signature: sha256=<digest>`. The view recomputes it over `request.body` and compares with `hmac.compare_digest`. A missing, malformed, or wrong signature is a `403` before any signal fires; a body that is not a JSON object is a `400`. The view is `csrf_exempt` and accepts `POST` only.
 

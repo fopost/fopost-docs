@@ -54,7 +54,7 @@ The key travels as the `X-API-Key` header on every request. The credential's **T
 Worth knowing:
 
 - **Workspace, account, and label pickers are live dropdowns.** The account and label lists reload when you change the selected workspace.
-- **Publishing is two steps.** `Create` makes a draft or scheduled post; `Publish` queues it for delivery. Publish answers when delivery is queued, not when the post is live — use the trigger or `Get Deliveries` to learn the outcome.
+- **Publishing is two steps.** `Create` makes a draft or scheduled post; `Publish` queues it for delivery. Publish answers when delivery is queued, not when the post is live. Use the trigger or `Get Deliveries` to learn the outcome.
 - **Preflight** checks a post against every target platform's rules without sending anything, and **Publish → Dry Run** validates delivery the same way.
 - **Media Upload** reads an incoming binary field and stores the file in the workspace media library, returning a URL you can attach to a post.
 - **Return All** pages through the API for you; leave it off and set a **Limit** instead.
@@ -64,11 +64,11 @@ Worth knowing:
 
 The **FoPost Trigger** node registers a [webhook](/webhooks) when the workflow is activated and removes it when the workflow is deactivated. Pick a workspace and the events you care about:
 
-- `post.published` — a post went live on every target account
-- `post.failed` — every delivery of a post failed
-- `post.partially_failed` — some deliveries of a post failed
-- `delivery.published`, `delivery.failed`, `delivery.delayed` — a single account delivery
-- `account.health_changed` — a connected account changed connection health, including disconnects
+- `post.published`: a post went live on every target account
+- `post.failed`: every delivery of a post failed
+- `post.partially_failed`: some deliveries of a post failed
+- `delivery.published`, `delivery.failed`, `delivery.delayed`: a single account delivery
+- `account.health_changed`: a connected account changed connection health, including disconnects
 
 Every incoming request is verified before the workflow runs: FoPost signs the raw request body with HMAC-SHA256 using the secret it issues at webhook creation and sends it as `X-FoPost-Signature: sha256=<hex>`. A request whose signature does not match is answered with `401` and starts nothing.
 
@@ -76,8 +76,8 @@ Every incoming request is verified before the workflow runs: FoPost signs the ra
 
 Importable workflow JSON lives in [`examples/`](https://github.com/fopost/fopost-n8n/tree/main/examples):
 
-- `create-and-publish-post.json` — create a draft, then publish it
-- `react-to-published-posts.json` — start a workflow when a post goes live
+- `create-and-publish-post.json`: create a draft, then publish it
+- `react-to-published-posts.json`: start a workflow when a post goes live
 
 ## Next
 

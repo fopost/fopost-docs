@@ -4,7 +4,7 @@ description: Every tool the FoPost MCP server exposes, with parameters and cavea
 icon: list-unordered
 ---
 
-Fourteen tools, in three groups. Ids are UUIDs throughout, and every tool returns the API's JSON response as text. The server exposes tools only — no MCP resources or prompts.
+Fourteen tools, in three groups. Ids are UUIDs throughout, and every tool returns the API's JSON response as text. The server exposes tools only: no MCP resources or prompts.
 
 ## Posts
 
@@ -27,7 +27,7 @@ Fetch one post by `id`, with content, settings, and delivery records.
 
 ### `schedule_post`
 
-Create a post — as a draft, scheduled, or published immediately.
+Create a post as a draft, scheduled, or published immediately.
 
 | Parameter | Required | Notes |
 |:----------|:---------|:------|
@@ -39,7 +39,7 @@ Create a post — as a draft, scheduled, or published immediately.
 | `media_urls` | No | Already-uploaded media URLs; attached as images |
 | `labels` | No | Label ids |
 
-With `publish_now`, the server creates the post and then calls the publish endpoint, returning the publish response. Media passed by URL is attached as image media — video attachments need the [API](/api/media) or the dashboard.
+With `publish_now`, the server creates the post and then calls the publish endpoint, returning the publish response. Media passed by URL is attached as image media. Video attachments need the [API](/api/media) or the dashboard.
 
 ### `edit_post`
 
@@ -47,7 +47,7 @@ Update a post's `content`, `schedule_at`, or `labels`; only the fields you pass 
 
 ### `cancel_post` / `delete_post`
 
-`cancel_post` stops a scheduled post from publishing; the post stays. `delete_post` removes it permanently — it cannot be undone, so it is worth an approval step in your MCP client.
+`cancel_post` stops a scheduled post from publishing; the post stays. `delete_post` removes it permanently: it cannot be undone, so it is worth an approval step in your MCP client.
 
 ### `list_post_deliveries`
 
@@ -63,11 +63,11 @@ Connected accounts in a workspace: platform, username, primary flag, connection 
 
 ### `get_account_health`
 
-Token freshness and rate-limit headroom for one `account_id`. The first tool to reach for when posts are failing — it tells you whether the connection has expired.
+Token freshness and rate-limit headroom for one `account_id`. The first tool to reach for when posts are failing: it tells you whether the connection has expired.
 
 ### `list_workspaces`
 
-Every workspace the key can reach. No parameters — usually the first call an assistant makes.
+Every workspace the key can reach. No parameters. Usually the first call an assistant makes.
 
 ## AI
 
@@ -79,7 +79,7 @@ Write or improve a caption. All parameters optional: `current_caption` to improv
 
 ### `get_ai_credits`
 
-The current credit balance, usage this period, and reset date. Free — reading the balance costs nothing.
+The current credit balance, usage this period, and reset date. Free: reading the balance costs nothing.
 
 <Callout type="warn">
 `rewrite_for_platforms` and `repurpose_url` are also registered, but they reach
@@ -89,7 +89,7 @@ key. Everything else on this page works.
 
 ## Errors
 
-A failed call comes back as an error message, not an exception: a `403` names the missing scope, a `402` means the AI credit balance ran out, and a `429` means the key hit its rate limit — the server does not retry, so the assistant sees it immediately.
+A failed call comes back as an error message, not an exception: a `403` names the missing scope, a `402` means the AI credit balance ran out, and a `429` means the key hit its rate limit. The server does not retry, so the assistant sees it immediately.
 
 ## Next
 

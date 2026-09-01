@@ -46,7 +46,7 @@ await client.Posts.CreateAsync(new CreatePostOptions
 });
 ```
 
-`PublishAsync` returns once delivery is queued, not once it is live — read `Posts.DeliveriesAsync` or subscribe to [webhooks](/webhooks) for the result. A key is limited to the scopes granted at creation; the calls above need `posts` and `accounts`.
+`PublishAsync` returns once delivery is queued, not once it is live. Read `Posts.DeliveriesAsync` or subscribe to [webhooks](/webhooks) for the result. A key is limited to the scopes granted at creation; the calls above need `posts` and `accounts`.
 
 ## Configuration
 
@@ -61,7 +61,7 @@ using var client = new FoPostClient(new FoPostClientOptions
 });
 ```
 
-`FoPostClient` is thread-safe and meant to be long-lived — register it as a singleton rather than constructing one per request. With `IHttpClientFactory`:
+`FoPostClient` is thread-safe and meant to be long-lived, so register it as a singleton rather than constructing one per request. With `IHttpClientFactory`:
 
 ```csharp
 services.AddHttpClient("fopost");
@@ -95,7 +95,7 @@ await client.Posts.UpdateAsync(post.Id, new UpdatePostOptions
 {
     Title = "New title",                    // sent
     Summary = Optional<string?>.Of(null),   // sent as null, clearing it
-    // ScheduleAt is untouched — not sent at all
+    // ScheduleAt is untouched, not sent at all
 });
 ```
 
@@ -128,7 +128,7 @@ composer for those until a later release.
 | `Labels` | `ListAsync` |
 | `Ai` | `CreditsAsync`, `GenerateCaptionAsync`, `RewriteAsync`, `RepurposeUrlAsync` |
 
-The API has more endpoints than this client wraps — analytics, webhooks, automations, media, and communities among them. `RequestAsync` reaches any of them with the same auth, retries, and error handling:
+The API has more endpoints than this client wraps: analytics, webhooks, automations, media, and communities among them. `RequestAsync` reaches any of them with the same auth, retries, and error handling:
 
 ```csharp
 var overview = await client.RequestAsync(

@@ -4,7 +4,7 @@ description: The FoPost TypeScript client wired into Next.js, with a server-only
 icon: tech-typescript
 ---
 
-`@fopost/next` is a thin wrapper over the [TypeScript SDK](/sdks/typescript). Every request, retry, model, and error class lives there; this package only wires FoPost into Next.js idioms — a server-only client, a webhook Route Handler, Server Action helpers, and cache tags.
+`@fopost/next` is a thin wrapper over the [TypeScript SDK](/sdks/typescript). Every request, retry, model, and error class lives there; this package only wires FoPost into Next.js idioms: a server-only client, a webhook Route Handler, Server Action helpers, and cache tags.
 
 Needs Node 20 or newer, Next 14 or 15, and React 18.2 or newer. Ships ESM and CommonJS builds with TypeScript types.
 
@@ -53,7 +53,7 @@ export default async function PostsPage() {
     <ul>
       {posts.map((post) => (
         <li key={post.id}>
-          {post.title ?? post.id} — {post.status}
+          {post.title ?? post.id}: {post.status}
         </li>
       ))}
     </ul>
