@@ -1,0 +1,68 @@
+---
+title: Security
+description: How FoPost handles access, isolation, and your data.
+icon: key
+---
+
+What actually protects your account and your audience's data, in the order you will meet it: signing in, API keys, workspace isolation, and deletion.
+
+## Signing in
+
+You sign in at [fopost.com/dashboard](https://fopost.com/dashboard) with an email address and password, or with Google or GitHub. Passwords are stored hashed — nobody, including us, can read one back. A dashboard session lasts up to 90 days before you sign in again, and signing out ends it immediately.
+
+## API keys
+
+Programmatic access goes through API keys, managed at **Settings → API Keys** — and only there: managing keys requires a signed-in dashboard session, so a leaked key cannot be used to mint more keys.
+
+- **Shown once.** The full key appears only at creation (or regeneration). It is stored hashed and verified server-side on every request, so it cannot be displayed again — the list shows a short prefix for identification
+- **Scoped.** A key reaches only the endpoints covered by the scopes you granted it. The full scope list and what each covers is in [Authentication](/api/authentication)
+- **Optionally workspace-bound.** A key created against one workspace cannot touch any other, whatever its scopes
+- **Optionally expiring.** Set an expiry at creation and the key answers `401` past it
+- **Revocable immediately.** Deleting or deactivating a key takes effect on the next request
+
+The `ai` scope is never bundled into another scope, because it spends credits; grant it deliberately.
+
+## Workspace isolation
+
+Everything in FoPost lives in a workspace, and every request — dashboard, API key, SDK, MCP, agent — is checked against the workspace membership of whoever is asking. There is no privileged read path around that check. A workspace you are not a member of does not exist as far as the API is concerned: it answers `404`, not `403`, so outsiders cannot even confirm one is there.
+
+Within a workspace, members hold a role — **owner**, **admin**, or **member** — and destructive operations such as deleting the workspace are owner-only. See [Team Collaboration](/guide/using-fopost/team-collaboration) for what each role can do.
+
+### The connected-account boundary
+
+Some of what FoPost holds is not yours alone — the comments, mentions, messages, and follower information read through your connected accounts contain personal data about people who never signed up for anything. That data is confined to the workspace whose accounts produced it: post text, author identities, messages, follower lists, and raw platform records never cross into another workspace, in any form. Only statistics aggregated across many unrelated sources may inform anything outside a workspace, with thresholds that make them impossible to trace back to any one account.
+
+## Encryption
+
+Data is protected with industry-standard encryption in transit and at rest.
+
+## Deleting data
+
+Deletion follows the same boundary:
+
+- **Disconnect an account** and the inbox and monitoring data read through its credentials is purged
+- **Delete a workspace** (owner-only) and its data, including everything read through its connected accounts, is purged
+- **Close your account** by following [fopost.com/data-deletion](https://fopost.com/data-deletion): the request is confirmed against your account email, every connected social token is revoked, and personal data is deleted within 30 days
+
+## Compliance
+
+The legal detail lives on the marketing site, kept current there rather than mirrored here:
+
+- [Privacy Policy](https://fopost.com/privacy-policy)
+- [GDPR Compliance](https://fopost.com/gdpr)
+- [Data Processing Agreement](https://fopost.com/dpa)
+- [Data Deletion Instructions](https://fopost.com/data-deletion)
+
+FoPost is operated by Porter Bridge, LLC, the data controller named in those documents.
+
+## Reporting a concern
+
+If you believe you have found a security issue, report it through [fopost.com/contact](https://fopost.com/contact) — it reaches the people who can act on it directly.
+
+## Next
+
+<Cards>
+  <Card title="Authentication" href="/api/authentication" />
+  <Card title="Workspaces" href="/guide/using-fopost/workspaces" />
+  <Card title="Team Collaboration" href="/guide/using-fopost/team-collaboration" />
+</Cards>
