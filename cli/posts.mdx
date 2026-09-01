@@ -29,7 +29,7 @@ fopost posts create \
 | `--label` | Label id to attach. Repeatable |
 | `--title` | A title, for platforms that use one |
 
-A workspace is required: `--workspace` or the default saved by `auth login`. Files passed with `--media` are uploaded to the workspace's [media library](/guide/using-fopost/media-library) first, then attached.
+A workspace is required: `--workspace` or the default saved by `auth login`. Files passed with `--media` are uploaded to the workspace's [media library](/guide/media-library) first, then attached.
 
 `--schedule-at` reads RFC 3339 (`2026-09-01T09:00:00Z`) or plain layouts like `"2026-09-01 09:00"` and `"2026-09-01"`, interpreted in your local timezone unless an offset is present. If you pass both `--draft` and `--schedule-at`, the schedule wins.
 

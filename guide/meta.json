@@ -4,6 +4,30 @@
   "icon": "book-open",
   "pages": [
     "index",
-    "using-fopost"
+    "---Start here---",
+    "getting-started",
+    "dashboard",
+    "connecting-accounts",
+    "creating-posts",
+    "---Publishing---",
+    "scheduling",
+    "calendar",
+    "bulk-scheduling",
+    "recycling",
+    "automations",
+    "---AI---",
+    "agent",
+    "ai-content",
+    "brand-voices",
+    "---Library and insights---",
+    "media-library",
+    "sources",
+    "analytics",
+    "inbox",
+    "---Teams and agencies---",
+    "workspaces",
+    "team-collaboration",
+    "labels",
+    "link-in-bio"
   ]
 }

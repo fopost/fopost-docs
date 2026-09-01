@@ -26,7 +26,7 @@ The `ai` scope is never bundled into another scope, because it spends credits; g
 
 Everything in FoPost lives in a workspace, and every request (dashboard, API key, SDK, MCP, agent) is checked against the workspace membership of whoever is asking. There is no privileged read path around that check. A workspace you are not a member of does not exist as far as the API is concerned: it answers `404`, not `403`, so outsiders cannot even confirm one is there.
 
-Within a workspace, members hold a role (**owner**, **admin**, or **member**), and destructive operations such as deleting the workspace are owner-only. See [Team Collaboration](/guide/using-fopost/team-collaboration) for what each role can do.
+Within a workspace, members hold a role (**owner**, **admin**, or **member**), and destructive operations such as deleting the workspace are owner-only. See [Team Collaboration](/guide/team-collaboration) for what each role can do.
 
 ### The connected-account boundary
 
@@ -63,6 +63,6 @@ If you believe you have found a security issue, report it through [fopost.com/co
 
 <Cards>
   <Card title="Authentication" href="/api/authentication" />
-  <Card title="Workspaces" href="/guide/using-fopost/workspaces" />
-  <Card title="Team Collaboration" href="/guide/using-fopost/team-collaboration" />
+  <Card title="Workspaces" href="/guide/workspaces" />
+  <Card title="Team Collaboration" href="/guide/team-collaboration" />
 </Cards>
