@@ -29,7 +29,7 @@ curl -X POST https://api.fopost.com/v1/media/upload \
 
 The declared type is verified against the actual file contents, so renaming an executable to `.png` does not get it through.
 
-Pass `workspaceId` to also save the files to that workspace's media library, where they are reusable and count against the plan's storage allowance. Leave it out for a one-off attachment.
+Pass `workspaceId` to also save the files to that workspace's media library, where they are reusable and count against the account's storage allowance. Leave it out for a one-off attachment.
 
 ## List the library
 
@@ -75,7 +75,7 @@ Each network sets its own limits on count, dimensions, aspect ratio, and duratio
 
 ## Storage
 
-The library counts against the storage allowance on your plan. A stored URL is an identity, not public access: the bucket is private, and the dashboard renders media through a per-request check rather than a link anyone can pass around.
+The library counts against your account's free storage allowance; past it, storage is metered per GB per month with a card on file. A stored URL is an identity, not public access: the bucket is private, and the dashboard renders media through a per-request check rather than a link anyone can pass around.
 
 ## Next
 
