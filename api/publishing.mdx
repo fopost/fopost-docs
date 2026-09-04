@@ -4,7 +4,7 @@ description: Create a post, target accounts, publish it, and read the per-accoun
 icon: paper-airplane
 ---
 
-Publishing in FoPost is two steps: create a post, then publish it. They are separate because a post is a durable object with per-account deliveries, not a fire-and-forget request. Everything on this page needs the `posts` scope.
+Publishing in FoPost is two steps: create a post, then publish it. They are separate because a post is a durable object with per-account deliveries, not a fire-and-forget request. Creating and reading posts needs the `posts` scope. Publishing, retrying and cancelling also need `publish`, so a key can manage drafts without being able to send anything to a network.
 
 ## The model
 
