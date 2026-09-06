@@ -4,7 +4,7 @@ description: Hear about publishing outcomes and account health without polling.
 icon: webhook
 ---
 
-Delivery is asynchronous, so a `202` from the publish endpoint tells you the post was accepted, not that it is live. Webhooks are how you find out what actually happened without polling: FoPost `POST`s a signed JSON event to your endpoint when a post publishes, a delivery fails, or a connected account's credentials degrade.
+Delivery is asynchronous, so a `202` from the publish endpoint tells you the post was accepted, not that it is live. Webhooks are how you find out what actually happened without polling: FoPost `POST`s a signed JSON event to your endpoint when a post is scheduled or publishes, a delivery fails, an account connects or its credentials degrade, something new lands in the inbox, or an automation runs.
 
 These endpoints need the `webhooks` scope, and work from the [API](/api/overview), the [SDKs](/sdks/overview), or the [CLI](/cli/automations#webhooks).
 
@@ -20,22 +20,32 @@ curl -X POST https://api.fopost.com/v1/webhooks \
   -H "Content-Type: application/json" \
   -d '{
     "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "name": "Production",
     "url": "https://yourbrand.com/hooks/fopost",
-    "events": ["post.published", "post.partially_failed", "delivery.failed"]
+    "events": ["post.published", "post.partially_failed", "delivery.failed"],
+    "headers": { "Authorization": "Bearer your-own-token" }
   }'
 ```
 
 `workspaceId`, `url`, and at least one event are required; the names are on the [events page](/webhooks/events). Use an HTTPS URL your server exposes publicly; deliveries come from the open internet.
 
-The response carries the webhook's signing `secret`. It is returned **only** on creation and cannot be shown or rotated later. To rotate, create a new webhook and delete the old one. It is what you [verify the signature](/webhooks/verification) with.
+Optional fields:
+
+| Field | What it does |
+|:------|:-------------|
+| `name` | A label for the endpoint, up to 120 characters. Shown in the dashboard, never sent |
+| `secret` | Your own signing secret, 16 to 255 characters. Omit it and one is generated |
+| `headers` | Up to 10 custom headers sent with every delivery, such as an `Authorization` header your endpoint checks. Names use letters, digits and hyphens. The signing headers, `Content-Type` and `Host` cannot be set here. Values are write-only: responses carry `headerNames`, never the values |
+
+The response carries the webhook's signing `secret`. It is returned **only** on creation and on the update that rotates it, and is never shown by a `GET`. It is what you [verify the signature](/webhooks/verification) with.
 
 ## Manage
 
 | Endpoint | What it does |
 |:---------|:-------------|
 | `GET /v1/webhooks` | List your subscriptions, with `lastTriggeredAt` and `failureCount`. Spans every workspace you belong to |
-| `PUT /v1/webhooks/{id}` | Change the URL, the events, or `active`. Setting `active: true` also resets the failure count |
-| `POST /v1/webhooks/{id}/test` | Send a test event. See [test deliveries](/webhooks/retries#test-deliveries) for how it behaves |
+| `PUT /v1/webhooks/{id}` | Change the name, URL, events, headers, or `active`. `headers` replaces the set; give an existing header a `null` value to keep what is stored. Pass `secret` to rotate it: the new value comes back once in that response. Setting `active: true` also resets the failure count |
+| `POST /v1/webhooks/{id}/test` | Send a test event to this endpoint. See [test deliveries](/webhooks/retries#test-deliveries) for how it behaves |
 | `DELETE /v1/webhooks/{id}` | Delete it |
 
 Workspace viewers can list webhooks but not create, change, or delete them.

@@ -35,10 +35,10 @@ POST /v1/webhooks/{id}/test
 
 Two behaviours to know before relying on it:
 
-- The test is dispatched as a `post.published` event to the workspace's active webhooks subscribed to that event, so a webhook not subscribed to `post.published` receives nothing, and the endpoint still answers with success
+- The test is dispatched as a `post.published` event to this webhook only, whatever it subscribes to. A paused webhook receives nothing, and the endpoint still answers with success
 - The delivery arrives with `X-FoPost-Event: post.published` and `data.test: true`, which is how your handler tells it apart from a real publish
 
-Subscribe the webhook to `post.published`, send the test, and watch your logs. It remains the cheapest way to find out your handler is behind a firewall.
+Send the test and watch your logs. It remains the cheapest way to find out your handler is behind a firewall.
 
 ## Next
 

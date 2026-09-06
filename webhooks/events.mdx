@@ -4,23 +4,25 @@ description: Every webhook event FoPost can send, when it fires, and its payload
 icon: lightning
 ---
 
-Seven events, in three families. Subscribe to `delivery.*` when you want per-account granularity, `post.*` when you only care about the overall outcome. Subscribing to both means two notifications for the same publish, which is fine as long as your handler expects it.
+Seventeen events, in five families. Subscribe to `delivery.*` when you want per-account granularity, `post.*` when you only care about the overall outcome. Subscribing to both means two notifications for the same publish, which is fine as long as your handler expects it.
 
-## Post outcomes
-
-One event per post, once every account has a final status.
+## Posts
 
 | Event | Fires when |
 |:------|:-----------|
+| `post.scheduled` | A post was put on the calendar, by hand, by an approval, by a bulk import or by an automation. Rescheduling fires it again |
 | `post.published` | Every account on the post published successfully |
 | `post.partially_failed` | Some accounts published, some did not |
 | `post.failed` | No account published (failed and cancelled deliveries both count) |
+| `post.deleted` | A post was deleted. Any delivery still pending was cancelled with it |
 
-`data` carries the post and its final status:
+The three outcome events fire once per post, when every account has a final status. `data` carries the post and its status:
 
 ```json
 { "postId": "7d2b8c11-…", "status": "published" }
 ```
+
+`post.scheduled` adds `scheduleAt`; `post.deleted` carries only `postId`.
 
 ## Delivery outcomes
 
@@ -42,17 +44,57 @@ One event per account on the post.
 
 `delivery.failed` swaps `externalUrl` for `errorCode` and `errorMessage`; `delivery.delayed` carries `reason: "platform_rate_limit"`, a `message`, and `retryAt`. Ordinary retry backoff between attempts does not emit `delivery.delayed`; only a platform rate limit does.
 
-## Account health
+## Accounts
 
 | Event | Fires when |
 |:------|:-----------|
+| `account.connected` | A social account was connected to the workspace |
+| `account.disconnected` | A social account was disconnected |
 | `account.health_changed` | A connected account's credential health changed: degraded, expired, revoked, or recovered |
+
+`account.connected` and `account.disconnected` carry the account:
+
+```json
+{ "accountId": "…", "platform": "instagram", "username": "yourbrand" }
+```
+
+`account.health_changed` adds the transition:
 
 ```json
 { "accountId": "…", "platform": "instagram", "username": "yourbrand", "previousStatus": "healthy", "newStatus": "expired" }
 ```
 
 This is the one worth wiring even if you skip the rest. It is how you learn a token died before a scheduled post silently fails. It fires on recovery too, so you can close the alert it opened. When the change comes from a failed token refresh rather than a health check, the payload carries a `reason` instead of a `username`.
+
+## Inbox
+
+One event per new inbound item, as the inbox poll picks it up. Your own replies never fire one.
+
+| Event | Fires when |
+|:------|:-----------|
+| `inbox.comment_received` | Someone commented on one of your posts |
+| `inbox.mention_received` | Someone mentioned one of your accounts |
+| `inbox.message_received` | A direct message arrived |
+
+```json
+{ "itemId": "…", "type": "comment", "platform": "instagram", "accountId": "…", "receivedAt": "2026-09-01T09:00:12.000Z" }
+```
+
+The payload is ids only. Fetch the item from the [inbox](/guide/inbox) for its text and author, so nothing a customer wrote sits in your webhook logs.
+
+## Automations
+
+| Event | Fires when |
+|:------|:-----------|
+| `automation.triggered` | A run started |
+| `automation.completed` | A run finished every step |
+| `automation.failed` | A run stopped on an error |
+
+```json
+{ "automationId": "…", "runId": 4821, "totalSteps": 3 }
+```
+
+`automation.triggered` carries `automationId` and `runId`; `automation.completed` adds `totalSteps`; `automation.failed` adds `error`.
 
 ## The envelope
 
