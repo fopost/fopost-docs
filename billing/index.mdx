@@ -1,14 +1,14 @@
 ---
 title: Billing
-description: When the card is charged, how invoices work, and what the free credit covers.
+description: When the card is charged, how invoices work, what the free credit covers, and how the prepaid AI balance works.
 icon: credit-card
 ---
 
-FoPost bills like a utility: usage is metered daily, credited monthly, and charged to the card on file. What you pay for is on the [Pricing](/pricing) page; this page is about when and how the money actually moves.
+FoPost bills like a utility: connected accounts are metered daily, credited monthly, and charged to the card on file, while AI and X API calls come out of a prepaid balance as you use them. What you pay for is on the [Pricing](/pricing) page; this page is about when and how the money actually moves.
 
 ## The billing account
 
-Charges land on one billing account: yours, or the workspace owner's when someone else pays. Everything on this page is per billing account: an agency's workspaces and members share one allowance, one free credit, one invoice. The billing email and payment method live at **Settings → Usage**, and past invoices are in the billing portal there.
+Charges land on one billing account: yours, or the workspace owner's when someone else pays. Everything on this page is per billing account: an agency's workspaces and members share one allowance, one free credit, one balance, one invoice. The billing email and payment method live at **Settings → Billing**, the balance at **Settings → AI Usage**, and past invoices are in the billing portal.
 
 ## Daily metering
 
@@ -16,36 +16,44 @@ Each day, every connected account is metered as one account-day into a usage led
 
 Metering daily is what makes proration automatic: connect an account on the 20th and you pay for the days from the 20th; disconnect one and it stops accruing that day. There is nothing to cancel and no partial-month arithmetic to request.
 
-AI usage joins the same ledger in dollars as you use it, so one bill covers everything.
+AI and X API usage are recorded in the same ledger in dollars as you use them, so the usage page shows everything in one place, but they are paid differently: from the prepaid balance below, never on the invoice.
 
 ## The free credit
 
-Every billing account gets a **$15 usage credit each month**. It is not a separate AI wallet. It is applied to the invoice, against everything metered, before anything is charged. It refreshes each calendar month and does not roll over.
+Every billing account gets a **$15 usage credit each month**. It is applied to the invoice, against connected-account and storage fees, before anything is charged. It refreshes each calendar month and does not roll over. It does not fund AI; the balance does.
 
 Two free connected accounts plus the monthly credit is why light usage never produces a charge at all: an invoice that comes to $0 after credit is simply waived.
 
 ## The card gate
 
-Your first **2 connected accounts need no card**. Connecting a third asks you to save a payment method first: the request answers with `payment_method_required` until one is on file. Saving the card is a setup step through our payment processing provider; nothing is charged at that moment, and card details never touch FoPost's own systems.
+Your first **2 connected accounts need no card**. Connecting a third asks you to save a payment method first: the request answers with `payment_method_required` until one is on file. Saving the card is a setup step through our payment processing provider; nothing is charged for the card itself, and card details never touch FoPost's own systems. The first card you save starts your balance with **$3** and switches auto-reload on.
 
 ## When the card is charged
 
 Two triggers, both automatic:
 
-- **Monthly close.** On the 1st, the previous month's ledger becomes an itemized invoice (account-days, AI usage, and storage overage per workspace, minus the free credit), and the remainder is charged to the card on file
+- **Monthly close.** On the 1st, the previous month's ledger becomes an itemized invoice (account-days and storage overage per workspace, minus the free credit), and the remainder is charged to the card on file
 - **Mid-month threshold.** As protection against fraud and surprise balances, accrued usage past a threshold is charged when it accrues rather than waiting for month-end. The threshold starts at **$10** and doubles with each successfully paid charge (up to $500), so established accounts see fewer, larger charges; a failed payment resets it to $10
 
 If a charge fails, the invoice is retried at the next monthly close. Fix the card in the billing portal and it clears itself.
 
-## AI spending controls
+## The prepaid balance
 
-AI is postpaid like everything else once a card is on file, but you hold the ceiling: a monthly **AI spend cap** in settings stops AI usage at the amount you chose. With no card on file, AI works until the free credit is exhausted.
+AI actions and X API calls cost real money the moment they run, so they are paid **up front from a balance** rather than billed after the fact. Every AI action and every metered X call is deducted from the balance as it happens, and the balance never goes below zero: when it is empty, AI pauses and automated X reads (inbox polling, analytics collection, competitor tracking) stop until it is funded. Publishing, scheduling, and the inbox for every other network keep working.
 
-When AI is declined (cap reached, or no card and no credit left), the API answers `402`. It is not a rate limit: add a card, raise the cap, or wait for the credit to refresh. See [AI in the API](/api/ai).
+Funding the balance:
+
+- **Add funds** at **Settings → AI Usage**, or from the drawer that opens whenever an action needs a balance. Top-ups are whole dollars from **$5 to $500**, charged to the card on file immediately, each with its own receipt. Funds never expire.
+- **Auto-reload** charges the card automatically whenever a deduction leaves the balance below a floor you set (by default, $10 whenever it drops below $2). It is on from the moment you save a card and can be turned off or retuned at any time. A single action larger than the balance triggers one reload before it runs rather than being refused.
+- **Starter balance.** The first card saved on a billing account adds $3 once.
+
+Auto-reload never runs past your monthly **total spend cap**, and a monthly **AI spend cap** stops AI at the amount you chose regardless of balance.
+
+When AI is declined (empty balance, or a cap reached), the API answers `402`. It is not a rate limit: add funds, turn on auto-reload, or raise the cap. See [AI in the API](/api/ai).
 
 ## Leftover credit packs
 
-Credit packs are no longer sold. If you bought packs before the usage model, their value was converted into a prepaid dollar balance that never expires and is applied to invoices after the free credit, until it runs out.
+Credit packs are no longer sold. If you bought packs before the usage model, their value was converted into the prepaid balance at the price you paid, and it is spent on AI and X calls like any other funds.
 
 ## Next
 
