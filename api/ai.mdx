@@ -21,7 +21,7 @@ curl -X POST https://api.fopost.com/v1/ai/generate-caption \
   -d '{ "content": "Notes from our launch week retro" }'
 ```
 
-Writes or improves a caption. It is billed as AI usage on your monthly bill, covered first by the free monthly credit.
+Writes or improves a caption. It is billed as AI usage and deducted from your prepaid balance as it runs.
 
 ## Usage balance
 
@@ -29,13 +29,13 @@ Writes or improves a caption. It is billed as AI usage on your monthly bill, cov
 GET /v1/ai/credits
 ```
 
-How much of the free monthly credit is left, what AI has spent this month, and whether a payment method is on file. Read it before a batch job so you fail early instead of halfway through.
+Your prepaid balance, whether auto-reload is on, how much of the free monthly credit is left on account fees, what AI has spent this month, and whether a payment method is on file. Read it before a batch job so you fail early instead of halfway through.
 
 ## Running out
 
-An AI call answers `402` when the free credit is used up and no payment method is on file, or when your own AI spend cap for the month is reached. It is not a rate limit, so do not retry it with backoff. Add a card (or raise the cap), or degrade to publishing without generation.
+An AI call answers `402` when the prepaid balance cannot cover it (and auto-reload is off or capped), or when your own AI spend cap for the month is reached. It is not a rate limit, so do not retry it with backoff. Add funds or turn on auto-reload (or raise the cap), or degrade to publishing without generation.
 
-The free credit refreshes monthly. See [Pricing](/pricing) and [Billing](/billing).
+Funds never expire and the free credit on account fees refreshes monthly. See [Pricing](/pricing) and [Billing](/billing).
 
 ## Everything else
 
