@@ -12,14 +12,18 @@ Unlike a WordPress username and Application Password, the plugin issues a **scop
 
 ## Requirements
 
-- FoPost plugin **1.1.0 or later**
-- An FoPost Cloud account
+- WordPress 6.4 or later, PHP 8.1 or later
+- An FoPost account
+
+## Install the Plugin
+
+In your WordPress admin, go to **Plugins → Add New**, search for **FoPost**, then install and activate it. You can also download it from the [plugin directory](https://wordpress.org/plugins/fopost/).
 
 ## Generate a Site Token
 
 1. In your WordPress admin, go to **Settings → FoPost**
 2. Click **Generate Token**
-3. Copy the token. It is shown only once
+3. Copy the token. It starts with `fopst_` and is shown only once
 
 ## Connect in the FoPost Dashboard
 
@@ -30,7 +34,7 @@ FoPost verifies the connection against your site before saving it. Once verified
 
 ## Control Incoming Content
 
-On the **Fopost → Cloud** page you decide how pushed content is handled:
+On the same **Settings → FoPost** page you decide how pushed content is handled:
 
 | Setting | Options |
 |:--------|:--------|
@@ -42,7 +46,7 @@ Choose **Always save as draft** to review every post in WordPress before it goes
 
 ## Revoke Access
 
-Click **Revoke Token** on the **Fopost → Cloud** page. FoPost Cloud loses access immediately. Generating a new token also invalidates the old one.
+Click **Revoke Token** on the **Settings → FoPost** page. FoPost Cloud loses access immediately. Generating a new token also invalidates the old one.
 
 ## Troubleshooting
 
