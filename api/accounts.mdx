@@ -21,9 +21,45 @@ Each account carries its `id`, `platform`, `username`, display `name`, `avatar`,
 
 ## Connecting an account
 
-Connecting is an OAuth handshake with the network, so it happens in a browser, in the dashboard, under **Accounts → Connect**. The API cannot do it for you, because the network will not hand a token to a server-to-server call.
+Connecting is an OAuth handshake with the network, so it happens in a browser. Your own accounts connect in the dashboard under **Accounts → Connect**. For your users' accounts, mint a hosted connect link and hand it to them.
 
-`POST /v1/accounts` exists for the handful of networks that authenticate with credentials you already hold rather than an OAuth redirect. For everything else, connect in the dashboard once and use the account id from then on.
+`POST /v1/accounts` exists for the handful of networks that authenticate with credentials you already hold rather than an OAuth redirect.
+
+## Hosted connect links
+
+A connect link is a single-use URL that lets one of your end users connect a social account into your workspace, with no FoPost login and under your branding. Use it when your product needs its users' accounts, not yours.
+
+```http
+POST /v1/connect-sessions
+```
+
+```bash
+curl https://api.fopost.com/v1/connect-sessions \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "ws_…",
+    "externalUserId": "user_8812",
+    "platforms": ["twitter", "linkedin"],
+    "redirectUrl": "https://app.example.com/settings/social",
+    "branding": { "name": "Acme", "logoUrl": "https://app.example.com/logo.png" }
+  }'
+```
+
+The response carries a `url`. Send your user there: they see your name and logo, pick a network from `platforms`, and authorize it. The link stays open for one hour and is spent by the first account it connects.
+
+- `externalUserId` is your id for that user. The connected account carries it, so `GET /v1/accounts?external_user_id=user_8812` finds their accounts.
+- `redirectUrl` is where they land once connected, with `status=success`, `platform`, `account_id` and `external_user_id` appended. Its domain must be on the workspace redirect allowlist, set in the dashboard under **API Keys**; a domain that is not listed is refused, both when the link is created and again when it finishes.
+- `workspaceId` can be omitted for a key bound to one workspace.
+- `platforms` accepts the networks that connect in one step: `twitter`, `instagram`, `linkedin`, `threads`, `tiktok`, `youtube`, `reddit`, `tumblr` and `dribbble`. Networks that need a Page or board picked after authorizing are not available through a hosted link yet.
+
+To learn the outcome without a redirect, poll the session:
+
+```http
+GET /v1/connect-sessions/{id}
+```
+
+`status` moves from `pending` to `used`, and `accountId` is set, once the user has connected. A session created in another workspace answers 404.
 
 ## Health
 
