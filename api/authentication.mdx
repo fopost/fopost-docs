@@ -11,7 +11,7 @@ curl https://api.fopost.com/v1/accounts \
   -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
-There is no `Authorization: Bearer` path for API keys. Bearer tokens are session tokens the dashboard issues to itself, and they are not something you create or use from your own code.
+There is no `Authorization: Bearer` path for API keys. A bearer token is either a session token the dashboard issues to itself, or an OAuth access token a third-party app obtained from a user (see [OAuth for third-party apps](#oauth-for-third-party-apps) below). Your own integration uses an API key.
 
 ## Creating a key
 
@@ -61,6 +61,88 @@ Keys can be regenerated or deleted at any time from the same screen, and both ta
 | 403 | `insufficient_scope` | Key is valid but lacks the scope |
 | 403 | `forbidden` | Resource belongs to a workspace the key cannot reach |
 | 402 | `subscription_required` | The account behind the key has no active plan |
+
+## OAuth for third-party apps
+
+Building something other FoPost customers install? Do not ask them for an API key. Register an OAuth client and let each user approve your app on a consent screen, where they pick one workspace and see exactly which scopes you asked for. You get an access token confined to that workspace and those scopes, and the user can cut you off at any time from **Settings → Connected Apps**.
+
+The server follows OAuth 2.1: authorization code flow only, PKCE with `S256` on every request, exact `redirect_uri` matching, and refresh tokens that rotate on use. Everything is discoverable at `https://api.fopost.com/.well-known/oauth-authorization-server`.
+
+### 1. Register a client
+
+```bash
+curl -X POST https://api.fopost.com/oauth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "client_name": "Acme Scheduler",
+    "redirect_uris": ["https://acme.example/oauth/callback"],
+    "client_uri": "https://acme.example"
+  }'
+```
+
+The response carries your `client_id`. Redirect URIs must be `https` (loopback `http://localhost` is allowed for native and local clients) and are matched character for character. Leave `token_endpoint_auth_method` at its default of `none` for a browser, mobile or desktop app; a server-side app may set it to `client_secret_basic` or `client_secret_post` to receive a `client_secret`, shown once.
+
+### 2. Send the user to authorize
+
+Generate a random `code_verifier` (43 to 128 characters), derive `code_challenge = BASE64URL(SHA256(code_verifier))`, and open:
+
+```
+https://api.fopost.com/oauth/authorize
+  ?response_type=code
+  &client_id=YOUR_CLIENT_ID
+  &redirect_uri=https://acme.example/oauth/callback
+  &scope=posts%20accounts
+  &state=RANDOM_STATE
+  &code_challenge=CHALLENGE
+  &code_challenge_method=S256
+```
+
+`scope` is a space-separated list using the same names as API-key scopes above. The user signs in if needed, picks a workspace and approves. The browser comes back to your `redirect_uri` with `code` and `state`, or with `error=access_denied` if they declined. Always check `state`.
+
+### 3. Exchange the code
+
+```bash
+curl -X POST https://api.fopost.com/oauth/token \
+  -d grant_type=authorization_code \
+  -d client_id=YOUR_CLIENT_ID \
+  -d code=CODE_FROM_CALLBACK \
+  -d redirect_uri=https://acme.example/oauth/callback \
+  -d code_verifier=VERIFIER
+```
+
+```json
+{
+  "access_token": "oa_...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "or_...",
+  "scope": "posts accounts"
+}
+```
+
+A code is single-use and expires after ten minutes. A wrong `code_verifier`, a reused code or a different `redirect_uri` all answer `400` with `error: "invalid_grant"`.
+
+### 4. Call the API
+
+```bash
+curl https://api.fopost.com/v1/posts \
+  -H "Authorization: Bearer oa_..."
+```
+
+The token behaves like a workspace-bound API key: it reaches only the workspace the user approved, list endpoints return only that workspace's rows, and naming any other workspace answers `403`. An endpoint outside the granted scopes answers `403`. A revoked or expired token answers `401`.
+
+### 5. Refresh and revoke
+
+Access tokens last an hour. Refresh with `grant_type=refresh_token`; the response carries a new access token and a new refresh token, and the old refresh token stops working. Refresh tokens last thirty days from their last rotation.
+
+```bash
+curl -X POST https://api.fopost.com/oauth/token \
+  -d grant_type=refresh_token \
+  -d client_id=YOUR_CLIENT_ID \
+  -d refresh_token=or_...
+```
+
+To disconnect, send either token to `/oauth/revoke` with your `client_id`; the whole grant is revoked and the endpoint answers `200` either way. The user can do the same from Settings → Connected Apps.
 
 ## Keeping a key safe
 
