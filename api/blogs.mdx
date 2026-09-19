@@ -1,0 +1,211 @@
+---
+title: Blogs and Articles
+description: Read and manage the articles and products that already live on a connected site.
+icon: book-closed
+---
+
+Most of the API creates content. These endpoints reach content the connected site already owns: the articles on a WordPress site or a Shopify store's blog, and a Shopify store's products. Every id in a path below is the **platform's own id**, not a FoPost id.
+
+Reads need the `posts` scope. Anything that changes the site needs `posts` **and** `publish`, because a change here is visible to the site's own readers.
+
+Accounts on a platform that cannot manage articles answer `400 unsupported_platform`. Today that means WordPress and Shopify can; products are Shopify only.
+
+## List the blogs on a site
+
+```http
+GET /v1/accounts/{id}/blogs
+```
+
+```bash
+curl https://api.fopost.com/v1/accounts/$ACCOUNT_ID/blogs \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+```json
+{
+  "data": [
+    { "id": "11", "title": "News", "handle": "news", "url": "https://your-store.myshopify.com/blogs/news" }
+  ]
+}
+```
+
+A Shopify store reports every blog it has. WordPress has one implicit blog and reports it as a single entry with the id `default`, so both platforms answer the same shape.
+
+## List articles
+
+```http
+GET /v1/accounts/{id}/blogs/{blogId}/articles
+```
+
+| Query | Type | Description |
+|:------|:-----|:------------|
+| `limit` | integer | How many to return, 1 to 50. Defaults to 20 |
+| `status` | string | `published`, `draft`, `pending` or `scheduled` |
+| `q` | string | Match the article title |
+
+```bash
+curl "https://api.fopost.com/v1/accounts/$ACCOUNT_ID/blogs/11/articles?status=draft" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+Articles come back newest first, drafts included, whether FoPost created them or the site owner wrote them in the store admin.
+
+```json
+{
+  "data": [
+    {
+      "id": "99",
+      "blog_id": "11",
+      "title": "Spring drop",
+      "body_html": "<p>Hello</p>",
+      "excerpt": "A short summary",
+      "status": "published",
+      "author_name": "Store Owner",
+      "tags": ["news"],
+      "image_url": "https://cdn.example/img.png",
+      "url": "https://your-store.myshopify.com/blogs/article/spring-drop",
+      "published_at": "2026-09-01T10:00:00.000Z",
+      "updated_at": "2026-09-02T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+## Read one article
+
+```http
+GET /v1/accounts/{id}/blogs/{blogId}/articles/{articleId}
+```
+
+An article that does not exist answers `404`.
+
+## Create an article
+
+```http
+POST /v1/accounts/{id}/blogs/{blogId}/articles
+```
+
+Needs the `publish` scope.
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `title` | string | Yes | The article title |
+| `body` | string | Yes | FoPost body markup, rendered to the site's own format |
+| `excerpt` | string | No | Summary shown in listings |
+| `status` | string | No | `published`, `draft`, `pending` or `scheduled`. Defaults to `draft` |
+| `tags` | string[] | No | Up to 50 tags |
+| `author_name` | string | No | Byline, where the platform accepts one |
+| `image_url` | string | No | Public http(s) URL of the featured image |
+
+A platform maps the status onto what it actually has. WordPress carries all four. Shopify has only published and unpublished, so `draft`, `pending` and `scheduled` all leave the article unpublished.
+
+```bash
+curl -X POST https://api.fopost.com/v1/accounts/$ACCOUNT_ID/blogs/11/articles \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Spring drop",
+    "body": "The new collection is live.",
+    "status": "draft",
+    "tags": ["news"]
+  }'
+```
+
+## Update an article
+
+```http
+PATCH /v1/accounts/{id}/blogs/{blogId}/articles/{articleId}
+```
+
+Needs the `publish` scope. Takes the same fields as create, all optional, and at least one.
+
+Only the fields you send change; everything else on the article stays as it is. The article is addressed by its own id, so an update **changes the live article in place** and never creates a second post. The link you already shared keeps working.
+
+```bash
+curl -X PATCH https://api.fopost.com/v1/accounts/$ACCOUNT_ID/blogs/11/articles/99 \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "title": "Spring drop, restocked", "status": "published" }'
+```
+
+## Delete an article
+
+```http
+DELETE /v1/accounts/{id}/blogs/{blogId}/articles/{articleId}
+```
+
+Needs the `publish` scope. Answers `204` with no body. The article is removed from the site permanently; this cannot be undone.
+
+## List products
+
+```http
+GET /v1/accounts/{id}/products
+```
+
+| Query | Type | Description |
+|:------|:-----|:------------|
+| `limit` | integer | How many to return, 1 to 50. Defaults to 20 |
+| `status` | string | `active`, `draft` or `archived` |
+| `q` | string | Match the product title |
+
+```json
+{
+  "data": [
+    {
+      "id": "7",
+      "title": "Mug",
+      "handle": "mug",
+      "status": "active",
+      "description": null,
+      "vendor": "Your Brand",
+      "product_type": "Drinkware",
+      "tags": ["kitchen"],
+      "image_url": "https://cdn.example/mug.png",
+      "url": "https://your-store.myshopify.com/products/mug",
+      "price": "12.00",
+      "currency": "USD",
+      "updated_at": "2026-09-02T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+`price` is the lowest variant price, as a decimal string.
+
+## Update a product
+
+```http
+PATCH /v1/accounts/{id}/products/{productId}
+```
+
+Needs the `publish` scope.
+
+| Field | Type | Description |
+|:------|:-----|:------------|
+| `title` | string | The product title |
+| `description` | string | Body markup, rendered to HTML |
+| `status` | string | `active`, `draft` or `archived` |
+| `tags` | string[] | Up to 50 tags |
+| `product_type` | string | The product type |
+| `vendor` | string | The vendor |
+
+At least one field is required. Only what you send changes.
+
+## Errors
+
+| Status | Code | Meaning |
+|:-------|:-----|:--------|
+| `400` | `unsupported_platform` | The account's platform cannot manage articles or products |
+| `400` | `validation_error` | A field failed validation |
+| `401` | `reconnect_required` | The platform rejected the stored token; reconnect the account |
+| `404` | `not_found` | No such account in your workspaces, or no such article or product |
+| `429` | `rate_limited` | The platform's own rate limit was reached |
+| `502` | `platform_error` | The platform refused the request; its message is passed through |
+
+## Next
+
+<Cards>
+  <Card title="Shopify" href="/platforms/shopify" />
+  <Card title="WordPress" href="/platforms/wordpress" />
+  <Card title="Publishing" href="/api/publishing" />
+</Cards>

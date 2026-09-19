@@ -25,6 +25,18 @@ Two ways in:
 
 The first attached image is uploaded to the site's media library and set as the post's **featured image**; images placed in the body render inline. Per post you can publish live (the default) or as a **draft**. On a plugin connection, the site's own policy can downgrade a publish to a draft. The post's status reflects what the site actually did.
 
+## Managing posts already on the site
+
+The site's own posts are readable and writable, whether FoPost created them or you wrote them in wp-admin.
+
+- **List** every post on the site, drafts and pending ones included, newest first
+- **Read** one post in full
+- **Create** a new post
+- **Update** a live post in place. Only the fields you send change, and the post is addressed by its WordPress id, so an edit never leaves a duplicate behind
+- **Delete** a post from the site
+
+Ask the agent for "what's on the blog" to list them, and see [Blogs and articles](/api/blogs) for the API. WordPress has one implicit blog, which the API reports under the id `default`.
+
 ## Inbox
 
 Approved comments on the site land in the [inbox](/guide/inbox), and you can reply from there.
@@ -41,6 +53,7 @@ Deleting the post in FoPost deletes it on the site permanently, bypassing the tr
 
 <Cards>
   <Card title="WordPress Plugin" href="/sdks/wordpress" />
+  <Card title="Blogs and Articles" href="/api/blogs" />
   <Card title="Inbox" href="/guide/inbox" />
   <Card title="Connecting Accounts" href="/guide/connecting-accounts" />
 </Cards>
