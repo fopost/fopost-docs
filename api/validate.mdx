@@ -1,0 +1,158 @@
+---
+title: Validation
+description: Check content, text length, and media against platform rules before a post exists.
+icon: check-circle
+---
+
+Preflight checks a saved post. The validation endpoints run the same checks on content you have not saved yet, so a form can tell a user what will fail before anything is created. Nothing is stored, and every endpoint needs the `posts` scope.
+
+The three endpoints answer three different questions:
+
+- `/validate/post` runs the full preflight on a body, its media and a list of platforms
+- `/validate/length` counts text the way each platform counts it and compares it with the limit
+- `/validate/media` fetches a file by URL and runs the upload checks on it
+
+## Validate a post
+
+```http
+POST /v1/validate/post
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/validate/post \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Shipping something new today. https://yourbrand.com/launch",
+    "media": [
+      { "url": "https://yourbrand.com/launch.png", "mime_type": "image/png", "size": 240000 }
+    ],
+    "platforms": ["twitter", "instagram", "linkedin"]
+  }'
+```
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `content` | string | No | The post text. Defaults to empty |
+| `media` | object[] | No | Files the post will carry. Up to 20 |
+| `media[].url` | string | Yes | Public http(s) URL of the file |
+| `media[].mime_type` | string | Yes | MIME type of the file, for example `image/png` |
+| `media[].size` | integer | No | File size in bytes. Size checks are skipped without it |
+| `platforms` | string[] | Yes | Platform slugs to check against |
+
+The response has one entry per platform, in the shape preflight uses per account:
+
+```json
+{
+  "data": {
+    "ready": false,
+    "platforms": [
+      {
+        "platform": "twitter",
+        "ready": true,
+        "issues": [],
+        "score": 97,
+        "signals": [
+          { "level": "info", "code": "no_emoji", "message": "Adding a relevant emoji can lift engagement on twitter." }
+        ]
+      },
+      {
+        "platform": "instagram",
+        "ready": true,
+        "issues": [],
+        "score": 94,
+        "signals": [
+          { "level": "info", "code": "link_in_caption", "message": "instagram doesn't render links in captions. Consider \"link in bio\" instead." }
+        ]
+      },
+      {
+        "platform": "linkedin",
+        "ready": false,
+        "issues": ["Unsupported media type: image/webp"],
+        "score": 95,
+        "signals": []
+      }
+    ]
+  }
+}
+```
+
+`issues` are hard blockers: publishing this content to that platform would fail. `signals` are advisory and never block publishing. `ready` at the top is true only when every platform is ready.
+
+## Check length
+
+```http
+POST /v1/validate/length
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/validate/length \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "A long announcement with a link https://yourbrand.com/launch",
+    "platforms": ["twitter", "bluesky", "youtube"]
+  }'
+```
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `text` | string | Yes | The text to count |
+| `platforms` | string[] | Yes | Platform slugs to check against |
+
+```json
+{
+  "data": {
+    "ok": true,
+    "platforms": [
+      { "platform": "twitter", "length": 55, "limit": 25000, "unit": "chars", "ok": true, "signals": [] },
+      { "platform": "bluesky", "length": 61, "limit": 300, "unit": "chars", "ok": true, "signals": [] },
+      { "platform": "youtube", "length": 61, "limit": 5000, "unit": "bytes", "ok": true, "signals": [] }
+    ]
+  }
+}
+```
+
+`length` is what the platform counts, which is not always the character count: some platforms bill every link at a flat rate however long it is, and some count bytes, so `unit` says which. `limit` is `null` for a platform with no text limit. `signals` carries only the length signals, `over_length` and `near_length_limit`.
+
+## Check a media file
+
+```http
+POST /v1/validate/media
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/validate/media \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "url": "https://yourbrand.com/launch.png" }'
+```
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `url` | string | Yes | Public http(s) URL of the file |
+
+The file is fetched and put through the same checks as an upload: the type has to be on the allowed list, the bytes have to match the declared type, and the file has to be under the size ceiling. It is not stored.
+
+```json
+{
+  "data": {
+    "ok": true,
+    "issues": [],
+    "name": "launch.png",
+    "size": 240000,
+    "mime_type": "image/png",
+    "type": "image"
+  }
+}
+```
+
+A file that fails a check still answers `200`, with `ok: false` and the reason in `issues`. A URL that cannot be fetched at all is an error: `400` for a link that is not public, including one that points at a private address, `404` when the link answers not found, and `401` when it needs credentials.
+
+## Errors
+
+| Status | Code | Meaning |
+|:-------|:-----|:--------|
+| `400` | `validation_error` | A field is missing, or a platform slug is unknown |
+| `400` | `unsupported` | The media URL is not fetchable from here |
+| `403` | `forbidden` | The API key lacks the `posts` scope |
