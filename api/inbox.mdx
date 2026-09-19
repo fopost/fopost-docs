@@ -4,7 +4,7 @@ description: Comments, mentions and direct messages across every connected accou
 icon: inbox
 ---
 
-The inbox collects what people say to your accounts: comments under your posts, mentions of your accounts elsewhere, and direct messages. Every item is stored once, tagged with the account it arrived on, and can be answered, resolved, snoozed, hidden or deleted from the API. These endpoints need the `inbox` scope.
+The inbox collects what people say to your accounts: comments under your posts, mentions of your accounts elsewhere, and direct messages. Every item is stored once, tagged with the account it arrived on, and can be answered, liked, resolved, snoozed, hidden or deleted from the API. These endpoints need the `inbox` scope. Anything that acts on a platform beyond a plain reply (a like, a pin, an edit, a reaction, a new conversation, an attachment) also needs the `publish` scope.
 
 ## List items
 
@@ -50,12 +50,23 @@ An item looks like this:
   "canReply": true,
   "canHide": true,
   "canDelete": true,
+  "canLike": true,
+  "canPin": false,
+  "canEdit": false,
+  "canReact": false,
+  "canSendMedia": false,
+  "canQuickReply": false,
+  "canPrivateReply": true,
+  "liked": false,
+  "pinned": false,
+  "reaction": null,
+  "editedAt": null,
   "post": { "id": "3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10", "title": "Autumn drop" },
   "account": { "id": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4", "platform": "instagram", "username": "yourbrand" }
 }
 ```
 
-`canReply`, `canHide` and `canDelete` tell you what the platform allows for that item before you try. A platform whose API reads comments but cannot answer them returns `canReply: false`.
+The `can*` flags tell you what the platform allows for that item before you try. A platform whose API reads comments but cannot answer them returns `canReply: false`. An action the platform does not offer answers `409` with `unsupported_platform`.
 
 DM attachments are listed under `attachments`, each with a `url` served by the API. That link grants nothing on its own: workspace membership is checked on every request, and the bytes come through FoPost rather than from a platform URL.
 
@@ -92,6 +103,23 @@ curl -X POST https://api.fopost.com/v1/inbox/0f1c4a1e-8f3c-4c62-9f6a-2a4b1a9e77d
 
 The reply is posted on the platform as the connected account and the item is settled. The response carries the updated `item` and a `reply` with the platform's id and link for it. A `409` means the account is disconnected or the platform cannot reply; a `502` means the platform refused the reply and `message` says why.
 
+A reply to a DM can carry more than text, where the item allows it. Both need the `publish` scope.
+
+| Field | Description |
+|:------|:------------|
+| `text` | The message. Optional when `media_ids` is set |
+| `media_ids` | Up to 10 media library ids, sent as files. Needs `canSendMedia`. The platform receives a short-lived link to each file, never its stored address |
+| `quick_replies` | Up to 13 answer buttons, 20 characters each, shown under the message. Needs `canQuickReply` |
+
+```bash
+curl -X POST https://api.fopost.com/v1/inbox/0f1c4a1e-8f3c-4c62-9f6a-2a4b1a9e77d1/reply \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "text": "Here is the size chart.", "media_ids": ["5c0e2a44-1b7d-4f3e-9c21-6a8b0d4e2f17"], "quick_replies": ["Order now", "Talk to us"] }'
+```
+
+A media id from another workspace answers `404`, the same as one that does not exist.
+
 ## Change state
 
 ```http
@@ -102,6 +130,14 @@ PATCH /v1/inbox/{id}
 |:------|:------------|
 | `state` | `unread`, `read`, `resolved`, or `snoozed` |
 | `snoozedUntil` | Required when snoozing. A snoozed item returns to unread at that time |
+
+## Edit your own comment
+
+```http
+PATCH /v1/inbox/{id}
+```
+
+Send `{ "text": "..." }` instead of a state to change a comment your account wrote, on the platform. Available where `canEdit` is true, and needs the `publish` scope. The item comes back with the new `text` and an `editedAt` time.
 
 To read a whole thread at once, the way opening a chat does:
 
@@ -119,7 +155,65 @@ POST /v1/inbox/{id}/unhide
 DELETE /v1/inbox/{id}
 ```
 
-Hide and delete act on the platform, not just in FoPost. They are available where the item's `canHide` or `canDelete` is true. A hidden item stays in the inbox with `hidden: true`.
+Hide and delete act on the platform, not just in FoPost. They are available where the item's `canHide` or `canDelete` is true. A hidden item stays in the inbox with `hidden: true`. Delete also removes a reply your account wrote; deleting your own reply needs the `publish` scope.
+
+## Like and pin
+
+```http
+POST /v1/inbox/{id}/like
+POST /v1/inbox/{id}/unlike
+POST /v1/inbox/{id}/pin
+POST /v1/inbox/{id}/unpin
+```
+
+Like acts as the connected account: a like on most networks, an upvote on Reddit, a favourite on Mastodon. It is available where `canLike` is true, and the item then reports `liked: true`. Pin works on a comment your account wrote, where `canPin` is true. All four need the `publish` scope.
+
+## Direct messages
+
+Start a conversation:
+
+```http
+POST /v1/inbox/conversations
+```
+
+| Field | Description |
+|:------|:------------|
+| `account_id` | The account to send from, with `handle` |
+| `handle` | Who to message. Available on accounts whose `canStartConversation` is true |
+| `comment_id` | An inbox comment to answer privately instead of `account_id` and `handle`. This is how Facebook and Instagram open a DM, and it needs `canPrivateReply` on the comment |
+| `text` | The message |
+| `media_ids` | Optional files from the media library, where the platform takes them |
+
+```bash
+curl -X POST https://api.fopost.com/v1/inbox/conversations \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "comment_id": "0f1c4a1e-8f3c-4c62-9f6a-2a4b1a9e77d1", "text": "Sending you the details here." }'
+```
+
+The response is `201` with the `conversationId` where the platform reports one and the sent `item`.
+
+React to a message, or remove your reaction with `null`, where `canReact` is true. Instagram has one reaction, a heart, so any emoji sends it.
+
+```http
+POST /v1/inbox/{id}/react
+```
+
+```json
+{ "reaction": "❤️" }
+```
+
+Show the typing indicator in a thread while someone writes an answer, then clear it with `on: false`:
+
+```http
+POST /v1/inbox/conversations/{conversationId}/typing
+```
+
+```json
+{ "account_id": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4", "on": true }
+```
+
+All of these need the `publish` scope.
 
 ## Replies awaiting approval
 
@@ -141,7 +235,7 @@ GET /v1/inbox/platforms
 GET /v1/inbox/unread-count
 ```
 
-`/accounts` lists every active connected account with `inboxSupported` and `dmSupported`, so a filter can tell the truth about what it reads. `/platforms` lists which networks feed the inbox today and which are coming.
+`/accounts` lists every active connected account with `inboxSupported` and `dmSupported`, so a filter can tell the truth about what it reads, plus `canStartConversation` for accounts that can open a DM by handle. `/platforms` lists which networks feed the inbox today and which are coming.
 
 ## Poll now
 
