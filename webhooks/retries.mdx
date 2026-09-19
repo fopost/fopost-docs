@@ -27,6 +27,10 @@ curl -X PUT https://api.fopost.com/v1/webhooks/$WEBHOOK_ID \
 
 Re-enabling resets the failure count. Events that fired while it was disabled are not replayed; poll [deliveries](/api/publishing#read-the-result) to backfill anything you missed.
 
+## The delivery log
+
+Every attempt, including each retry, is logged for 30 days with the status and body your endpoint answered, and any attempt can be sent again with the identical body. Both are in the dashboard under **Webhooks** and on the [webhooks API](/api/webhooks#the-delivery-log).
+
 ## Test deliveries
 
 ```http
