@@ -238,7 +238,7 @@ curl "https://api.fopost.com/v1/analytics/inbox/conversations?days=30&sort=slowe
   "data": {
     "conversations": [
       {
-        "key": "t_182736",
+        "key": "9f2c7a10b4e83d5612ff0a8c4d1e6b73",
         "accountId": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4",
         "platform": "instagram",
         "received": 9,
@@ -258,3 +258,5 @@ curl "https://api.fopost.com/v1/analytics/inbox/conversations?days=30&sort=slowe
 ```
 
 Counts and timings only: no message text and no author, so these numbers sit next to the rest of your analytics.
+
+`key` here is an opaque handle for the thread, stable across pages and across requests, so you can line the same conversation up between two calls. It is deliberately not the thread id or handle the inbox groups on: that is a person, and an `analytics` key reads the numbers rather than who they are about. To go from a number back to a thread, read the same person through `GET /v1/contacts/{id}/conversations`, which needs the `inbox` scope.
