@@ -25,6 +25,24 @@ Thread chains are supported: blocks written as a thread publish as replies to ea
 
 Video goes through Bluesky's processing pipeline, and FoPost waits for it to finish before publishing. Bluesky applies its own daily video quotas and requires a verified email for video upload. Those are Bluesky's rules, surfaced as the post's error message when they bite.
 
+## Post languages
+
+Bluesky filters the feed by language, so a post with none set is shown to everyone regardless of what they read. The composer picks up to three BCP-47 tags per post, and each connection carries a default the composer starts from.
+
+```bash
+# Read the connection default
+curl https://api.fopost.com/v1/accounts/{account_id}/bluesky/languages \
+  -H "X-API-Key: $FOPOST_API_KEY"
+
+# Set it; an empty list clears it
+curl -X PUT https://api.fopost.com/v1/accounts/{account_id}/bluesky/languages \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"languages": ["en", "pt-BR"]}'
+```
+
+Per post, pass the same tags as the `languages` platform setting.
+
 ## Analytics
 
 Per post: likes, replies, and reposts plus quotes. Per account: followers, following, and post count. Recent posts published natively in a Bluesky app are included in [analytics](/guide/analytics) too. Competitor tracking works on Bluesky: track any public handle.
