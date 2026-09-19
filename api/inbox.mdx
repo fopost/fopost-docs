@@ -1,0 +1,159 @@
+---
+title: Inbox
+description: Comments, mentions and direct messages across every connected account.
+icon: inbox
+---
+
+The inbox collects what people say to your accounts: comments under your posts, mentions of your accounts elsewhere, and direct messages. Every item is stored once, tagged with the account it arrived on, and can be answered, resolved, snoozed, hidden or deleted from the API. These endpoints need the `inbox` scope.
+
+## List items
+
+```http
+GET /v1/inbox
+```
+
+```bash
+curl "https://api.fopost.com/v1/inbox?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90&state=unread" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+| Parameter | Description |
+|:----------|:------------|
+| `workspace_id` | One workspace. Omit it to span every workspace the key can reach; each item then carries `workspaceId` |
+| `type` | `comment`, `mention`, or `dm` |
+| `state` | `unread`, `read`, `resolved`, or `snoozed` |
+| `platform` | A platform slug, such as `instagram` |
+| `account_id` | One connected account |
+| `post_id` | Comments under one FoPost post |
+| `post_external_id` | Comments under one platform post, including posts you did not publish through FoPost |
+| `conversation_id` | One DM thread |
+| `direction` | `inbound` or `outbound` |
+| `q` | Searches text and author |
+| `sort` | `newest` (default), `oldest`, or `unanswered` |
+| `page`, `per_page` | Pagination, `per_page` up to 100 |
+
+An item looks like this:
+
+```json
+{
+  "id": "0f1c4a1e-8f3c-4c62-9f6a-2a4b1a9e77d1",
+  "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+  "platform": "instagram",
+  "type": "comment",
+  "state": "unread",
+  "direction": "inbound",
+  "authorName": "Sam Rivera",
+  "authorHandle": "samrivera",
+  "text": "Does this come in blue?",
+  "permalink": "https://www.instagram.com/p/abc123/",
+  "platformCreatedAt": "2026-09-18T14:30:00.000Z",
+  "canReply": true,
+  "canHide": true,
+  "canDelete": true,
+  "post": { "id": "3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10", "title": "Autumn drop" },
+  "account": { "id": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4", "platform": "instagram", "username": "yourbrand" }
+}
+```
+
+`canReply`, `canHide` and `canDelete` tell you what the platform allows for that item before you try. A platform whose API reads comments but cannot answer them returns `canReply: false`.
+
+DM attachments are listed under `attachments`, each with a `url` served by the API. That link grants nothing on its own: workspace membership is checked on every request, and the bytes come through FoPost rather than from a platform URL.
+
+## Threads and conversations
+
+Two views group the same items the way the dashboard does.
+
+```http
+GET /v1/inbox/posts
+GET /v1/inbox/conversations
+```
+
+`/posts` returns one row per platform post that has collected comments, with counts and the latest comment. Pass `kind=mentions` for the posts your account was tagged in instead. `/conversations` returns one row per DM thread, latest first. Both accept `workspace_id`, `platform`, `account_id`, `state`, `q`, `sort` and pagination.
+
+To read a thread, list items with the pair the row gives you:
+
+```bash
+curl "https://api.fopost.com/v1/inbox?account_id=$ACCOUNT&post_external_id=17895695668004550" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+## Reply
+
+```http
+POST /v1/inbox/{id}/reply
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/inbox/0f1c4a1e-8f3c-4c62-9f6a-2a4b1a9e77d1/reply \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "text": "It does. Blue lands next week." }'
+```
+
+The reply is posted on the platform as the connected account and the item is settled. The response carries the updated `item` and a `reply` with the platform's id and link for it. A `409` means the account is disconnected or the platform cannot reply; a `502` means the platform refused the reply and `message` says why.
+
+## Change state
+
+```http
+PATCH /v1/inbox/{id}
+```
+
+| Field | Description |
+|:------|:------------|
+| `state` | `unread`, `read`, `resolved`, or `snoozed` |
+| `snoozedUntil` | Required when snoozing. A snoozed item returns to unread at that time |
+
+To read a whole thread at once, the way opening a chat does:
+
+```http
+POST /v1/inbox/read
+```
+
+with `workspace_id`, `account_id`, and either `post_external_id` or `conversation_id`.
+
+## Moderate
+
+```http
+POST /v1/inbox/{id}/hide
+POST /v1/inbox/{id}/unhide
+DELETE /v1/inbox/{id}
+```
+
+Hide and delete act on the platform, not just in FoPost. They are available where the item's `canHide` or `canDelete` is true. A hidden item stays in the inbox with `hidden: true`.
+
+## Replies awaiting approval
+
+An automation or the agent can draft a reply that a person still has to send. Nothing reaches a platform until it is approved.
+
+```http
+GET /v1/inbox/approvals
+POST /v1/inbox/approvals/{id}/approve
+POST /v1/inbox/approvals/{id}/reject
+```
+
+Approve takes an optional `text` to send an edited version instead of the draft. A `409` means the reply was already decided.
+
+## Coverage
+
+```http
+GET /v1/inbox/accounts
+GET /v1/inbox/platforms
+GET /v1/inbox/unread-count
+```
+
+`/accounts` lists every active connected account with `inboxSupported` and `dmSupported`, so a filter can tell the truth about what it reads. `/platforms` lists which networks feed the inbox today and which are coming.
+
+## Poll now
+
+```http
+POST /v1/inbox/refresh
+```
+
+Fetches new comments and messages for every inbox-capable account in the `workspace_id` you pass, instead of waiting for the next scheduled poll. The response reports how many accounts were polled and how many new items arrived. Platforms that bill per read are read on this call, so use it when someone is waiting, not on a timer of your own.
+
+## Next
+
+<Cards>
+  <Card title="Analytics" href="/api/analytics" />
+  <Card title="Ads" href="/api/ads" />
+</Cards>

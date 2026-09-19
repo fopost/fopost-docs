@@ -1,0 +1,157 @@
+---
+title: Ads
+description: Boost published posts and run Meta ads, audiences and lead forms.
+icon: megaphone
+---
+
+Ads run on a Meta Ads connection: a Meta business or user login that reaches ad accounts and Facebook Pages, separate from the account used for posting. With one in place you can boost a post FoPost already published, create a standalone ad, build audiences and read leads from Instant Forms. These endpoints need the `ads` scope, and the four that spend money also need `publish`.
+
+| Endpoint | Scopes |
+|:---------|:-------|
+| `POST /v1/ads/boost` | `ads`, `publish` |
+| `POST /v1/ads` | `ads`, `publish` |
+| `PATCH /v1/ads/{id}` | `ads`, `publish` |
+| `DELETE /v1/ads/{id}` | `ads`, `publish` |
+| Everything else under `/v1/ads` | `ads` |
+
+Amounts are in the ad account's currency, in minor units: `1500` is $15.00 on a USD account.
+
+## Connect
+
+```http
+GET /v1/ads/connections
+POST /v1/ads/connections/meta/authorize
+DELETE /v1/ads/connections/{id}?workspace_id=
+```
+
+Authorize returns the Meta login URL for the `workspaceId` you pass. The user who calls it has to finish the login in their own browser session, because the callback checks that the same user came back. Removing a connection also deletes every ad record FoPost created through it.
+
+```http
+GET /v1/ads/sources
+```
+
+lists each connection with the ad accounts (`act_…`) and Pages its grant reaches. You need one of each to create an ad.
+
+## Boost a post
+
+```http
+GET /v1/ads/boostable
+POST /v1/ads/boost
+```
+
+`/boostable` lists published posts with a delivery on an account the connection reaches. Boost one:
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/boost \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "adAccountId": "act_1234567890",
+    "postId": "3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10",
+    "accountId": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4",
+    "name": "Autumn drop boost",
+    "goal": "engagement",
+    "budget": { "minor": 2000, "type": "daily" },
+    "targeting": { "countries": ["US", "CA"], "ageMin": 21, "ageMax": 45, "gender": "all" }
+  }'
+```
+
+| Field | Required | Description |
+|:------|:---------|:------------|
+| `workspaceId` | Yes | Workspace the ad belongs to |
+| `connectionId` | Yes | A Meta Ads connection in that workspace |
+| `adAccountId` | Yes | `act_…`, from `/sources` |
+| `postId`, `accountId` | Yes | The post and the account it was delivered to, from `/boostable` |
+| `name` | Yes | What the campaign is called on Meta |
+| `goal` | Yes | `engagement`, `traffic`, `awareness`, or `video_views` |
+| `budget` | Yes | `minor` plus `type` of `daily` or `lifetime`, optional `endAt` |
+| `targeting` | Yes | See below |
+| `paused` | No | Default `true`. Set `false` to start delivering at once |
+
+The response is the ad, `201`. It starts paused unless you said otherwise, so a boost created from a script never spends until someone resumes it.
+
+## Create an ad
+
+```http
+POST /v1/ads
+```
+
+Same fields as a boost, minus `postId` and `accountId`, plus the creative: `pageId` (from `/sources`), `text` (up to 125 characters), optional `headline`, `destinationUrl` and `mediaUrl` (a media library asset).
+
+## Targeting
+
+`targeting` needs at least one country or one location:
+
+| Field | Description |
+|:------|:------------|
+| `countries` | ISO 3166-1 alpha-2 codes |
+| `ageMin`, `ageMax` | 13 to 65 |
+| `gender` | `all`, `male`, or `female` |
+| `locations` | Regions, cities, postcodes or metro areas below country level |
+| `interests`, `behaviors`, `income` | Meta catalogue entries |
+| `audienceIds` | Custom audiences to include |
+
+Everything below country level comes from the catalogue:
+
+```http
+GET /v1/ads/targeting/search?connection_id=&type=&q=
+```
+
+`type` is one of `country`, `region`, `city`, `zip`, `metro`, `interest`, `behavior`, or `income`. Each result has an `id` and `name` you pass back as-is; a location also needs its `type`.
+
+## Manage
+
+```http
+GET /v1/ads
+POST /v1/ads/{id}/refresh?workspace_id=
+PATCH /v1/ads/{id}?workspace_id=
+DELETE /v1/ads/{id}?workspace_id=
+```
+
+`GET /v1/ads` lists the boosts and ads created through FoPost with the insights from their last refresh: impressions, reach, clicks and `spendMinor`. Refresh reads the current delivery status and lifetime insights from Meta. `PATCH` takes `{ "status": "active" }` or `{ "status": "paused" }`. Delete ends delivery and removes the ad on Meta as well as here.
+
+```http
+GET /v1/ads/external
+```
+
+lists ads that live on the same ad accounts but were made elsewhere, read live from Meta and never stored.
+
+## Audiences
+
+```http
+GET /v1/ads/audiences?connection_id=&ad_account_id=
+POST /v1/ads/audiences
+```
+
+Create one of three kinds by `spec.subtype`:
+
+| Subtype | Fields | What it is |
+|:--------|:-------|:-----------|
+| `CUSTOM` | `emails` | A customer list. Emails are hashed before they leave the API |
+| `LOOKALIKE` | `originAudienceId`, `country`, `ratio` | People who resemble an existing audience |
+| `WEBSITE` | `pixelId`, `retentionDays`, `urlContains` | Visitors your pixel saw |
+
+The list endpoint also returns the ad account's `pixels`.
+
+## Lead forms
+
+```http
+GET /v1/ads/lead-forms
+POST /v1/ads/lead-forms
+GET /v1/ads/lead-forms/{formId}/leads?connection_id=&page_id=&after=
+```
+
+Instant Forms belong to a Page. Create one with `pageId`, `name`, one to three `questions` from `EMAIL`, `FULL_NAME` and `PHONE`, a `privacyPolicyUrl`, a `thankYouMessage`, and an optional `followUpUrl`. Leads come back a page at a time, each with its `fields`; pass `nextCursor` as `after` for the next page.
+
+## Errors
+
+A `422` means Meta refused the request and `message` carries Meta's reason, such as an ad account without a payment method or a Page the connection does not manage. A `403` with `error: "no_ads_access"` means the connection's grant does not reach ads on that account.
+
+## Next
+
+<Cards>
+  <Card title="Inbox" href="/api/inbox" />
+  <Card title="Authentication" href="/api/authentication" />
+</Cards>
