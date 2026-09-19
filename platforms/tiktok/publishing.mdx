@@ -29,6 +29,25 @@ The settings TikTok requires a posting tool to expose:
 - **AI-generated content** label
 - **Commercial content disclosure**: your brand, branded content, or both
 
+## Creator limits
+
+Several posting switches are set on the TikTok account itself, not in FoPost: whether comments, Duet and Stitch are allowed, which privacy levels are open, and how long a video the account may post. The composer reads them and disables anything TikTok has turned off, rather than offering a toggle that will be refused.
+
+```bash
+curl https://api.fopost.com/v1/accounts/{account_id}/tiktok/creator-info \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+Change any of them in the TikTok app and the composer picks it up on the next load.
+
+## Not available
+
+TikTok's public API has no endpoint for these, so FoPost does not offer them:
+
+- **Commercial Music Library search**, and no music field on a post to attach a track to
+- **Location and place tagging**: no place search, and no place field on a post
+- **Video download by URL**: nothing returns a video file, so a TikTok link cannot be repurposed from its media. Repurpose from a transcript or the page text instead
+
 ## TikTok's guardrails
 
 TikTok enforces its own posting pace. Too many posts in a day, or too many still processing, and TikTok refuses with a clear reason; FoPost backs off and the post retries rather than dying. If a video's format is refused, TikTok wants MP4 or MOV with H.264, 3 seconds to 10 minutes.
