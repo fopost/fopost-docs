@@ -13,7 +13,7 @@ Connect with a one-time code, so there is no chat ID to look up.
 1. Open **Connections → Telegram** and choose **Connect with Code**.
 2. Send the command shown, `/connect <code>`, in the chat you want to connect:
    - **Private chat:** tap **Open Private Chat**, which opens the bot with the code filled in.
-   - **Group:** tap **Add to Group**, pick the group, and the code goes with it. Make the bot an admin if it should post.
+   - **Group:** tap **Add to Group**, pick the group, and the code goes with it. Only a group admin can connect a group. Make the bot an admin if it should post.
    - **Channel:** add the bot as an admin with permission to post, then post the command in the channel. The bot removes the command message once it has read it.
 3. The dialog closes once the chat is connected. The code works once and expires after 15 minutes.
 
@@ -45,7 +45,7 @@ Photos, files and voice notes show as a message without their content, since the
 
 ## Bot commands
 
-The account drawer in **Connections** has a **Bot Commands** editor for private chats and groups: the menu Telegram shows when someone types `/` in that chat. Up to 100 commands, each 1 to 32 lowercase letters, digits or underscores, with a description of up to 256 characters. The menu applies to the connected chat only.
+The account drawer in **Connections** has a **Bot Commands** editor for private chats and groups: the menu Telegram shows when someone types `/` in that chat. Up to 100 commands, each 1 to 32 lowercase letters, digits or underscores, with a description of up to 256 characters. The menu applies to the connected chat only, and needs a chat connected with a code.
 
 Over the API: `GET`, `PUT` and `DELETE /v1/accounts/{id}/telegram/commands`.
 
