@@ -4,7 +4,7 @@ description: Boost published posts and run Meta ads, audiences and lead forms.
 icon: megaphone
 ---
 
-Ads run on a Meta Ads connection: a Meta business or user login that reaches ad accounts and Facebook Pages, separate from the account used for posting. With one in place you can boost a post FoPost already published, create a standalone ad, build audiences and read leads from Instant Forms. These endpoints need the `ads` scope, and the four that spend money also need `publish`.
+Ads run on a Meta Ads connection: a Meta business or user login that reaches ad accounts and Facebook Pages, separate from the account used for posting. With one in place you can boost a post FoPost already published, create an ad in one call or build its campaign, ad set, creative and ad one at a time, manage everything already on the ad account, read insights, build audiences and collect leads from Instant Forms. These endpoints need the `ads` scope, and every one that can start or stop spend also needs `publish`.
 
 | Endpoint | Scopes |
 |:---------|:-------|
@@ -12,6 +12,8 @@ Ads run on a Meta Ads connection: a Meta business or user login that reaches ad 
 | `POST /v1/ads` | `ads`, `publish` |
 | `PATCH /v1/ads/{id}` | `ads`, `publish` |
 | `DELETE /v1/ads/{id}` | `ads`, `publish` |
+| `POST`, `PATCH`, `DELETE` and `/duplicate` on `/v1/ads/campaigns`, `/v1/ads/ad-sets` and `/v1/ads/ads` | `ads`, `publish` |
+| `POST /v1/ads/status` | `ads`, `publish` |
 | Everything else under `/v1/ads` | `ads` |
 
 Amounts are in the ad account's currency, in minor units: `1500` is $15.00 on a USD account.
@@ -78,7 +80,101 @@ The response is the ad, `201`. It starts paused unless you said otherwise, so a 
 POST /v1/ads
 ```
 
-Same fields as a boost, minus `postId` and `accountId`, plus the creative: `pageId` (from `/sources`), `text` (up to 125 characters), optional `headline`, `destinationUrl` and `mediaUrl` (a media library asset).
+Same fields as a boost, minus `postId` and `accountId`, plus the creative: `pageId` (from `/sources`), `text` (up to 125 characters), optional `headline`, `destinationUrl`, `mediaUrl` (a media library asset) and `urlTags`, a query string such as `utm_source=meta&utm_medium=paid` appended to every link in the ad.
+
+This one call creates a campaign, an ad set, a creative and an ad on Meta. The next section builds the same four objects one at a time, and Meta receives exactly the same requests either way.
+
+## The campaign tree
+
+Everything on an ad account, whoever made it, is addressed by Meta's own ids through a connection. Nothing here is stored by FoPost: each call reads or writes Meta directly. An id on an ad account the connection does not reach answers `404`, the same as an id that does not exist.
+
+```http
+GET /v1/ads/accounts/{adAccountId}/tree?connection_id=
+```
+
+returns every campaign with its ad sets and each ad set's ads, with status, budget and objective.
+
+Build an ad one object at a time:
+
+```http
+POST /v1/ads/campaigns
+POST /v1/ads/ad-sets
+POST /v1/ads/creatives
+POST /v1/ads/ads
+```
+
+| Request | Fields |
+|:--------|:-------|
+| Campaign | `workspaceId`, `connectionId`, `adAccountId`, `name`, `goal`, `paused` |
+| Ad set | `workspaceId`, `connectionId`, `campaignId`, `pageId`, `name`, `goal`, `budget`, `targeting`, `paused` |
+| Ad | `workspaceId`, `connectionId`, `adSetId`, `creativeId`, `name`, `paused` |
+
+Each starts paused unless `paused` is `false`. Every object then has the same four operations, with `?workspace_id=&connection_id=` on the path:
+
+```http
+GET /v1/ads/campaigns/{id}
+PATCH /v1/ads/campaigns/{id}
+DELETE /v1/ads/campaigns/{id}
+POST /v1/ads/campaigns/{id}/duplicate
+```
+
+and likewise under `/v1/ads/ad-sets/{id}` and `/v1/ads/ads/{id}`. `PATCH` changes `name` and `status` on all three, `budgetMinor`, `endAt` and `targeting` on an ad set, and `creativeId` on an ad. Deleting a campaign or ad set deletes everything under it. Duplicating copies everything under it too, paused unless the body says `{ "paused": false }`.
+
+Pause or resume up to 50 objects at once:
+
+```http
+POST /v1/ads/status
+```
+
+```json
+{
+  "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+  "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+  "status": "paused",
+  "objects": [
+    { "id": "120210000000000001", "level": "campaign" },
+    { "id": "120210000000000002", "level": "ad_set" }
+  ]
+}
+```
+
+Each object succeeds or fails on its own; the response lists `ok` and `error` for every one.
+
+## Creatives
+
+```http
+GET /v1/ads/creatives?connection_id=&ad_account_id=
+POST /v1/ads/creatives
+GET /v1/ads/creatives/{id}?connection_id=
+DELETE /v1/ads/creatives/{id}?workspace_id=&connection_id=
+```
+
+The list is the ad account's creative library. Create one with `adAccountId`, `pageId`, `name`, `text` and a `format`:
+
+| Format | Media |
+|:-------|:------|
+| `image` | Optional `mediaUrl`, a library image |
+| `video` | `mediaUrl`, a library video, plus an optional `thumbnailMediaUrl`. Without one, Meta picks a frame |
+| `carousel` | `cards`: 2 to 10, each with a library image `mediaUrl` and optional `destinationUrl`, `headline` and `description` |
+
+All three take optional `headline`, `destinationUrl`, `callToAction` (`LEARN_MORE` by default, or `SHOP_NOW`, `SIGN_UP`, `SUBSCRIBE`, `CONTACT_US`, `DOWNLOAD`, `GET_OFFER`, `BOOK_NOW`, `APPLY_NOW`, `WATCH_MORE`) and `urlTags`. A creative runs nowhere until an ad uses it.
+
+## Insights
+
+```http
+GET /v1/ads/insights?connection_id=&object_id=&since=&until=&breakdown=&daily=
+GET /v1/ads/{id}/insights?workspace_id=&since=&until=&breakdown=&daily=
+```
+
+The first reads an ad account (`act_…`), campaign, ad set or ad; the second reads an ad created through FoPost. `since` and `until` are `YYYY-MM-DD`, inclusive, up to three years apart. The report has `totals` (impressions, reach, clicks, `spendMinor`, `ctr` as a percentage, and leads), a `breakdown` by `age`, `gender`, `placement` or `country` when you ask for one, and a day-by-day `timeline` when `daily=true`.
+
+## Reach estimate
+
+```http
+POST /v1/ads/reach-estimate
+```
+
+Pass `workspaceId`, `connectionId`, `adAccountId`, `pageId` and a `targeting` block. The answer is Meta's estimated audience, `lower` to `upper` people; `ready` is `false` while Meta is still working it out.
 
 ## Targeting
 
@@ -135,6 +231,15 @@ Create one of three kinds by `spec.subtype`:
 
 The list endpoint also returns the ad account's `pixels`.
 
+```http
+GET /v1/ads/audiences/{id}?connection_id=
+PATCH /v1/ads/audiences/{id}?workspace_id=&connection_id=
+DELETE /v1/ads/audiences/{id}?workspace_id=&connection_id=
+POST /v1/ads/audiences/{id}/users?workspace_id=&connection_id=
+```
+
+`PATCH` renames an audience or changes its `description`. `/users` adds more `emails` to a customer list after it was created; they are hashed before they leave the API.
+
 ## Lead forms
 
 ```http
@@ -144,6 +249,28 @@ GET /v1/ads/lead-forms/{formId}/leads?connection_id=&page_id=&after=
 ```
 
 Instant Forms belong to a Page. Create one with `pageId`, `name`, one to three `questions` from `EMAIL`, `FULL_NAME` and `PHONE`, a `privacyPolicyUrl`, a `thankYouMessage`, and an optional `followUpUrl`. Leads come back a page at a time, each with its `fields`; pass `nextCursor` as `after` for the next page.
+
+```http
+GET /v1/ads/lead-forms/{formId}?connection_id=&page_id=
+POST /v1/ads/lead-forms/{formId}/archive
+```
+
+The first returns one form with its questions, privacy policy and lead count. Archiving (body: `workspaceId`, `connectionId`, `pageId`) stops the form collecting; its leads stay readable.
+
+### The leads feed
+
+```http
+POST /v1/ads/lead-pages
+GET /v1/ads/lead-pages
+DELETE /v1/ads/lead-pages/{pageId}?workspace_id=&connection_id=
+GET /v1/ads/leads?form_id=&page_id=&cursor=&limit=
+```
+
+Subscribe a Page (body: `workspaceId`, `connectionId`, `pageId`) and every new lead on any of its forms arrives in the feed as it is submitted. Subscribing also backfills the most recent leads of each form. `GET /v1/ads/leads` lists leads across every subscribed Page in your workspaces, newest first, up to 100 at a time; pass `nextCursor` back as `cursor`. Unsubscribing stops new leads; the ones already in the feed stay. Removing the connection deletes its leads from the feed.
+
+## Comments on ads
+
+Comments on a Facebook ad, including an ad made only for Ads Manager and never posted to the Page, arrive in the [inbox](/api/inbox) with the Page's other comments, and you reply to or moderate them the same way.
 
 ## Errors
 
