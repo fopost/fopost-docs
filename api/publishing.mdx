@@ -35,7 +35,8 @@ curl -X POST https://api.fopost.com/v1/posts \
 | Field | Type | Required | Description |
 |:------|:-----|:---------|:------------|
 | `workspace_id` | uuid | Yes | Workspace the post belongs to |
-| `accounts` | uuid[] | Yes | Connected accounts to target |
+| `accounts` | uuid[] | Yes, unless `account_group_id` is set | Connected accounts to target |
+| `account_group_id` | uuid | No | Target every account in an [account group](/api/accounts#account-groups). Merged with `accounts`; each account publishes once |
 | `content` | block[] | Yes | One block per item. More than one block makes a thread |
 | `content[].text` | string | No | The text of the block |
 | `content[].media` | media[] | No | Attachments for the block |
