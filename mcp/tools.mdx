@@ -65,6 +65,26 @@ Connected accounts in a workspace: platform, username, primary flag, connection 
 
 Token freshness and rate-limit headroom for one `account_id`. The first tool to reach for when posts are failing: it tells you whether the connection has expired.
 
+### `list_reddit_subreddits`
+
+Subreddits a Reddit account is subscribed to, busiest first, with `canPost` and the account's default marked. Takes `account_id`.
+
+### `list_reddit_subreddit_rules`
+
+The rules a subreddit publishes, in its own order. Takes `account_id` and `subreddit`.
+
+### `list_reddit_flairs`
+
+Post flairs one subreddit offers. Takes `account_id` and `subreddit`. A flair id belongs to one subreddit only; pass it as `flair_id` in the post's Reddit settings.
+
+### `set_reddit_default_subreddit`
+
+Where posts from a Reddit account go when a post names no subreddit. Takes `account_id` and `subreddit`, or `null` to fall back to the account's own profile page.
+
+### `validate_subreddit`
+
+Whether a subreddit exists and takes a post from an account, before a post is created. Takes `account_id` and `name`.
+
 ### `list_workspaces`
 
 Every workspace the key can reach. No parameters. Usually the first call an assistant makes.
@@ -151,6 +171,10 @@ Change the text of a comment your account wrote, on the platform. Takes `id` and
 ### `like_inbox_item` / `unlike_inbox_item` / `pin_inbox_item` / `unpin_inbox_item`
 
 Like a comment or mention as the connected account (an upvote on Reddit, a favourite on Mastodon), or pin a comment your account wrote. Each takes `id` and needs `publish`.
+
+### `vote_inbox_item`
+
+Vote an item up or down as the connected account, on a network that ranks by votes (Reddit). Takes `id` and `direction` (`up`, `down`, or `none` to take an earlier vote back). Needs `publish`.
 
 ### `react_to_inbox_item`
 
