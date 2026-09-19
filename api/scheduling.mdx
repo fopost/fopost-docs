@@ -27,6 +27,48 @@ curl -X POST https://api.fopost.com/v1/posts \
 
 Move a scheduled post with `PUT /v1/posts/{id}`, sending a new `schedule_at`. Call `POST /v1/posts/{id}/cancel` to pull it out of the queue. To shift many posts at once, `POST /v1/posts/bulk` with the `shift` action moves each `schedule_at` by `offset_minutes`, negative to move earlier, and refuses an offset that would land in the past.
 
+## Add to the queue
+
+Instead of picking a time, let the post take the next free posting slot. Slots are recurring weekly times set per workspace under Settings → Posting Schedule, for one account or for every account, each in its own timezone.
+
+```bash
+curl -X POST https://api.fopost.com/v1/posts \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "accounts": ["3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10"],
+    "content": [{ "text": "Doors open Monday." }],
+    "schedule": "queue"
+  }'
+```
+
+`schedule: "queue"` replaces `status` and `schedule_at`. The response is an ordinary scheduled post: `status` is `scheduled`, `schedule_at` is the slot it took, and `schedule_mode` is `queue`. From there it is delivered exactly like a post you scheduled by hand. A workspace with no slot that applies to the post's accounts answers `400`.
+
+A slot is free per account, so two posts to the same account take the next two occurrences while a post to another account can share the first. `PUT /v1/posts/{id}` with `schedule: "queue"` puts an existing draft on the queue; sending a `schedule_at` instead takes it back off.
+
+### Manage slots
+
+```http
+GET    /v1/queue/slots?workspace_id={id}
+POST   /v1/queue/slots
+PUT    /v1/queue/slots/{id}
+DELETE /v1/queue/slots/{id}
+```
+
+A slot is `weekday` (`0` Sunday to `6` Saturday), `time` (`HH:MM`, 24-hour), `timezone` (an IANA zone name) and an optional `account_id`; omit it for a slot every account shares.
+
+Changing or removing a slot reflows the queue: every queued post whose time no longer matches a free occurrence moves to the next one, in queue order, and the response lists each move in `moved` with its `from` and `to` times. Hand-scheduled posts are never moved.
+
+### Look ahead
+
+```http
+GET /v1/queue/next?workspace_id={id}&account_id={id}
+GET /v1/queue/preview?workspace_id={id}&account_id={id}&count=5
+```
+
+`next` answers the one time a post added now would get, `null` when no slot applies. `preview` answers the next `count` free occurrences in order, up to 20, each one taken as it is handed out. Leave `account_id` off for the whole workspace's view.
+
 ## Repeat a post
 
 A post can republish on a cadence without you scheduling each occurrence:
