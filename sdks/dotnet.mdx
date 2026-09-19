@@ -127,6 +127,10 @@ composer for those until a later release.
 | `Workspaces` | `ListAsync`, `GetAsync` |
 | `Labels` | `ListAsync` |
 | `Ai` | `CreditsAsync`, `GenerateCaptionAsync`, `RewriteAsync`, `RepurposeUrlAsync` |
+| `Inbox` | `ListAsync`, `ThreadsAsync`, `ConversationsAsync`, `UnreadCountAsync`, `AccountsAsync`, `PlatformsAsync`, `MarkThreadReadAsync`, `RefreshAsync`, `UpdateAsync`, `ReplyAsync`, `HideAsync`, `UnhideAsync`, `DeleteAsync`, `ApprovalsAsync`, `ApproveReplyAsync`, `RejectReplyAsync` |
+| `Ads` | `ListAsync`, `ExternalAsync`, `BoostableAsync`, `ConnectionsAsync`, `SourcesAsync`, `AuthorizeMetaAsync`, `DeleteConnectionAsync`, `BoostAsync`, `CreateAsync`, `RefreshAsync`, `SetStatusAsync`, `DeleteAsync`, `AudiencesAsync`, `CreateAudienceAsync`, `SearchTargetingAsync`, `LeadFormsAsync`, `CreateLeadFormAsync`, `LeadsAsync` |
+
+`Ads.BoostAsync`, `CreateAsync`, `SetStatusAsync` and `DeleteAsync` spend money, so they need the `publish` scope as well as `ads`.
 
 The API has more endpoints than this client wraps: analytics, webhooks, automations, media, and communities among them. `RequestAsync` reaches any of them with the same auth, retries, and error handling:
 

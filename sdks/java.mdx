@@ -10,12 +10,12 @@ icon: tech-java
 <dependency>
   <groupId>com.fopost</groupId>
   <artifactId>fopost-java</artifactId>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
 </dependency>
 ```
 
 ```kotlin
-implementation("com.fopost:fopost-java:0.1.0")
+implementation("com.fopost:fopost-java:0.2.0")
 ```
 
 <Callout type="warn">
@@ -134,6 +134,10 @@ client.webhooks().test(hook.id());
 | `automations()` | `list`, `get`, `create`, `update`, `delete`, `toggle`, `runs`, `run`, `trigger`, `stats` |
 | `media()` | `list`, `upload`, `delete` |
 | `ai()` | `credits`, `generateCaption`, `rewrite`, `repurposeUrl` |
+| `inbox()` | `list`, `threads`, `conversations`, `unreadCount`, `accounts`, `platforms`, `markThreadRead`, `markConversationRead`, `refresh`, `update`, `reply`, `hide`, `unhide`, `delete`, `listApprovals`, `approveReply`, `rejectReply` |
+| `ads()` | `list`, `external`, `boostable`, `connections`, `sources`, `authorizeMeta`, `deleteConnection`, `boost`, `create`, `refresh`, `setStatus`, `delete`, `audiences`, `createAudience`, `searchTargeting`, `leadForms`, `createLeadForm`, `leads` |
+
+On `ads()`, `boost`, `create`, `setStatus` and `delete` spend money, so they need the `publish` scope as well as `ads`.
 
 `accounts().communities()` covers the X communities an account can post into: `list`, `sync`, `search`, `add`, `remove`.
 

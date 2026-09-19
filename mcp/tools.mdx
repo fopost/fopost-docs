@@ -4,7 +4,7 @@ description: Every tool the FoPost MCP server exposes, with parameters and cavea
 icon: list-unordered
 ---
 
-Fourteen tools, in three groups. Ids are UUIDs throughout, and every tool returns the API's JSON response as text. The server exposes tools only: no MCP resources or prompts.
+Forty-one tools, in five groups. Ids are UUIDs throughout, and every tool returns the API's JSON response as text. The server exposes tools only: no MCP resources or prompts.
 
 ## Posts
 
@@ -86,6 +86,159 @@ The current credit balance, usage this period, and reset date. Free: reading the
 endpoints that require a dashboard session, so they answer `401` with an API
 key. Everything else on this page works.
 </Callout>
+
+## Inbox
+
+Need the `inbox` scope. Item ids are UUIDs; approval ids are integers.
+
+### `list_inbox`
+
+Inbox items (comments, mentions, DMs) newest first.
+
+| Parameter | Required | Notes |
+|:----------|:---------|:------|
+| `workspace_id` | No | Restrict to one workspace |
+| `type` | No | `comment`, `mention`, or `dm` |
+| `platform`, `account_id` | No | Narrow to one network or one connected account |
+| `state` | No | `unread`, `read`, `resolved`, or `snoozed` |
+| `post_id` | No | Comments under one FoPost post |
+| `post_external_id` | No | Comments under one platform post, including posts not published through FoPost |
+| `conversation_id` | No | One DM thread |
+| `direction` | No | `inbound` or `outbound` |
+| `q` | No | Search text |
+| `sort` | No | `newest`, `oldest`, or `unanswered` |
+| `page`, `per_page` | No | `per_page` is 1–100 |
+
+### `list_inbox_threads`
+
+Comment threads under your posts (`kind` = `comments`, the default) or posts you were tagged in (`kind` = `mentions`). Takes the same `workspace_id`, `platform`, `account_id`, `state`, `q`, `sort`, `page`, and `per_page` filters as `list_inbox`.
+
+### `list_inbox_conversations`
+
+DM conversations across connected accounts. Same filters as `list_inbox_threads`, without `kind`.
+
+### `get_inbox_unread_count`
+
+Unread items, optionally for one `workspace_id`.
+
+### `mark_inbox_thread_read`
+
+Mark every item in a comment thread or DM conversation as read.
+
+| Parameter | Required | Notes |
+|:----------|:---------|:------|
+| `workspace_id` | Yes | |
+| `account_id` | Yes | |
+| `post_external_id` | No | The comment thread |
+| `conversation_id` | No | The DM conversation |
+
+### `reply_to_inbox_item`
+
+Reply to a comment, mention, or DM on the platform as the connected account. Takes `id` and `text`.
+
+### `update_inbox_item`
+
+Set an item's `state` (`unread`, `read`, `resolved`, or `snoozed`). Snoozing also needs `snoozed_until`, an ISO 8601 time in the future.
+
+### `hide_inbox_item` / `unhide_inbox_item` / `delete_inbox_item`
+
+Hide a comment on the platform, show it again, or delete it there. Each takes `id`. `delete_inbox_item` cannot be undone, so it is worth an approval step in your MCP client.
+
+### `list_inbox_approvals`
+
+Drafted replies waiting for a person to approve before they are sent, optionally for one `workspace_id`.
+
+### `approve_inbox_reply` / `reject_inbox_reply`
+
+Approve a drafted reply and send it, or reject it so it is never sent. Both take the approval `id`; `approve_inbox_reply` also accepts `text` to replace the draft before sending.
+
+### `refresh_inbox`
+
+Poll every inbox-capable account in a `workspace_id` now and report what is new.
+
+## Ads
+
+Need the `ads` scope. `boost_post`, `create_ad`, `set_ad_status`, and `delete_ad` spend money, so they need `publish` as well.
+
+### `list_ads`
+
+Boosts and ads created through FoPost, with insights from their last refresh. Optional `workspace_id`.
+
+### `list_external_ads`
+
+Ads on the connected ad accounts that were created elsewhere, read live. Optional `workspace_id`.
+
+### `list_boostable_posts`
+
+Published posts that can be boosted. Optional `workspace_id`.
+
+### `list_ad_sources`
+
+Ad connections with their ad accounts and pages: the ids `boost_post` and `create_ad` need. Optional `workspace_id`.
+
+### `boost_post`
+
+Boost a published post as an ad. It starts paused unless `paused` is `false`.
+
+| Parameter | Required | Notes |
+|:----------|:---------|:------|
+| `workspace_id` | Yes | |
+| `connection_id` | Yes | An ads connection in the workspace |
+| `ad_account_id` | Yes | `act_…` |
+| `post_id` | Yes | A published FoPost post |
+| `account_id` | Yes | The account the post was delivered to |
+| `name` | Yes | Up to 255 characters |
+| `goal` | Yes | `engagement`, `traffic`, `awareness`, or `video_views` |
+| `budget` | Yes | `minor` (ad account currency, minor units), `type` (`daily` or `lifetime`), optional `end_at` |
+| `targeting` | Yes | `countries`, `age_min`, `age_max`, `gender`; optional `audience_ids`, `locations`, `interests`, `behaviors`, `income` |
+| `paused` | No | Default `true` |
+
+### `create_ad`
+
+Create a standalone ad. Same `workspace_id`, `connection_id`, `ad_account_id`, `name`, `goal`, `budget`, `targeting`, and `paused` as `boost_post`, plus:
+
+| Parameter | Required | Notes |
+|:----------|:---------|:------|
+| `page_id` | Yes | The page the ad is published from |
+| `text` | Yes | Up to 125 characters |
+| `headline` | No | Up to 40 characters |
+| `destination_url` | No | |
+| `media_url` | No | A media library asset URL |
+
+### `set_ad_status`
+
+Pause or resume an ad: `id`, `workspace_id`, and `status` (`active` or `paused`).
+
+### `refresh_ad`
+
+Re-read an ad's delivery status and lifetime insights from the ad platform. Takes `id` and `workspace_id`.
+
+### `delete_ad`
+
+End delivery and delete the ad on the ad platform. Takes `id` and `workspace_id`. It cannot be undone.
+
+### `list_audiences`
+
+Saved audiences and pixels on one ad account, for targeting. Takes `connection_id` and `ad_account_id`, optional `workspace_id`.
+
+### `search_ad_targeting`
+
+Search targeting options by name for `boost_post` and `create_ad`.
+
+| Parameter | Required | Notes |
+|:----------|:---------|:------|
+| `connection_id` | Yes | |
+| `type` | Yes | `country`, `region`, `city`, `zip`, `metro`, `interest`, `behavior`, or `income` |
+| `q` | No | Up to 100 characters |
+| `workspace_id` | No | |
+
+### `list_lead_forms`
+
+Lead forms on the connected pages. Optional `workspace_id`.
+
+### `list_leads`
+
+One page of leads from a form: `form_id`, `connection_id`, `page_id`, optional `workspace_id` and `after`. Pass the response's `next_cursor` back as `after` for the next page.
 
 ## Errors
 

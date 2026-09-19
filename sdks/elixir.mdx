@@ -8,7 +8,7 @@ icon: tech-elixir
 
 ```elixir
 def deps do
-  [{:fopost, "~> 0.1"}]
+  [{:fopost, "~> 0.2"}]
 end
 ```
 
@@ -187,6 +187,10 @@ A file is a path, a `{filename, content}` tuple, or a map of `:filename`, `:cont
 | `FoPost.Analytics` | `overview/2`, `time_series/2`, `top_posts/2`, `labels/2`, `posts_table/2`, `demographics/2`, `posting_streak/2`, `collect/2` |
 | `FoPost.Automations` | `list/1`, `get/2`, `create/2`, `update/3`, `delete/2`, `toggle/2`, `runs/3`, `run/3`, `trigger/3`, `stats/1` |
 | `FoPost.Media` | `list/2`, `upload/2`, `delete/2` |
+| `FoPost.Inbox` | `list/2`, `threads/2`, `conversations/2`, `unread_count/2`, `accounts/2`, `platforms/1`, `mark_thread_read/2`, `refresh/2`, `update/3`, `reply/3`, `hide/2`, `unhide/2`, `delete/2`, `approvals/2`, `approve_reply/3`, `reject_reply/2` |
+| `FoPost.Ads` | `list/2`, `external/2`, `boostable/2`, `connections/2`, `sources/2`, `authorize_meta/2`, `delete_connection/3`, `boost/2`, `create/2`, `refresh/3`, `set_status/3`, `delete/3`, `audiences/2`, `create_audience/2`, `search_targeting/2`, `lead_forms/2`, `create_lead_form/2`, `leads/3` |
+
+`FoPost.Ads.boost/2`, `create/2`, `set_status/3` and `delete/3` spend money, so they need the `publish` scope as well as `ads`.
 
 Each of these has a bang twin that returns the result or raises the same error. `stream/2` is the exception: it has none, because it already raises on a failed page. Responses come back as structs with snake_case fields, each keeping the decoded body on `:raw`, so a field added server side stays reachable from an older client.
 

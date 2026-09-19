@@ -84,6 +84,10 @@ Times are UTC.
 | `$client->workspaces()` | `list`, `get` |
 | `$client->labels()` | `list`, `create`, `update`, `delete` |
 | `$client->ai()` | `credits`, `generateCaption`, `rewrite`, `repurposeUrl` |
+| `$client->inbox()` | `list`, `threads`, `conversations`, `unreadCount`, `accounts`, `platforms`, `markThreadRead`, `refresh`, `update`, `reply`, `hide`, `unhide`, `delete`, `listApprovals`, `approveReply`, `rejectReply` |
+| `$client->ads()` | `list`, `external`, `boostable`, `connections`, `sources`, `authorizeMeta`, `deleteConnection`, `boost`, `create`, `refresh`, `setStatus`, `delete`, `audiences`, `createAudience`, `searchTargeting`, `leadForms`, `createLeadForm`, `leads` |
+
+On `ads()`, `boost`, `create`, `setStatus` and `delete` spend money, so they need the `publish` scope as well as `ads`.
 
 `iterate()` walks every page for you, so you do not hand-roll a pagination loop to sweep a workspace. Anything the client does not wrap yet is still reachable:
 
