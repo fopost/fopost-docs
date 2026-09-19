@@ -1,14 +1,31 @@
 ---
 icon: social-reddit
 title: Reddit
-description: Text, link, image, and gallery posts to a subreddit, with the inbox reading replies.
+description: Text, link, image, and gallery posts to any subreddit you are in, with rules and flairs in the composer.
 ---
 
-A Reddit connection posts to one subreddit, chosen when you connect. Posting to several subreddits means connecting the account once per subreddit; each connection is targeted separately in the composer.
+A Reddit connection can post to any subreddit the account is subscribed to. Each post picks its own destination in the composer, and the account carries a default for the posts that do not.
 
 ## Connecting
 
-**Accounts → Connect → Reddit**, approve on Reddit, pick the subreddit for this connection. The grant is permanent until revoked and tokens refresh automatically.
+**Accounts → Connect → Reddit**, then approve on Reddit. The grant is permanent until revoked and tokens refresh automatically.
+
+The grant covers reading your subreddit list, a subreddit's rules and flairs, and voting from the inbox. An account connected before those permissions were asked for shows a **Reconnect** badge on its card in **Accounts**; reconnecting grants them and nothing else changes.
+
+## Choosing a subreddit
+
+The composer's Reddit panel lists the subreddits the account is in, busiest first, and marks the ones it can read but not submit to. Picking one sets the destination for that post only.
+
+Without a pick, the post goes to the account's **default subreddit**. Set it with `PUT /v1/accounts/{id}/reddit/default-subreddit`; with no default, posts go to the account's own profile page, which always accepts one.
+
+## Rules and flairs
+
+Choosing a subreddit loads two things from Reddit:
+
+- **Its rules**, listed under the picker so you can read them before publishing.
+- **Its post flairs.** A flair belongs to one subreddit, so switching subreddits clears the flair. Where the subreddit allows it, the flair label can be replaced with your own text.
+
+A flair id that the chosen subreddit does not offer fails [preflight](/guide/publishing) rather than being dropped silently by Reddit at publish time.
 
 ## What you can publish
 
@@ -21,7 +38,7 @@ A Reddit connection posts to one subreddit, chosen when you connect. Posting to 
 
 Four shapes, picked automatically: a **text post**, a **link post** (when the post has a link and no media), a **single image**, or a **gallery** of up to 20 images with per-image captions from alt text.
 
-Per post you can set a **flair**, and mark the post **NSFW** or **spoiler**. Blocks written as a thread in the composer publish as comments under the post.
+Per post you can set the subreddit and a **flair**, and mark the post **NSFW** or **spoiler**. Blocks written as a thread in the composer publish as comments under the post.
 
 ## Analytics
 
@@ -30,6 +47,8 @@ Per post: upvotes and comments. Recent submissions are included in [analytics](/
 ## Inbox
 
 Comments on your recent posts (the last 30 days) land in the [inbox](/guide/inbox), and you can reply from there.
+
+You can also **vote** on an item: up, down, or take the vote back. An upvote is the same action as a like, so the two stay in step. The agent can propose a vote, and like everything that reaches a network, it waits for your approval.
 
 ## Deleting
 
