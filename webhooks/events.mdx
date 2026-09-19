@@ -81,7 +81,7 @@ One event per new inbound item, as the inbox poll picks it up. Your own replies 
 { "itemId": "…", "type": "comment", "platform": "instagram", "accountId": "…", "receivedAt": "2026-09-01T09:00:12.000Z" }
 ```
 
-The payload is ids only. Fetch the item from the [inbox](/guide/inbox) for its text and author, so nothing a customer wrote sits in your webhook logs.
+The payload is ids only. Fetch the item from the [inbox](/guide/inbox) for its text and author, so nothing a customer wrote sits in your webhook logs. Building a bot on `inbox.message_received`? The [chat adapter](/sdks/chat-adapter) does the verify-and-fetch half for you.
 
 ## Automations
 
