@@ -28,8 +28,6 @@ There is nothing to install. Reference the action by tag from any workflow:
 
 `@v0` is a floating major tag moved to each release, so it always points at the newest release on that major. Pin a commit SHA instead for the strictest supply-chain posture.
 
-The action is not listed in the GitHub Marketplace yet: that listing is a one-time manual step on a release and is still pending. Referencing the repository by tag works today either way; a Marketplace listing only changes how people discover it.
-
 ## Getting an API key
 
 Create one at **Settings → API Keys** in the dashboard. It needs the `posts` scope, plus `media` if you attach local files. Store it as a repository secret named `FOPOST_API_KEY` and reference it as `${{ secrets.FOPOST_API_KEY }}`. Never paste the key into the workflow file, and never into a `run:` step.
