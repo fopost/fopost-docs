@@ -17,7 +17,67 @@ curl https://api.fopost.com/v1/accounts \
   -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
-Each account carries its `id`, `platform`, `username`, display `name`, `avatar`, and whether it is `active`. A workspace-bound key sees only that workspace's accounts.
+Each account carries its `id`, `platform`, `username`, display `name`, `avatar`, and whether it is `active`. `name` is the name you gave the account when it has been renamed, and `platformName` is always the network's own. Pass `group_id` to list only the accounts in one [account group](#account-groups). A workspace-bound key sees only that workspace's accounts.
+
+## Rename an account
+
+```http
+PATCH /v1/accounts/{id}
+```
+
+```bash
+curl -X PATCH https://api.fopost.com/v1/accounts/{id} \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "display_name": "Brand UK" }'
+```
+
+The new name shows everywhere the account is listed. It is yours, so a profile refresh from the network never overwrites it. Send `null` or an empty string to go back to the network's name.
+
+## Move to another workspace
+
+```http
+POST /v1/accounts/{id}/move
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/accounts/{id}/move \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90" }'
+```
+
+The account moves with its connection, so nothing has to be reauthorized, and its inbox and analytics history move with it in the same step. You must own both workspaces; any other target answers `404`.
+
+A move is all or nothing. When the account still has records that belong to its current workspace, such as posts, recycling queues, ads, or monitoring rules, the move is refused with `409 move_blocked` and a `blocking_tables` list naming them. A target that already has an account on the same network also answers `409`. The account leaves its account groups, since those belong to the old workspace.
+
+## Account groups
+
+A group is a named set of accounts in one workspace, such as "EU brands" or "Founders". Target a whole group when posting instead of listing every account.
+
+```http
+GET    /v1/account-groups
+POST   /v1/account-groups
+GET    /v1/account-groups/{id}
+PATCH  /v1/account-groups/{id}
+DELETE /v1/account-groups/{id}
+PUT    /v1/account-groups/{id}/members
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/account-groups \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "name": "EU brands",
+    "account_ids": ["3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10"]
+  }'
+```
+
+Each group carries its `id`, `name` and `account_ids`. `PUT …/members` replaces the member list with the `account_ids` you send. `PATCH` renames the group, and `DELETE` removes the group while its accounts stay connected. Every account must belong to the group's workspace.
+
+To post to a group, pass `account_group_id` on [create post](/api/publishing). Each account publishes once, even when it is also listed in `accounts`.
 
 ## Connecting an account
 
