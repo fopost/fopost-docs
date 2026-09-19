@@ -169,6 +169,25 @@ DELETE /v1/accounts/{accountId}/communities/{communityId}
 
 `sync` pulls the communities the account belongs to, `search` looks one up, and `manual` adds one by id when you already know it.
 
+## Slack channels, members and identity
+
+A Slack account connected through the app (not a webhook) has three extra resources:
+
+```http
+GET   /v1/accounts/{id}/slack/channels
+GET   /v1/accounts/{id}/slack/members
+GET   /v1/accounts/{id}/slack/identity
+PATCH /v1/accounts/{id}/slack/identity
+```
+
+`channels` lists the channels the app can post to, with `is_current` on the one this account uses. `members` lists the people in the Slack workspace; a member's `id` is the handle for starting a DM. `identity` is the name and icon posts appear under:
+
+```json
+{ "username": "Release Bot", "icon_url": "https://yourbrand.com/bot.png" }
+```
+
+Omitted fields keep their value and `null` clears one. Set `icon_url` or `icon_emoji` (like `:rocket:`), not both. A webhook connection answers `409 webhook_connection`. All four need the `accounts` scope.
+
 ## Next
 
 <Cards>
