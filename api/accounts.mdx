@@ -17,7 +17,7 @@ curl https://api.fopost.com/v1/accounts \
   -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
-Each account carries its `id`, `platform`, `username`, display `name`, `avatar`, and whether it is `active`. `name` is the name you gave the account when it has been renamed, and `platformName` is always the network's own. Pass `group_id` to list only the accounts in one [account group](#account-groups). A workspace-bound key sees only that workspace's accounts.
+Each account carries its `id`, `platform`, `username`, display `name`, `avatar`, and whether it is `active`. `name` is the name you gave the account when it has been renamed, and `platformName` is always the network's own. Pass `group_id` to list only the accounts in one [account group](#account-groups). A workspace-bound key sees only that workspace's accounts. `reconnectRequired` is true when the account was connected before FoPost asked for a permission it now needs; reconnecting it is the fix.
 
 ## Rename an account
 
@@ -187,6 +187,36 @@ PATCH /v1/accounts/{id}/slack/identity
 ```
 
 Omitted fields keep their value and `null` clears one. Set `icon_url` or `icon_emoji` (like `:rocket:`), not both. A webhook connection answers `409 webhook_connection`. All four need the `accounts` scope.
+
+## Reddit subreddits, rules and flairs
+
+A Reddit account carries four extra resources:
+
+```http
+GET /v1/accounts/{id}/reddit/subreddits
+GET /v1/accounts/{id}/reddit/subreddits/{name}/rules
+GET /v1/accounts/{id}/reddit/flairs?subreddit={name}
+PUT /v1/accounts/{id}/reddit/default-subreddit
+```
+
+`subreddits` lists the ones the account is subscribed to, busiest first, with `canPost` false where it may read but not submit and `isDefault` on the account's default. `rules` returns what the subreddit publishes, in its own order. `flairs` returns the post flairs one subreddit offers:
+
+```json
+{ "subreddit": "webdev", "flairs": [{ "id": "8d0c…", "text": "Showoff Saturday", "editable": false }] }
+```
+
+A flair id belongs to one subreddit only. Pass it as `flair_id` in the post's Reddit [platform settings](/api/publishing), with `flair_text` where `editable` is true; an id the chosen subreddit does not offer fails preflight.
+
+`default-subreddit` sets where posts from this account go when the platform settings name none. Send `{"subreddit": "webdev"}`, or `null` to fall back to the account's own profile page:
+
+```bash
+curl -X PUT https://api.fopost.com/v1/accounts/$ACCOUNT_ID/reddit/default-subreddit \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"subreddit": "webdev"}'
+```
+
+An account with no usable token, or one whose grant is missing a permission these reads need, answers `409 reconnect_required`. All four need the `accounts` scope.
 
 ## Next
 

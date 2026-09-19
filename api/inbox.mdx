@@ -4,7 +4,7 @@ description: Comments, mentions and direct messages across every connected accou
 icon: inbox
 ---
 
-The inbox collects what people say to your accounts: comments under your posts, mentions of your accounts elsewhere, and direct messages. Every item is stored once, tagged with the account it arrived on, and can be answered, liked, resolved, snoozed, hidden or deleted from the API. These endpoints need the `inbox` scope. Anything that acts on a platform beyond a plain reply (a like, a pin, an edit, a reaction, a new conversation, an attachment) also needs the `publish` scope.
+The inbox collects what people say to your accounts: comments under your posts, mentions of your accounts elsewhere, and direct messages. Every item is stored once, tagged with the account it arrived on, and can be answered, liked, voted on, resolved, snoozed, hidden or deleted from the API. These endpoints need the `inbox` scope. Anything that acts on a platform beyond a plain reply (a like, a vote, a pin, an edit, a reaction, a new conversation, an attachment) also needs the `publish` scope.
 
 ## List items
 
@@ -51,6 +51,7 @@ An item looks like this:
   "canHide": true,
   "canDelete": true,
   "canLike": true,
+  "canVote": false,
   "canPin": false,
   "canEdit": false,
   "canReact": false,
@@ -58,6 +59,7 @@ An item looks like this:
   "canQuickReply": false,
   "canPrivateReply": true,
   "liked": false,
+  "vote": null,
   "pinned": false,
   "reaction": null,
   "editedAt": null,
@@ -157,16 +159,32 @@ DELETE /v1/inbox/{id}
 
 Hide and delete act on the platform, not just in FoPost. They are available where the item's `canHide` or `canDelete` is true. A hidden item stays in the inbox with `hidden: true`. Delete also removes a reply your account wrote; deleting your own reply needs the `publish` scope.
 
-## Like and pin
+## Like, vote and pin
 
 ```http
 POST /v1/inbox/{id}/like
 POST /v1/inbox/{id}/unlike
+POST /v1/inbox/{id}/vote
 POST /v1/inbox/{id}/pin
 POST /v1/inbox/{id}/unpin
 ```
 
-Like acts as the connected account: a like on most networks, an upvote on Reddit, a favourite on Mastodon. It is available where `canLike` is true, and the item then reports `liked: true`. Pin works on a comment your account wrote, where `canPin` is true. All four need the `publish` scope.
+Like acts as the connected account: a like on most networks, an upvote on Reddit, a favourite on Mastodon. It is available where `canLike` is true, and the item then reports `liked: true`. Pin works on a comment your account wrote, where `canPin` is true. All five need the `publish` scope.
+
+Vote is for networks that rank by votes, which today means Reddit. It is available where `canVote` is true.
+
+| Field | Description |
+|:------|:------------|
+| `direction` | `up`, `down`, or `none` to take an earlier vote back |
+
+```bash
+curl -X POST https://api.fopost.com/v1/inbox/$ITEM_ID/vote \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"direction": "down"}'
+```
+
+The item reports the result as `vote`. An upvote is the same call a like makes, so `liked` moves with it.
 
 ## Direct messages
 

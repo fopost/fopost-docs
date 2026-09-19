@@ -6,11 +6,12 @@ icon: check-circle
 
 Preflight checks a saved post. The validation endpoints run the same checks on content you have not saved yet, so a form can tell a user what will fail before anything is created. Nothing is stored, and every endpoint needs the `posts` scope.
 
-The three endpoints answer three different questions:
+The four endpoints answer four different questions:
 
 - `/validate/post` runs the full preflight on a body, its media and a list of platforms
 - `/validate/length` counts text the way each platform counts it and compares it with the limit
 - `/validate/media` fetches a file by URL and runs the upload checks on it
+- `/validate/subreddit` asks Reddit whether a subreddit exists and takes a post from an account
 
 ## Validate a post
 
@@ -149,6 +150,39 @@ The file is fetched and put through the same checks as an upload: the type has t
 
 A file that fails a check still answers `200`, with `ok: false` and the reason in `issues`. A URL that cannot be fetched at all is an error: `400` for a link that is not public, including one that points at a private address, `404` when the link answers not found, and `401` when it needs credentials.
 
+## Check a subreddit
+
+```http
+GET /v1/validate/subreddit?account_id={id}&name={subreddit}
+```
+
+```bash
+curl "https://api.fopost.com/v1/validate/subreddit?account_id=$ACCOUNT_ID&name=webdev" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `account_id` | string | Yes | A connected Reddit account, whose token the check runs with |
+| `name` | string | Yes | Subreddit name, without the `r/` prefix |
+
+```json
+{
+  "data": {
+    "subreddit": "webdev",
+    "exists": true,
+    "can_post": true,
+    "over_18": false,
+    "flair_enabled": true,
+    "ok": true
+  }
+}
+```
+
+`ok` is true when the subreddit exists and takes a post from this account. A private, banned or missing subreddit answers `200` with `exists: false`, not an error. An account with no usable token, or whose grant is missing a permission this read needs, answers `409 reconnect_required`.
+
+Unlike the other checks here, this one reads the account, so it needs the account to be in a workspace the key can see. Nothing is stored.
+
 ## Errors
 
 | Status | Code | Meaning |
@@ -156,3 +190,5 @@ A file that fails a check still answers `200`, with `ok: false` and the reason i
 | `400` | `validation_error` | A field is missing, or a platform slug is unknown |
 | `400` | `unsupported` | The media URL is not fetchable from here |
 | `403` | `forbidden` | The API key lacks the `posts` scope |
+| `404` | `not_found` | The Reddit account is unknown, or not one this key can see |
+| `409` | `reconnect_required` | The Reddit account has to be reconnected |
