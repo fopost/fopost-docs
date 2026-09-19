@@ -1,14 +1,25 @@
 ---
 icon: social-telegram
 title: Telegram
-description: Bot posting to channels and groups, with formatting and albums.
+description: Bot posting to channels, groups and private chats, with an inbox and a command menu.
 ---
 
-Telegram publishing works through a bot you own, posting into a channel or group where that bot is an admin.
+Telegram works through our bot: it posts into the chat you connect, and messages sent to it in that chat land in your inbox.
 
 ## Connecting
 
-Create a bot with [@BotFather](https://t.me/BotFather), make it an admin of your channel or group, then enter the bot token and the chat (`@channelname` or a numeric ID) in **Accounts → Connect → Telegram**.
+Connect with a one-time code, so there is no chat ID to look up.
+
+1. Open **Connections → Telegram** and choose **Connect with Code**.
+2. Send the command shown, `/connect <code>`, in the chat you want to connect:
+   - **Private chat:** tap **Open Private Chat**, which opens the bot with the code filled in.
+   - **Group:** tap **Add to Group**, pick the group, and the code goes with it. Only a group admin can connect a group. Make the bot an admin if it should post.
+   - **Channel:** add the bot as an admin with permission to post, then post the command in the channel. The bot removes the command message once it has read it.
+3. The dialog closes once the chat is connected. The code works once and expires after 15 minutes.
+
+A public channel can still be connected by its `@username` from the same dialog.
+
+Over the API, `POST /v1/accounts/telegram/connect-code` returns the code and both links, and `GET /v1/accounts/telegram/connect-code/status?code=<code>` reports `pending`, `connected` (with the account ID), `failed` (with a reason) or `expired`.
 
 ## What you can publish
 
@@ -23,6 +34,20 @@ Create a bot with [@BotFather](https://t.me/BotFather), make it an admin of your
 Posts render with formatting: a bold title, the body, a **Read more** link when the post has one, and hashtags. One photo or video sends as a single captioned message; several send as an album with the caption on the first item.
 
 Per post you can send **silently** (no notification sound) and **protect content** (no forwarding or saving), the same options Telegram offers.
+
+## Inbox
+
+Messages sent to the bot in a connected private chat or group appear in **Inbox → Messages**, and your reply is sent back into the chat as a reply to that message. Replies carry text only.
+
+In groups, Telegram only passes the bot commands, replies to its own messages and messages that mention it, unless the group makes the bot an admin. Channels have no inbox.
+
+Photos, files and voice notes show as a message without their content, since the bot cannot share those files outside Telegram.
+
+## Bot commands
+
+The account drawer in **Connections** has a **Bot Commands** editor for private chats and groups: the menu Telegram shows when someone types `/` in that chat. Up to 100 commands, each 1 to 32 lowercase letters, digits or underscores, with a description of up to 256 characters. The menu applies to the connected chat only, and needs a chat connected with a code.
+
+Over the API: `GET`, `PUT` and `DELETE /v1/accounts/{id}/telegram/commands`.
 
 ## Analytics
 
