@@ -84,7 +84,7 @@ Times are UTC.
 | `$client->workspaces()` | `list`, `get` |
 | `$client->labels()` | `list`, `create`, `update`, `delete` |
 | `$client->ai()` | `credits`, `generateCaption`, `rewrite`, `repurposeUrl` |
-| `$client->inbox()` | `list`, `threads`, `conversations`, `unreadCount`, `accounts`, `platforms`, `markThreadRead`, `refresh`, `update`, `reply`, `hide`, `unhide`, `delete`, `listApprovals`, `approveReply`, `rejectReply` |
+| `$client->inbox()` | `list`, `threads`, `conversations`, `unreadCount`, `accounts`, `platforms`, `markThreadRead`, `refresh`, `update`, `reply`, `hide`, `unhide`, `delete`, `like`, `unlike`, `pin`, `unpin`, `react`, `editComment`, `startConversation`, `setTyping`, `listApprovals`, `approveReply`, `rejectReply` |
 | `$client->ads()` | `list`, `external`, `boostable`, `connections`, `sources`, `authorizeMeta`, `deleteConnection`, `boost`, `create`, `refresh`, `setStatus`, `delete`, `audiences`, `createAudience`, `searchTargeting`, `leadForms`, `createLeadForm`, `leads` |
 
 On `ads()`, `boost`, `create`, `setStatus` and `delete` spend money, so they need the `publish` scope as well as `ads`.
