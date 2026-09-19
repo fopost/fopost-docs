@@ -43,6 +43,29 @@ Label endpoints need the `labels` scope.
 
 Attach labels with the `labels` array when creating a post, or apply them to many posts at once with the `label` action on `POST /v1/posts/bulk`.
 
+## Activity
+
+`GET /v1/activity` lists what happened in your workspaces, newest first. It needs the `analytics` scope. Events are kept for 90 days.
+
+| Kind | Recorded when |
+|:-----|:--------------|
+| `publish` | A post finishes publishing: published, failed, or partially failed |
+| `connection` | An account is connected, disconnected, or changes health |
+| `webhook` | A webhook delivery succeeds, or fails with no retries left |
+| `inbox` | A reply is sent from the inbox |
+| `automation` | An automation run completes or fails |
+| `billing` | A usage invoice is issued, covered by credit, or fails to charge |
+
+| Parameter | What it does |
+|:----------|:-------------|
+| `workspace_id` | One workspace. Omit it to read every workspace you belong to |
+| `kind` | One of the kinds above |
+| `from`, `to` | ISO 8601 time window |
+| `cursor` | `meta.next_cursor` from the previous page |
+| `limit` | 1 to 100, default 50 |
+
+Each event carries a `summary` and an `actor`: the `type` (`user`, `api_key`, `agent`, or `system`) and a `name` where there is one. `GET /v1/logs` is separate: it lists raw API requests, not workspace events.
+
 ## Next
 
 <Cards>
