@@ -121,7 +121,7 @@ One record per account, newest first:
 }
 ```
 
-`publish_status` is one of `pending`, `queued`, `delayed`, `publishing`, `published`, `failed`, `cancelled`. The post's own `status` summarises them: `published` when every delivery landed, `partially_failed` when some did.
+`publish_status` is one of `pending`, `queued`, `delayed`, `publishing`, `published`, `failed`, `cancelled`, `unpublished`. The post's own `status` summarises them: `published` when every delivery landed, `partially_failed` when some did.
 
 ## Retry a failure
 
@@ -140,6 +140,41 @@ POST /v1/posts/{id}/cancel
 ```
 
 Cancels a scheduled post and its queued deliveries. Anything already published stays published.
+
+## Edit after publishing
+
+```http
+PUT /v1/posts/{id}
+```
+
+A post that has gone out can still be edited. Send a content change only, `content`, `title`, `settings`, `labels`, `internal_title` or `summary`, and the new text is pushed to every network the post is live on. The accounts and the schedule stay as they are; sending `accounts`, `status` or `schedule_at` on a published post answers `409`.
+
+Every network the post is live on has to support editing in place. Each post account carries `remote_edit`, and when one of them is `false` the whole update answers `409` with `unsupported_platforms` and changes nothing, so a caption never drifts between networks. X is the usual reason: its API deletes and reposts, it does not edit.
+
+The response is the post with a `remote_edits` array, one entry per network with `edited` and, when a network refused, its `error`. The pass is also written to the publish log as its own run. Reaching a network needs the `publish` scope as well as `posts`.
+
+## Unpublish
+
+```http
+POST /v1/posts/{id}/unpublish
+```
+
+Takes the post down on every network it is live on. The post stays in FoPost as a record: each delivery is marked `unpublished`, the pass is written to the publish log, and the post status becomes `unpublished` once nothing is live any more. Requires the `publish` scope.
+
+Every network has to support deleting a live post (`remote_delete` on each post account). When one does not, the request answers `409` with `unsupported_platforms` and removes nothing. A network that refuses at the time comes back with `removed: false` and keeps its delivery published.
+
+```json
+{
+  "data": {
+    "post_status": "unpublished",
+    "deliveries": [
+      { "account_id": "…", "platform": "linkedin", "removed": true }
+    ]
+  }
+}
+```
+
+To remove the post from FoPost as well, use `DELETE /v1/posts/{id}?remove_from_platform=1` instead.
 
 ## Duplicate
 
