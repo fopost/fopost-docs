@@ -43,6 +43,7 @@ curl -X POST https://api.fopost.com/v1/posts \
 | `artifact_type` | enum | No | `text_post`, `thread`, `article`, `carousel`, `short_video`, `link_share` |
 | `status` | enum | No | `draft` or `scheduled`. Default `draft` |
 | `schedule_at` | datetime | No | When to publish. Required when `status` is `scheduled` |
+| `schedule` | enum | No | `queue` takes the next free [posting slot](/api/scheduling#add-to-the-queue) instead of a `schedule_at` |
 | `labels` | uuid[] | No | Labels to attach |
 | `title` | string | No | Title, for platforms that take one |
 | `summary` | string | No | Summary, for platforms that take one |
