@@ -128,6 +128,40 @@ Only `credits` and `generate_caption` work with an API key today. `rewrite` and
 `401`. Use the composer for those until a later release.
 </Callout>
 
+## Inbox
+
+Comments, mentions, and DMs on connected accounts, through `client.inbox`: `list`, `threads`, `conversations`, `unread_count`, `accounts`, `platforms`, `mark_thread_read`, `refresh`, `update`, `reply`, `hide`, `unhide`, `delete`, `approvals`, `approve_reply`, and `reject_reply`. Needs the `inbox` scope.
+
+```ruby
+page = client.inbox.list(workspace_id: workspace.id, state: 'unread', sort: 'unanswered')
+item = page.first
+
+client.inbox.reply(item.id, text: 'Thanks, glad it helped!')
+client.inbox.update(item.id, state: 'resolved')
+```
+
+## Ads
+
+Boosts, standalone ads, audiences, and lead forms, through `client.ads`: `list`, `external`, `boostable`, `connections`, `sources`, `authorize_meta`, `delete_connection`, `boost`, `create`, `refresh`, `set_status`, `delete`, `audiences`, `create_audience`, `search_targeting`, `lead_forms`, `create_lead_form`, and `leads`. Needs the `ads` scope.
+
+```ruby
+source = client.ads.sources(workspace_id: workspace.id).first
+
+ad = client.ads.boost(
+  workspace_id: workspace.id,
+  connection_id: source.connection_id,
+  ad_account_id: source.ad_accounts.first['id'],
+  post_id: post.id,
+  account_id: accounts.first.id,
+  name: 'Launch boost',
+  goal: 'engagement',
+  budget: { minor: 5000, type: 'daily' },
+  targeting: { countries: ['US'] }
+)
+```
+
+`boost`, `create`, `set_status`, and `delete` spend money, so they need the `publish` scope as well as `ads`.
+
 ## Configuration
 
 ```ruby
