@@ -1,0 +1,78 @@
+---
+title: Webhooks
+description: Manage webhook endpoints, read the delivery log, and redeliver an event.
+icon: webhook
+---
+
+A webhook is an HTTPS endpoint FoPost `POST`s signed events to. Subscribing, the event list, and signature verification are covered in the [webhooks guide](/webhooks); this page is the endpoint reference, including the delivery log. Everything here needs the `webhooks` scope.
+
+## Endpoints
+
+| Method | Path | What it does |
+|:-------|:-----|:-------------|
+| `GET` | `/v1/webhooks` | List the webhooks in your workspaces |
+| `POST` | `/v1/webhooks` | Register an endpoint. The signing `secret` is returned once |
+| `PUT` | `/v1/webhooks/{id}` | Change the URL, events, headers, or secret; enable or disable |
+| `DELETE` | `/v1/webhooks/{id}` | Remove it. Deliveries stop immediately |
+| `POST` | `/v1/webhooks/{id}/test` | Send a test `post.published` payload to this endpoint only |
+| `GET` | `/v1/webhooks/{id}/deliveries` | The delivery log, newest first |
+| `GET` | `/v1/webhooks/{id}/deliveries/{deliveryId}` | One attempt, with the payload that was sent |
+| `POST` | `/v1/webhooks/{id}/deliveries/{deliveryId}/redeliver` | Send that delivery again |
+
+## The delivery log
+
+```http
+GET /v1/webhooks/{id}/deliveries
+```
+
+```bash
+curl "https://api.fopost.com/v1/webhooks/$WEBHOOK_ID/deliveries?status=failed" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+Every attempt to reach the endpoint is logged, whatever the outcome: the first send, each automatic retry, and each redelivery. Attempts are kept for **30 days**.
+
+| Field | What it holds |
+|:------|:--------------|
+| `event` | The event name, for example `post.published` |
+| `deliveryKey` | The `X-FoPost-Delivery` header value. Every attempt of one event shares it |
+| `attempt` | `1` for the first send; retries and redeliveries count up |
+| `status` | `success` for a `2xx`, `failed` for anything else, a timeout included |
+| `responseStatus` | The HTTP status your endpoint answered, or `null` when no response arrived |
+| `responseSnippet` | Up to 500 characters of the response body, with anything credential-shaped redacted |
+| `durationMs` | How long the request took |
+| `nextRetryAt` | When the next automatic retry is due, or `null` |
+| `payloadHash` | SHA-256 of the body that was sent, for matching against what you received |
+
+`status=success` or `status=failed` filters the list; `limit` caps it at up to 200 (default 50).
+
+```http
+GET /v1/webhooks/{id}/deliveries/{deliveryId}
+```
+
+The single read adds `payload`: the body exactly as it was sent, so you can replay it against a local handler.
+
+## Redeliver
+
+```http
+POST /v1/webhooks/{id}/deliveries/{deliveryId}/redeliver
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/webhooks/$WEBHOOK_ID/deliveries/$DELIVERY_ID/redeliver \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+The delivery is sent again with the **identical body**, so `X-FoPost-Signature` (the signature over the body) and `X-FoPost-Delivery` match the original attempt. `X-FoPost-Timestamp` and `X-FoPost-Signature-256` are fresh, because they are what protects you from replays; a handler that verifies the timestamped signature accepts a redelivery the same way it accepts a retry.
+
+A redelivery is one attempt, logged as the next `attempt` of that delivery, and is not retried automatically. It answers `409` when the webhook is paused: enable it first. Deduplicate on `X-FoPost-Delivery` if your handler is not already idempotent.
+
+In the dashboard, the same log and the redeliver action sit on each webhook under **Webhooks**. The agent can read it too: ask "did my webhook get the post.published event", or ask it to send a delivery again, which it proposes for your approval.
+
+## Next
+
+<Cards>
+  <Card title="Webhooks Guide" href="/webhooks" />
+  <Card title="Verifying Signatures" href="/webhooks/verification" />
+  <Card title="Retries and Failures" href="/webhooks/retries" />
+</Cards>
