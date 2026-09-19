@@ -134,7 +134,7 @@ client.posts().create(&CreatePost::new(workspace_id, [block])).await?;
 | `automations()` | `list`, `get`, `create`, `update`, `delete`, `toggle`, `runs`, `get_run`, `stats`, `trigger` |
 | `analytics()` | `overview`, `time_series`, `top_posts`, `labels`, `posts_table`, `posting_streak`, `demographics`, `collect` |
 | `media()` | `list`, `upload`, `delete` |
-| `inbox()` | `list`, `threads`, `conversations`, `unread_count`, `accounts`, `platforms`, `mark_thread_read`, `refresh`, `update`, `reply`, `hide`, `unhide`, `delete`, `approvals`, `approve_reply`, `reject_reply` |
+| `inbox()` | `list`, `threads`, `conversations`, `unread_count`, `accounts`, `platforms`, `mark_thread_read`, `refresh`, `update`, `reply`, `hide`, `unhide`, `delete`, `like`, `unlike`, `pin`, `unpin`, `react`, `edit_comment`, `reply_with`, `start_conversation`, `set_typing`, `approvals`, `approve_reply`, `reject_reply` |
 | `ads()` | `list`, `external`, `boostable`, `connections`, `sources`, `authorize_meta`, `delete_connection`, `boost`, `create`, `refresh`, `set_status`, `delete`, `audiences`, `create_audience`, `search_targeting`, `lead_forms`, `create_lead_form`, `leads` |
 
 On `ads()`, `boost`, `create`, `set_status` and `delete` spend money, so they need the `publish` scope as well as `ads`.

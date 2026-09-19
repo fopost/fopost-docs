@@ -134,7 +134,7 @@ Mark every item in a comment thread or DM conversation as read.
 
 ### `reply_to_inbox_item`
 
-Reply to a comment, mention, or DM on the platform as the connected account. Takes `id` and `text`.
+Reply to a comment, mention, or DM on the platform as the connected account. Takes `id` and `text`. A DM reply can also take `media_ids` (files from the media library) and `quick_replies` (answer buttons), where the item allows them; `text` is then optional with `media_ids`. Either one needs the `publish` scope.
 
 ### `update_inbox_item`
 
@@ -142,7 +142,27 @@ Set an item's `state` (`unread`, `read`, `resolved`, or `snoozed`). Snoozing als
 
 ### `hide_inbox_item` / `unhide_inbox_item` / `delete_inbox_item`
 
-Hide a comment on the platform, show it again, or delete it there. Each takes `id`. `delete_inbox_item` cannot be undone, so it is worth an approval step in your MCP client.
+Hide a comment on the platform, show it again, or delete it there. Each takes `id`. `delete_inbox_item` also deletes a reply your account wrote, which needs the `publish` scope. It cannot be undone, so it is worth an approval step in your MCP client.
+
+### `edit_inbox_comment`
+
+Change the text of a comment your account wrote, on the platform. Takes `id` and `text`. Needs `publish`.
+
+### `like_inbox_item` / `unlike_inbox_item` / `pin_inbox_item` / `unpin_inbox_item`
+
+Like a comment or mention as the connected account (an upvote on Reddit, a favourite on Mastodon), or pin a comment your account wrote. Each takes `id` and needs `publish`.
+
+### `react_to_inbox_item`
+
+React to a DM with an emoji, or pass `null` as `reaction` to remove yours. Takes `id` and `reaction`. Needs `publish`.
+
+### `start_inbox_conversation`
+
+Open a DM. Pass `account_id` and `handle`, or `comment_id` to answer an inbox comment privately (how Facebook and Instagram open a DM). Takes `text` and optional `media_ids`. Needs `publish`.
+
+### `set_inbox_typing`
+
+Show or clear the typing indicator in a DM thread. Takes `conversation_id`, `account_id`, and optional `on` (default true). Needs `publish`.
 
 ### `list_inbox_approvals`
 
