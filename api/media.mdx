@@ -31,6 +31,57 @@ The declared type is verified against the actual file contents, so renaming an e
 
 Pass `workspaceId` to also save the files to that workspace's media library, where they are reusable and count against the account's storage allowance. Leave it out for a one-off attachment.
 
+## Direct upload
+
+For a large file, or a client that should not proxy bytes through your server, upload straight to storage through a signed URL. It is three calls.
+
+**1. Sign the upload.**
+
+```http
+POST /v1/media/presign
+```
+
+```json
+{
+  "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+  "filename": "launch.mp4",
+  "mimeType": "video/mp4",
+  "size": 18350080
+}
+```
+
+```json
+{
+  "data": {
+    "uploadId": "b1a3…",
+    "uploadUrl": "https://…",
+    "method": "PUT",
+    "headers": { "Content-Type": "video/mp4" },
+    "expiresAt": "2026-09-19T14:00:00.000Z"
+  }
+}
+```
+
+The same types and the 50 MB ceiling apply as for upload, and the storage allowance is checked here too. `size` is part of the signature, so the PUT is refused if the byte count differs.
+
+**2. PUT the bytes.**
+
+```bash
+curl -X PUT "$UPLOAD_URL" -H "Content-Type: video/mp4" --data-binary @launch.mp4
+```
+
+Send exactly the returned headers and no API key. The URL accepts one PUT and stops working after an hour.
+
+**3. Complete it.**
+
+```http
+POST /v1/media/presign/{uploadId}/complete
+```
+
+Completion reads the object back and runs the same checks as an upload: allowed type, content matching the declared type, size, storage allowance. It answers with the same item shape as upload, including `previewUrl`. A refused object is deleted; `409` means the upload was already completed and `410` that it expired. An upload that is never completed is discarded after 24 hours and never appears in the library.
+
+The SDKs wrap all three calls in one helper (`media.uploadDirect` or the language equivalent).
+
 ## List the library
 
 ```http
