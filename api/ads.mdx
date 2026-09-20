@@ -1,10 +1,12 @@
 ---
 title: Ads
-description: Boost published posts and run Meta ads, audiences and lead forms.
+description: Boost published posts and run ads, audiences and lead forms on an ad network.
 icon: megaphone
 ---
 
-Ads run on a Meta Ads connection: a Meta business or user login that reaches ad accounts and Facebook Pages, separate from the account used for posting. With one in place you can boost a post FoPost already published, create an ad in one call or build its campaign, ad set, creative and ad one at a time, manage everything already on the ad account, read insights, build audiences and collect leads from Instant Forms. These endpoints need the `ads` scope, and every one that can start or stop spend also needs `publish`.
+Ads run on an ad connection: a login to an ad network that reaches ad accounts, separate from the account used for posting. With one in place you can boost a post FoPost already published, create an ad in one call or build its campaign, ad set, creative and ad one at a time, manage everything already on the ad account, read insights, build audiences and collect leads. These endpoints need the `ads` scope, and every one that can start or stop spend also needs `publish`.
+
+Every network answers the same endpoints, so a client names a `connectionId` and FoPost dispatches to the network behind it. `GET /v1/ads/providers` lists the networks and what each one can do; the pages for [Pinterest](/api/ads-pinterest), [X](/api/ads-x) and [OpenAI](/api/ads-openai) cover only where they differ. The examples below are Meta, which is the network live today.
 
 | Endpoint | Scopes |
 |:---------|:-------|
@@ -279,6 +281,8 @@ A `422` means Meta refused the request and `message` carries Meta's reason, such
 ## Next
 
 <Cards>
+  <Card title="Pinterest Ads" href="/api/ads-pinterest" />
+  <Card title="X Ads" href="/api/ads-x" />
+  <Card title="OpenAI Ads" href="/api/ads-openai" />
   <Card title="Inbox" href="/api/inbox" />
-  <Card title="Authentication" href="/api/authentication" />
 </Cards>

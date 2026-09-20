@@ -1,0 +1,124 @@
+---
+title: Pinterest Ads
+description: Promote a Pin, build campaigns and audiences on a Pinterest ad account.
+icon: megaphone
+---
+
+<Callout type="warn">
+  Pinterest Ads is built but not live. The network lists as coming soon, `configured` is `false` on
+  `GET /v1/ads/providers`, and `POST /v1/ads/connections/pinterest/authorize` answers `503` until
+  the ads permissions are approved. Everything below is what it will do the day it turns on.
+</Callout>
+
+Pinterest Ads runs on the same `/v1/ads` endpoints every network does: you name a `connectionId`, FoPost dispatches to the network behind it. Read the [Ads reference](/api/ads) first for the shared request and response shapes, scopes and error codes. This page covers only what Pinterest does differently.
+
+## What it supports
+
+| Capability | Pinterest |
+|:-----------|:----------|
+| Campaigns, ad groups, ads | Yes |
+| Boost a published Pin | Yes |
+| Audiences | Customer lists only |
+| Targeting search | Interests and locations |
+| Insights and timeline | Yes |
+| Creatives as their own object | No |
+| Lead forms | No |
+| Duplicate an object | No |
+
+`GET /v1/ads/providers` returns the same list as `capabilities`, so a client can hide what a network cannot do rather than discovering it from a `400`.
+
+## Connect
+
+```http
+POST /v1/ads/connections/pinterest/authorize
+```
+
+Returns the Pinterest login URL for the `workspaceId` you pass. The grant asks for `ads:read` and `ads:write`, and for the profile's own name. The user who starts it has to finish it in the same browser session.
+
+## Ad accounts, not Pages
+
+```http
+GET /v1/ads/sources
+```
+
+lists each connection's ad accounts. `pages` is always empty: a Pinterest ad runs from the ad account, so nothing asks you for a Page, and `pageId` is ignored wherever the shared shapes carry one.
+
+Ad account ids are numeric, and so are campaign, ad group and ad ids.
+
+## The Pin is the creative
+
+There is no creative object to create and reuse. An ad names a Pin that is already published, so the chain is campaign, ad group, ad:
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/boost \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "adAccountId": "549755885175",
+    "postId": "3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10",
+    "accountId": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4",
+    "name": "Autumn drop",
+    "goal": "traffic",
+    "budget": { "minor": 2000, "type": "daily" },
+    "targeting": { "countries": ["US"], "ageMin": 25, "ageMax": 44, "gender": "all" }
+  }'
+```
+
+`POST /v1/ads` with its own text, headline and image is refused: Pinterest promotes a Pin you already have, so publish the Pin first and boost it.
+
+## Goals and budgets
+
+| `goal` | Pinterest objective | Billed on |
+|:-------|:--------------------|:----------|
+| `engagement` | Consideration | Clicks |
+| `traffic` | Consideration | Clicks |
+| `awareness` | Awareness | Impressions |
+| `video_views` | Video completion | Impressions |
+
+The budget sits on the ad group. `type: "lifetime"` needs `endAt`, because Pinterest spreads a lifetime budget evenly between the start and the end.
+
+## Targeting
+
+The shared targeting shape maps onto Pinterest as country and location keys, interests, gender and age. Pinterest targets whole age buckets, so a range is every bucket it touches: `ageMin: 25, ageMax: 44` targets 25 to 34 and 35 to 44.
+
+```http
+GET /v1/ads/targeting/search?type=interest&q=
+GET /v1/ads/reach-estimate
+```
+
+`type` accepts `interest`, `country`, `region`, `city` and `metro`. Anything else answers `400`. The reach estimate is Pinterest's own audience sizing and comes back as a `lower` and `upper` pair.
+
+## Audiences
+
+```http
+GET /v1/ads/audiences
+POST /v1/ads/audiences
+POST /v1/ads/audiences/{id}/users
+```
+
+Only a customer list is supported here. Creating one makes the record set and the targetable audience over it in a single call; adding users appends to that list. Emails are lowercased and hashed before they leave FoPost, which is how Pinterest matches them. A lookalike or a website audience needs a seed audience or a conversion tag that this surface does not name, so both answer `400` with `error: "unsupported"`.
+
+## Insights
+
+```http
+GET /v1/ads/insights?object_id=&since=&until=&daily=true
+```
+
+Totals and, with `daily=true`, a day by day timeline. Pinterest reports no unique reach on these endpoints, so `reach` is `0`; `impressions`, `clicks`, `spendMinor`, `ctr` and `leads` are real. A `breakdown` is not available and asking for one answers `400`.
+
+## Stopping and deleting
+
+Pinterest has no delete. `DELETE` on a campaign, ad group or ad archives it, which stops it for good and keeps its history readable. `PATCH` with a status pauses and resumes as usual.
+
+## Errors
+
+A `422` means Pinterest refused the request and `message` carries its reason. A `401` from Pinterest is surfaced as an expired connection, a `403` as a missing permission; both ask the user to reconnect.
+
+## Next
+
+<Cards>
+  <Card title="Ads" href="/api/ads" />
+  <Card title="X Ads" href="/api/ads-x" />
+</Cards>

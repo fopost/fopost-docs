@@ -1,0 +1,129 @@
+---
+title: X Ads
+description: Promote a post, build campaigns, line items and audiences on an X ad account.
+icon: megaphone
+---
+
+<Callout type="warn">
+  X Ads is built but not live. The network lists as coming soon, `configured` is `false` on
+  `GET /v1/ads/providers`, and `POST /v1/ads/connections/x/authorize` answers `503` until the Ads
+  API application is approved. Everything below is what it will do the day it turns on.
+</Callout>
+
+X Ads runs on the same `/v1/ads` endpoints every network does: you name a `connectionId`, FoPost dispatches to the network behind it. Read the [Ads reference](/api/ads) first for the shared request and response shapes, scopes and error codes. This page covers only what X does differently.
+
+## What it supports
+
+| Capability | X |
+|:-----------|:--|
+| Campaigns, line items, promoted posts | Yes |
+| Boost a published post | Yes |
+| Audiences | Customer lists only |
+| Targeting search | Interests and locations |
+| Insights and timeline | Yes |
+| Creatives as their own object | No |
+| Lead forms | No |
+| Duplicate an object | No |
+
+An X line item is what the shared shapes call an ad set, and a promoted post is what they call an ad.
+
+## Every call is billed
+
+X charges per API call from a pay-per-use balance, the same way its organic reads are charged. Two budgets are in play and they are not the same thing:
+
+- **Your ad budget** is spent on your own funding instrument at X, exactly as it would be in Ads Manager. FoPost never touches it.
+- **The API call** is metered to your workspace as it happens and appears on your invoice as `X Ads API reads` and `X Ads API writes`, priced like the organic X calls.
+
+Two consequences worth designing for. A workspace with no balance left is refused before the request goes out, with a message saying the balance has run out, so a script cannot quietly spend nothing and read nothing. And when X's own developer balance is spent, X answers `402` and FoPost surfaces that as a stored error on the connection rather than an empty result, so an empty list always means empty and never means unpaid.
+
+Because reads cost money, prefer the campaign tree over walking the levels separately:
+
+```http
+GET /v1/ads/accounts/{adAccountId}/tree
+```
+
+## Ad accounts, not Pages
+
+```http
+GET /v1/ads/sources
+```
+
+lists each connection's ad accounts. `pages` is always empty: an X ad runs from the ad account as the promotable handle, so nothing asks you for a Page.
+
+An ad account needs a funding instrument before a campaign can be created; without one the request answers `422`.
+
+## The post is the creative
+
+There is no creative object. A promoted post names a post that is already published, so the chain is campaign, line item, promoted post. `POST /v1/ads` with its own text and image is refused: publish the post first and boost it.
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/boost \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "adAccountId": "18ce54d4x5t",
+    "postId": "3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10",
+    "accountId": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4",
+    "name": "Launch week",
+    "goal": "engagement",
+    "budget": { "minor": 2500, "type": "daily" },
+    "targeting": { "countries": ["US"], "ageMin": 25, "ageMax": 34, "gender": "all" }
+  }'
+```
+
+## Budgets are required on the campaign
+
+X will not create a campaign without a budget, so FoPost always sends one and then raises it to cover the line item's. The budget you pass ends up on both. `type: "lifetime"` becomes a total budget; `daily` becomes a daily one.
+
+| `goal` | X objective | Optimized for |
+|:-------|:------------|:--------------|
+| `engagement` | Engagements | Engagement |
+| `traffic` | Website clicks | Site visits |
+| `awareness` | Reach | Reach |
+| `video_views` | Video views | Video view |
+
+## Targeting
+
+Targeting on X is its own resource: FoPost turns the shared targeting shape into targeting criteria and attaches them to the line item in one batch. Countries and location keys, interests, custom audiences, gender and age buckets all map across. Updating an ad set's `targeting` replaces the criteria.
+
+```http
+GET /v1/ads/targeting/search?type=interest&q=
+POST /v1/ads/reach-estimate
+```
+
+`type` accepts `interest`, `country`, `region`, `city` and `metro`. The reach estimate is X's own audience estimate and comes back as a `lower` and `upper` pair.
+
+## Pausing a promoted post
+
+A promoted post cannot be edited on X, and pausing one is the same action as removing it from its line item. So `PATCH` on a promoted post accepts only a status, `PAUSED` detaches it, and there is no way to resume it: promote the post again. Pausing the line item above it is usually what you want, and that is reversible.
+
+## Audiences
+
+```http
+GET /v1/ads/audiences
+POST /v1/ads/audiences
+POST /v1/ads/audiences/{id}/users
+```
+
+Only a customer list is supported. Emails are lowercased and hashed before they leave FoPost, which is how X matches them.
+
+## Insights
+
+```http
+GET /v1/ads/insights?object_id=&since=&until=&daily=true
+```
+
+Totals and, with `daily=true`, a day by day timeline, over the X and X Audience Platform timeline placement. X reports no unique reach on this endpoint, so `reach` is `0`. A `breakdown` is not available and asking for one answers `400`.
+
+## Errors
+
+A `422` means X refused the request and `message` carries its reason. A `402` means the API balance behind the integration has run out; the connection carries that as its stored error until it is funded. A `401` is surfaced as an expired connection and a `403` as a missing permission.
+
+## Next
+
+<Cards>
+  <Card title="Ads" href="/api/ads" />
+  <Card title="OpenAI Ads" href="/api/ads-openai" />
+</Cards>

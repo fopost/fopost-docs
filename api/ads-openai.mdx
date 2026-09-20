@@ -1,0 +1,99 @@
+---
+title: OpenAI Ads
+description: Run chat-card campaigns, ad groups and ads on an OpenAI ad account.
+icon: megaphone
+---
+
+<Callout type="warn">
+  OpenAI Ads is built but not live. The network lists as coming soon, `configured` is `false` on
+  `GET /v1/ads/providers`, and `POST /v1/ads/connections/openai/authorize` answers `503` until
+  Advertiser API access is granted. Everything below is what it will do the day it turns on.
+</Callout>
+
+OpenAI Ads runs on the same `/v1/ads` endpoints every network does: you name a `connectionId`, FoPost dispatches to the network behind it. Read the [Ads reference](/api/ads) first for the shared request and response shapes, scopes and error codes. This page covers only what OpenAI does differently.
+
+## What it supports
+
+| Capability | OpenAI |
+|:-----------|:-------|
+| Campaigns, ad groups, ads | Yes |
+| Creatives | Inline on the ad |
+| Measurement pixel | Yes |
+| Conversion events | Yes |
+| Boost a published post | No |
+| Audiences | No |
+| Targeting search | No |
+| Reach estimate | No |
+| Insights | No |
+| Lead forms | No |
+
+## Connecting is a key, not a login
+
+Every other network connects through an OAuth login. OpenAI Ads authenticates with an API key scoped to one ad account, created in Ads Manager, so there is no consent screen to send a user to and `authorize` refuses. A connection carries that key, and optionally a second Conversions API key for sending events; both are stored encrypted and neither is ever returned by the API.
+
+One key means one ad account, so `GET /v1/ads/sources` lists exactly one, and an account whose brand review is not approved comes back with `status: 0` and cannot serve ads.
+
+Ids are prefixed: `adacct_…` for the ad account, `cmpn_…`, `adgrp_…` and `ad_…` for the chain.
+
+## Budgets are lifetime only
+
+There is no daily budget. `budget.type` must be `lifetime`; `daily` answers `400`. The budget lives on the campaign as a lifetime spend limit and has to be at least one whole currency unit. The ad group carries a maximum bid rather than a budget, so patching an ad set's `budgetMinor` moves that bid, and patching its `endAt` moves the campaign's end time, which is where scheduling lives.
+
+## The creative is inline
+
+An ad is a chat card: a title, a body, an image and a destination URL, rendered inside a conversation. There is no creative object to reuse, so `POST /v1/ads` carries the card and FoPost sends it with the ad.
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "adAccountId": "adacct_1",
+    "name": "Workspace planner",
+    "goal": "traffic",
+    "text": "Coordinate tasks, docs, and meetings in one place.",
+    "headline": "Try the workspace planner",
+    "destinationUrl": "https://example.com/planner",
+    "budget": { "minor": 5000, "type": "lifetime" },
+    "targeting": { "countries": [], "ageMin": 18, "ageMax": 65, "gender": "all" }
+  }'
+```
+
+The card is strict about length: the title is 3 to 50 characters and the body at most 100, so a longer `headline` or `text` is trimmed to fit before it is sent. A chat card always needs a `destinationUrl`.
+
+Every ad comes back with a review state of its own. An ad that reads `rejected` broke an ads policy and has to be edited before it is looked at again.
+
+## Targeting is on the campaign
+
+Locations and custom audiences are set on the campaign, not the ad group, so patching an ad set's `targeting` answers `400` with `error: "unsupported"`. There is no targeting search and no reach estimate.
+
+## Nothing is deletable
+
+`DELETE` on a campaign, ad group or ad archives it. Archiving cannot be undone, so archive only what you have no further use for; pause with `PATCH` when you may want it back.
+
+## Measurement
+
+```http
+GET /v1/ads/pixels?workspace_id=&connection_id=&ad_account_id=
+```
+
+lists the account's measurement pixels. A pixel is created in Ads Manager or through the connection's own key, and its id is what you initialize the browser pixel with and what you send server-side events against.
+
+Server-side conversion events go to the Conversions API with the second key on the connection. Each event carries its own id, so resending the same conversion is safe: reuse the id when you retry, or when the browser pixel and your server might both report it. A batch fails or succeeds whole, and at most 1000 events go in one.
+
+## Insights
+
+OpenAI reports delivery and conversion insights of its own, and FoPost does not read them yet: `GET /v1/ads/insights` answers `400` with `error: "unsupported"` for this network. Read them in Ads Manager until that lands.
+
+## Errors
+
+A `422` means OpenAI refused the request and `message` carries its reason. A `401` is surfaced as an expired connection and a `403` as a missing permission.
+
+## Next
+
+<Cards>
+  <Card title="Ads" href="/api/ads" />
+  <Card title="Pinterest Ads" href="/api/ads-pinterest" />
+</Cards>
