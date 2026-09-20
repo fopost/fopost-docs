@@ -188,6 +188,74 @@ PATCH /v1/accounts/{id}/slack/identity
 
 Omitted fields keep their value and `null` clears one. Set `icon_url` or `icon_emoji` (like `:rocket:`), not both. A webhook connection answers `409 webhook_connection`. All four need the `accounts` scope.
 
+## Discord server
+
+A Discord account connected as the bot (not a webhook) exposes the server it was installed into. Every route answers `409 webhook_connection` on a webhook connection, and `502` when Discord itself does not answer.
+
+Channels and the posting identity:
+
+```http
+GET   /v1/accounts/{id}/discord/channels
+PATCH /v1/accounts/{id}/discord/channels/current
+GET   /v1/accounts/{id}/discord/identity
+PATCH /v1/accounts/{id}/discord/identity
+```
+
+`channels` lists the server's text channels, each with `can_post` — false when a channel permission in Discord shuts the bot out — and `is_current` on the one this account uses. `channels/current` takes `{ "channel_id": "..." }` and moves the account to another one in the same server; a channel the bot cannot post in answers `409 channel_not_writable`. `identity` is the nickname and avatar the bot wears there:
+
+```json
+{ "username": "Release Bot", "avatar_url": "https://yourbrand.com/bot.png" }
+```
+
+Omitted fields keep their value and `null` clears one.
+
+Messages, in the account's channel:
+
+```http
+GET    /v1/accounts/{id}/discord/messages/pinned
+DELETE /v1/accounts/{id}/discord/messages/{messageId}
+POST   /v1/accounts/{id}/discord/messages/{messageId}/pin
+DELETE /v1/accounts/{id}/discord/messages/{messageId}/pin
+POST   /v1/accounts/{id}/discord/messages/{messageId}/crosspost
+POST   /v1/accounts/{id}/discord/messages/{messageId}/thread
+POST   /v1/accounts/{id}/discord/dm
+```
+
+`crosspost` publishes an announcement-channel message to every server following the channel. `thread` takes `{ "name": "...", "auto_archive_duration": 1440 }`. `dm` takes `{ "member_id": "...", "content": "..." }` and sends one message to that member.
+
+Scheduled events, members and roles:
+
+```http
+GET    /v1/accounts/{id}/discord/events
+POST   /v1/accounts/{id}/discord/events
+GET    /v1/accounts/{id}/discord/events/{eventId}
+PATCH  /v1/accounts/{id}/discord/events/{eventId}
+DELETE /v1/accounts/{id}/discord/events/{eventId}
+GET    /v1/accounts/{id}/discord/members
+GET    /v1/accounts/{id}/discord/members/{memberId}
+GET    /v1/accounts/{id}/discord/roles
+POST   /v1/accounts/{id}/discord/roles
+PATCH  /v1/accounts/{id}/discord/roles/{roleId}
+DELETE /v1/accounts/{id}/discord/roles/{roleId}
+PUT    /v1/accounts/{id}/discord/roles/{roleId}/members/{memberId}
+DELETE /v1/accounts/{id}/discord/roles/{roleId}/members/{memberId}
+```
+
+An event names either a `channel_id` (a voice or stage channel) or a `location` with an `end_time`:
+
+```json
+{
+  "name": "Launch stream",
+  "start_time": "2026-10-01T18:00:00Z",
+  "end_time": "2026-10-01T19:00:00Z",
+  "location": "https://yourbrand.com/live"
+}
+```
+
+`members` takes `q` to search by username or nickname prefix, and `limit`. A member's `id` is the `member_id` for a DM and for a role assignment.
+
+Everything here needs the `accounts` scope. The routes that put something on the server — deleting, pinning, unpinning, crossposting, starting a thread and sending a DM — need the `publish` scope as well.
+
 ## Next
 
 <Cards>

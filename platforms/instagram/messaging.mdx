@@ -1,0 +1,40 @@
+---
+icon: social-instagram
+title: Messaging
+description: Ice breakers and webhook health for an Instagram account.
+---
+
+Instagram messaging settings live in the account's **Messaging Settings** drawer in **Connections**: open the card's menu and pick **Messaging Settings**. They are saved on the Instagram account itself, so they apply to everyone who messages you.
+
+Instagram carries **ice breakers** only. The persistent menu, the greeting and thread hand-over are Messenger features with no Instagram equivalent, and those sections do not appear for an Instagram account.
+
+## Webhook health
+
+The first row reports whether Meta is delivering comments and messages for this account. When it reads **Not Subscribed**, the inbox will look quiet even when it is not, and the fields Meta is not delivering are listed underneath.
+
+**Re-subscribe** puts the subscription back for every field the account needs. Check this first when the inbox stops filling.
+
+Over the API: `GET /v1/accounts/{id}/webhook-subscription` reports `subscribed`, the `fields` Meta lists, and any `missing_fields`; `POST` to the same path re-subscribes.
+
+## Ice breakers
+
+The tappable prompts Instagram shows before someone has typed anything. Up to four, each an 80-character question paired with a payload your webhook or automation receives when it is tapped.
+
+Over the API: `GET`, `PUT` and `DELETE /v1/accounts/{id}/messaging/ice-breakers`.
+
+```json
+{
+  "ice_breakers": [
+    { "question": "What are your hours?", "payload": "HOURS" },
+    { "question": "Where do you ship?", "payload": "SHIPPING" }
+  ]
+}
+```
+
+## Next
+
+<Cards>
+  <Card title="Publishing to Instagram" href="/platforms/instagram/publishing" />
+  <Card title="Instagram Analytics" href="/platforms/instagram/analytics" />
+  <Card title="Inbox" href="/guide/inbox" />
+</Cards>
