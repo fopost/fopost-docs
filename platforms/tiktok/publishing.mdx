@@ -40,13 +40,31 @@ curl https://api.fopost.com/v1/accounts/{account_id}/tiktok/creator-info \
 
 Change any of them in the TikTok app and the composer picks it up on the next load.
 
-## Not available
+## Music and places
 
-TikTok's public API has no endpoint for these, so FoPost does not offer them:
+The composer searches TikTok's Commercial Music Library and TikTok's places, and stores the picked track and place on the post as `music_id` and `location_id`.
 
-- **Commercial Music Library search**, and no music field on a post to attach a track to
-- **Location and place tagging**: no place search, and no place field on a post
-- **Video download by URL**: nothing returns a video file, so a TikTok link cannot be repurposed from its media. Repurpose from a transcript or the page text instead
+```bash
+curl "https://api.fopost.com/v1/accounts/{account_id}/tiktok/music?q=sunrise" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+
+curl "https://api.fopost.com/v1/accounts/{account_id}/tiktok/locations?q=blue%20bottle" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+Both searches run on TikTok's Business API, behind its Marketing API product. Until that product is granted to the app, they answer `403` naming what to enable rather than an empty list that would read as no matches.
+
+## Repurposing a TikTok video
+
+Resolve a share link to one of the connected account's own videos and hand the result to [repurposing](/guide/sources).
+
+```bash
+curl -X POST https://api.fopost.com/v1/accounts/{account_id}/tiktok/video-download \
+  -H "X-API-Key: $FOPOST_API_KEY" -H "Content-Type: application/json" \
+  -d '{"url": "https://www.tiktok.com/@you/video/7300000000000000000"}'
+```
+
+TikTok serves no raw media file, so `download_url` is the share address, which is what the transcript step reads. A link to a video the connection does not own answers `404`, and a `vm.tiktok.com` short link carries no id, so open it once and pass the full link.
 
 ## TikTok's guardrails
 
