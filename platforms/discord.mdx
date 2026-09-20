@@ -15,6 +15,25 @@ A webhook connection keeps working exactly as before. To turn one into a bot con
 
 To post to a different channel later, open the account and pick another one under **Server → Channel**.
 
+### Channel permissions
+
+Installing the bot grants it permissions across the **whole server**. It cannot ask for an
+exception to a **channel**'s own permissions, and Discord deliberately leaves those with you —
+otherwise adding an app could quietly unlock a restricted channel.
+
+So a channel can sit in a server the bot belongs to and still refuse it. A locked announcement
+channel usually denies **Send Messages** to `@everyone`, which applies to the bot too.
+
+FoPost checks this for you: a channel the bot cannot post in appears greyed out, both when you
+pick the channel at connect and in **Server → Channel** afterwards. To open one up, in Discord
+choose **Edit Channel → Permissions → Advanced permissions**, add **FoPost**, and allow
+**Send Messages** — plus Embed Links, Attach Files, Manage Messages, Read Message History,
+Create Public Threads and Send Messages in Threads if you want pins, media and threads to work
+there.
+
+If permissions change after you connect, a publish to that channel fails with a message naming
+the channel and the fix.
+
 ## Posting identity
 
 A bot connection can wear its own nickname and avatar in your server instead of the app's. Open the account in **Connections** and set **Nickname** and **Avatar URL** under **Server**. Over the API, it's `PATCH /v1/accounts/{id}/discord/identity`; see [Accounts](/api/accounts).
