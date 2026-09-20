@@ -1,0 +1,203 @@
+---
+title: Chat Adapter
+description: Plug the FoPost inbox into a chatbot framework as one send/receive channel.
+icon: message-circle
+---
+
+The social inbox is already a chat surface: a direct message arrives, you answer, the thread continues. The chat adapter exposes it that way, so a bot you have already written can treat FoPost as one channel across every network that carries DMs, instead of one integration per network.
+
+It ships inside the TypeScript and Python SDKs:
+
+```bash
+npm install @fopost/sdk     # import from '@fopost/sdk/chat-adapter'
+pip install fopost          # import from fopost.chat_adapter
+```
+
+Every other client can do the same thing by hand; see [other languages](#other-languages).
+
+## How it fits together
+
+```
+a DM arrives  →  inbox.message_received webhook  →  parseWebhook  →  receiveOne  →  your bot
+                                                                                      ↓
+                        the platform  ←  POST /v1/inbox/:id/reply  ←  send
+```
+
+Two halves, and they are independent. Inbound is the [`inbox.message_received`](/webhooks/events#inbox) webhook, which tells you something arrived. Outbound is the reply endpoint. If you would rather not run a webhook endpoint at all, poll with `receive()` instead and the outbound half is unchanged.
+
+## Set up
+
+Create an API key with the `inbox` scope, and add `publish` if the bot is going to answer rather than just listen. Then create a [webhook](/webhooks) subscribed to `inbox.message_received` and keep its signing secret.
+
+**TypeScript**
+
+```ts
+import { FoPost } from '@fopost/sdk';
+import { createChatAdapter } from '@fopost/sdk/chat-adapter';
+
+const chat = createChatAdapter({
+  client: new FoPost({ apiKey: process.env.FOPOST_API_KEY! }),
+  workspaceId,
+  webhookSecret: process.env.FOPOST_WEBHOOK_SECRET,
+});
+```
+
+**Python**
+
+```python
+from fopost import Fopost
+from fopost.chat_adapter import ChatAdapter
+
+chat = ChatAdapter(
+    Fopost(api_key=os.environ["FOPOST_API_KEY"]),
+    workspace_id=workspace_id,
+    webhook_secret=os.environ["FOPOST_WEBHOOK_SECRET"],
+)
+```
+
+`workspaceId` is optional when the key is bound to one workspace, and required when it is not.
+
+## Receive
+
+`parseWebhook` verifies the delivery and hands back the event. The webhook payload is ids only, on purpose, so nothing a customer wrote sits in your logs; `receiveOne` reads the message back through the API.
+
+**TypeScript**
+
+```ts
+export async function POST(request: Request) {
+  const body = await request.text();
+  const event = await chat.parseWebhook(body, request.headers);
+  const message = await chat.receiveOne(event);
+  if (!message) return new Response(null, { status: 204 });
+
+  await chat.typing(message.conversationId!, message.accountId!);
+  await chat.send({ replyTo: message.id, text: await yourBot(message.text) });
+  await chat.markRead(message);
+  return new Response(null, { status: 204 });
+}
+```
+
+**Python**
+
+```python
+@app.post("/webhooks/fopost")
+async def inbound(request: Request) -> Response:
+    event = chat.parse_webhook(await request.body(), request.headers)
+    message = chat.receive_one(event)
+    if message is None:
+        return Response(status_code=204)
+
+    chat.typing(message.conversation_id, message.account_id)
+    chat.send(reply_to=message.id, text=your_bot(message.text))
+    chat.mark_read(message)
+    return Response(status_code=204)
+```
+
+Pass the **raw** body, not a parsed and re-serialized object: the signature covers the exact bytes we sent.
+
+`receiveOne` answers `null` when the message has aged out of the lookback window or was deleted between the delivery and your call. Handle it; do not assume a message is always there.
+
+### Polling instead
+
+**TypeScript**
+
+```ts
+for (const message of await chat.receive()) {
+  await chat.send({ replyTo: message.id, text: await yourBot(message.text) });
+  await chat.markRead(message);
+}
+```
+
+**Python**
+
+```python
+for message in chat.receive():
+    chat.send(reply_to=message.id, text=your_bot(message.text))
+    chat.mark_read(message)
+```
+
+`receive()` returns inbound direct messages that are still unread. Marking each one read is what stops the next poll from answering it twice.
+
+## Send
+
+Three shapes, one method. Reply to a message, reply into a thread, or open one by handle.
+
+**TypeScript**
+
+```ts
+await chat.send({ replyTo: message.id, text: 'On it.' });
+await chat.send({ conversationId: 'conv_...', text: 'Still here.' });
+await chat.send({ accountId: 'acc_...', handle: 'samrivera', text: 'Following up.' });
+```
+
+**Python**
+
+```python
+chat.send(reply_to=message.id, text="On it.")
+chat.send(conversation_id="conv_...", text="Still here.")
+chat.send(account_id="acc_...", handle="samrivera", text="Following up.")
+```
+
+Media and quick replies ride along where the network supports them:
+
+```ts
+await chat.send({
+  replyTo: message.id,
+  text: 'Which size?',
+  mediaIds: ['med_...'],
+  quickReplies: ['Small', 'Medium', 'Large'],
+});
+```
+
+Check before you send: the message you received carries `raw.canSendMedia` and `raw.canQuickReply` for its network. Sending what the network cannot carry comes back as an error from the API, never as a silently dropped attachment.
+
+## The message shape
+
+| Field | What it is |
+|:------|:-----------|
+| `id` | The inbox item id. Pass it to `send` and `markRead` |
+| `conversationId` | The DM thread, when there is one |
+| `accountId` | The connected account that received it |
+| `platform` | The network slug |
+| `direction` | `inbound` or `outbound` |
+| `text` | The message body, empty string when it is media only |
+| `author` | `name`, `handle`, `avatarUrl` |
+| `attachments` | Served through FoPost, never a platform URL |
+| `receivedAt` | When the network stamped it |
+| `raw` | The untouched inbox item, for anything the flat shape drops |
+
+## Verification and errors
+
+Every delivery carries two signatures. The adapter prefers `X-FoPost-Signature-256`, an HMAC-SHA256 over `{timestamp}.{body}` keyed with the signing secret, and checks `X-FoPost-Timestamp` against a five-minute tolerance so a captured delivery cannot be replayed. It falls back to the body-only `X-FoPost-Signature` when that header is absent. Both are compared in constant time. [Verification](/webhooks/verification) covers the mistakes that make a signature never match.
+
+Every adapter failure is a `ChatAdapterError` carrying a `code`:
+
+| Code | What happened |
+|:-----|:--------------|
+| `invalid_signature` | The signature does not match the body, or there is none |
+| `stale_delivery` | Signed outside the five-minute tolerance |
+| `unexpected_event` | A different event reached this endpoint |
+| `invalid_body` | Not JSON, or no item id in the payload |
+| `missing_secret` | No signing secret was configured |
+| `unsupported_target` | Nothing to reply to, or the network refused to open a thread |
+
+Anything the API itself rejects raises the SDK's own error (`FoPostError`, `FopostError`) with its status and code, exactly as elsewhere.
+
+## Other languages
+
+There is no dedicated adapter in the other clients, and nothing stops you writing the same loop with them. It is three pieces:
+
+1. Verify the webhook signature. Every SDK's framework integration already ships a verified endpoint, and [verification](/webhooks/verification) documents the scheme.
+2. Read the item. The payload's `itemId` identifies it; list the inbox filtered to that account and match on the id.
+3. Reply with `POST /v1/inbox/:id/reply`, or open a thread with `POST /v1/inbox/conversations`.
+
+The [inbox API](/api/overview) is the same one the adapter calls, so a bot written this way behaves identically.
+
+## Next
+
+<Cards>
+  <Card title="Webhooks" href="/webhooks" description="Subscribing, verifying, retries." />
+  <Card title="Inbox" href="/guide/inbox" description="What the inbox does, and which networks carry DMs." />
+  <Card title="TypeScript SDK" href="/sdks/typescript" />
+  <Card title="Python SDK" href="/sdks/python" />
+</Cards>
