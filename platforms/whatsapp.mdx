@@ -1,0 +1,114 @@
+---
+icon: social-whatsapp
+title: WhatsApp
+description: Your own WhatsApp Business number in the shared inbox, with template messages, in-chat forms, and the 24 hour messaging window enforced for you.
+---
+
+WhatsApp is in preparation. The pages and the API below are built, and the connection opens once the platform review of the messaging permissions clears.
+
+You bring the number. FoPost connects to a WhatsApp Business Account you already own and control; it does not sell phone numbers, and SMS and voice calling are outside what it does.
+
+## Connecting
+
+Two ways, and they suit different customers.
+
+- **Guided signup** (recommended): in **Connections → WhatsApp**, choose **Connect WhatsApp**. The platform's own onboarding runs, you pick or add a business number, and FoPost then asks which number on the account to connect. One number per workspace.
+- **Your own credentials**: if you already run the number yourself, connect with the WhatsApp Business Account id, the phone number id, and a system user token. Useful when the number is managed outside FoPost.
+
+Either way the token is stored encrypted and never leaves the server.
+
+## The 24 hour messaging window
+
+This is the rule that shapes everything else, so it is worth reading once.
+
+After a customer messages you, you may reply freely for **24 hours**. Once that window shuts, WhatsApp accepts only an **approved template message** from you. Sending a free-form message after the window is refused by the platform, and refusals are what lower a number's quality rating.
+
+FoPost enforces the window before it sends. A free-form reply outside it is refused here with `window_closed`, and nothing reaches the platform. A template message is allowed either side of the window, which is the reason templates exist.
+
+## Inbox
+
+Inbound messages land in the [inbox](/guide/inbox), threaded by person: one number, one continuous conversation with their whole history.
+
+- **Text, media, and documents**, sent and received in the thread
+- **Taps on buttons and list rows**, recorded as the answer the customer gave
+- **Flow submissions**, recorded on the message they arrived as
+- **Media by reference**: an attachment is stored as the platform's media id, and the file is fetched server-side when someone opens it, so no expiring link is ever handed out
+
+Replies go out from the inbox like any other network, subject to the window above.
+
+## Template messages
+
+A template is how a conversation starts and how you reach someone after the window shuts. Templates live on the account, not in FoPost: the platform reviews each one and owns its status.
+
+Open the account in **Connections** and choose **Open Templates** to write one, submit it, and read the status the platform gave it. You can also adapt one of the platform's pre-written library templates instead of drafting from nothing.
+
+Over the API:
+
+| Endpoint | What it does |
+|:---------|:-------------|
+| `GET /v1/accounts/{id}/whatsapp/templates` | Every template with its review status |
+| `POST /v1/accounts/{id}/whatsapp/templates` | Files a template for review |
+| `GET /v1/accounts/{id}/whatsapp/templates/library` | The platform's pre-written templates |
+| `POST /v1/accounts/{id}/whatsapp/templates/import` | Creates one from a library entry |
+| `PATCH /v1/accounts/{id}/whatsapp/templates/{templateId}` | Edits the components or category |
+| `DELETE /v1/accounts/{id}/whatsapp/templates/{templateId}` | Removes it from the account |
+
+A newly submitted template comes back as **In Review**. Nothing marks it approved until the platform does.
+
+## Flows
+
+A flow is a short form the customer fills in inside the chat: a booking, a sign-up, a support triage. The builder in FoPost is a form, not a canvas, because a flow is a list of questions.
+
+Open the account and choose **Open Flows** to name one, pick its category, and add the questions. The flow is created as a draft and published when you are ready; a published flow is deprecated rather than deleted.
+
+| Endpoint | What it does |
+|:---------|:-------------|
+| `GET /v1/accounts/{id}/whatsapp/flows` | Flows on the account, with validation errors |
+| `POST /v1/accounts/{id}/whatsapp/flows` | Creates a draft |
+| `PUT /v1/accounts/{id}/whatsapp/flows/{flowId}/json` | Replaces the screens |
+| `POST /v1/accounts/{id}/whatsapp/flows/{flowId}/publish` | Makes it sendable |
+| `POST /v1/accounts/{id}/whatsapp/flows/{flowId}/deprecate` | Retires a published flow |
+| `GET /v1/accounts/{id}/whatsapp/flows/responses` | What people submitted |
+
+A flow that reads live data calls an endpoint of yours, and the platform encrypts those payloads. Register the public half of your key with `PUT /v1/accounts/{id}/whatsapp/flows/encryption-key`; the private half stays with you and is never sent to FoPost.
+
+## Profile, groups, blocking, and commerce
+
+| Surface | What it covers |
+|:--------|:---------------|
+| **Profile** | About text, address, description, websites, vertical, and the profile picture. The display name is a review request, not a write: the number keeps the old name until it passes |
+| **Groups** | Create a group on the number, read its info, update it, and get or reset the invite link. Participation is invite-only: there is no endpoint that adds someone, so you send the link |
+| **Blocking** | Block and unblock numbers, and list the blocked ones. Up to 100 per call |
+| **Commerce** | Turn the cart and the catalog on or off, and point the number at a catalog you already own |
+| **Account state** | The account review and verification state, plus the number's quality rating, name status, and messaging limit tier |
+
+## Broadcasts
+
+A template message can go to many people at once through a broadcast, to contacts who already have a conversation with you. Free-form bulk messaging is not something the platform allows.
+
+## What the platform charges
+
+WhatsApp bills **your own** WhatsApp Business Account for the conversations it charges for. FoPost does not resell or mark up that cost. What the platform reported for a message, including its billing category, is kept as a note beside it so you can read your own platform cost.
+
+## Click to WhatsApp ads
+
+When someone taps a Click to WhatsApp ad, the ad that earned the conversation rides on their first message. FoPost keeps that referral, so a conversation can be attributed to the campaign that produced it.
+
+## Sandbox
+
+Before your own number clears review, you can see a WhatsApp thread work end to end. `POST /v1/whatsapp/sandbox/sessions` invites one tester: a platform-owned test number sends them an approved template, and their reply opens the window and activates the session. The tester's number is not stored, only a keyed digest of it and the last four digits.
+
+## What it will not do
+
+- **Buy a phone number.** Bring your own WhatsApp Business number
+- **Send SMS or place calls.** Out of scope
+- **Publish a post.** WhatsApp delivers messages to people, not posts to a feed. There is nothing to schedule into a feed here
+- **Bulk message strangers.** Templates reach people who already have a conversation with you
+
+## Next
+
+<Cards>
+  <Card title="Connecting Accounts" href="/guide/connecting-accounts" />
+  <Card title="Inbox" href="/guide/inbox" />
+  <Card title="All Platforms" href="/platforms" />
+</Cards>
