@@ -16,6 +16,19 @@ You sign in at [fopost.com/dashboard](https://fopost.com/dashboard) with an emai
 
 Changing your email address or turning off two-step verification also ends every other session, since both change what it takes to get in.
 
+## Two-step verification
+
+Turn it on at **Settings → Security**. Scan the QR code with any authenticator app, confirm one code, and from then on signing in takes your usual first step plus a six-digit code.
+
+- **Codes are single use.** A code works once, even inside the minute and a half it stays live, so one seen over your shoulder is already spent
+- **Backup codes.** Ten of them appear once, when you turn two-step verification on. Each opens the account once and then dies. Keep them somewhere you can reach without your phone; we cannot show them again, though you can replace the whole unused set with a fresh one at any time
+- **Turning it off needs a code.** A code from the app or a backup code, so someone holding a session cannot quietly weaken the account
+- **A passkey skips it.** A passkey is already tied to your device, so it stands on its own
+
+Wrong codes are limited hard, and a sign-in waiting on its second step expires after five minutes.
+
+API keys are unaffected: two-step verification protects dashboard sign-in, not programmatic access. Keys are protected by being secret, scoped, and revocable instead.
+
 ## Audit log
 
 Security-relevant changes are recorded where you can read them back: **Settings → Activity**, filtered to **Security**. Each row carries who did it, what changed, and when.
