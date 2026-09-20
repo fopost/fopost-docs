@@ -1,7 +1,7 @@
 ---
 icon: social-google-business
 title: Google Business Profile
-description: Update, event and offer posts on a business location, and reviews in the inbox.
+description: Update, event and offer posts on a business location, reviews in the inbox, and the profile itself.
 ---
 
 Google Business Profile posts appear on your business listing in Search and Maps.
@@ -43,9 +43,26 @@ Facebook Page recommendations land in the same place, under the same type. A rec
 
 Reviews are read through the Business Profile API, which Google grants per project. Until that grant is in place the inbox lists Google Business under **Soon** and the reply endpoint answers `503`.
 
+## Managing the profile
+
+A connected location is editable from **Connections → the account → Business Profile**:
+
+| Section | What you can do |
+|:--------|:----------------|
+| Profile | Business name, description, website and phone |
+| Photos | Add a photo from your media library under a category (cover, interior, product, menu and the rest), or remove one |
+| Action links | Add, edit and remove the Book, Reserve, Order and Shop buttons on the listing |
+| Verification | See whether the location is verified and which verification methods Google offers it |
+
+Attributes, food menus and the service list are editable through the API, along with everything above. Photos always come from your media library, so a location photo is an asset you already own rather than a link typed into a box; JPEG and PNG only.
+
+A location can also be handed to another workspace without reconnecting it. The connection and everything keyed to it move together, in one step, and the caller has to own both workspaces.
+
+Like reviews, profile management needs the Business Profile API grant. Until it is in place the Business Profile tab does not appear and the endpoints answer `503`.
+
 ## Analytics
 
-None; post metrics are not read back. Check performance in your Business Profile dashboard.
+Post metrics are not read back. Location performance is: daily impressions on Search and Maps, calls, direction requests, website clicks, bookings and food orders, plus the search terms people used to find the listing, by month. Both read through the same API grant as everything above.
 
 ## Deleting
 
