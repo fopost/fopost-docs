@@ -84,7 +84,7 @@ A flow that reads live data calls an endpoint of yours, and the platform encrypt
 
 ## Broadcasts
 
-A template message can go to many people at once through a broadcast, to contacts who already have a conversation with you. Free-form bulk messaging is not something the platform allows.
+A template message can go to many people at once through a broadcast, to contacts who already have a conversation with you: a broadcast that names an approved template reaches someone whose window has shut, while a free-form one skips them with `window_closed`. Free-form bulk messaging is not something the platform allows, and a template still cannot open a conversation that never existed.
 
 ## What the platform charges
 
@@ -96,7 +96,9 @@ When someone taps a Click to WhatsApp ad, the ad that earned the conversation ri
 
 ## Sandbox
 
-Before your own number clears review, you can see a WhatsApp thread work end to end. `POST /v1/whatsapp/sandbox/sessions` invites one tester: a platform-owned test number sends them an approved template, and their reply opens the window and activates the session. The tester's number is not stored, only a keyed digest of it and the last four digits.
+Before your own number clears review, you can see a WhatsApp thread work end to end. `POST /v1/whatsapp/sandbox/sessions` invites one tester: a test number we own sends them an approved template, and their reply opens the window and activates the session.
+
+Because that message comes from our own number, the sandbox writes only to a number registered as a tester first, the same way the platform's own test recipients work. An unregistered number is refused with `not_a_tester` and nothing is sent. A workspace holds a few live invitations at a time, and the tester's number is not stored, only a keyed digest of it and the last four digits.
 
 ## What it will not do
 
