@@ -255,6 +255,60 @@ An event names either a `channel_id` (a voice or stage channel) or a `location` 
 `members` takes `q` to search by username or nickname prefix, and `limit`. A member's `id` is the `member_id` for a DM and for a role assignment.
 
 Everything here needs the `accounts` scope. The routes that put something on the server — deleting, pinning, unpinning, crossposting, starting a thread and sending a DM — need the `publish` scope as well.
+## Google Business Profile
+
+A connected Google Business location is managed under `gbp`:
+
+```http
+GET    /v1/accounts/{id}/gbp/location
+PATCH  /v1/accounts/{id}/gbp/location
+GET    /v1/accounts/{id}/gbp/attributes
+PATCH  /v1/accounts/{id}/gbp/attributes
+GET    /v1/accounts/{id}/gbp/menus
+PUT    /v1/accounts/{id}/gbp/menus
+GET    /v1/accounts/{id}/gbp/services
+PUT    /v1/accounts/{id}/gbp/services
+GET    /v1/accounts/{id}/gbp/media
+POST   /v1/accounts/{id}/gbp/media
+DELETE /v1/accounts/{id}/gbp/media/{mediaKey}
+GET    /v1/accounts/{id}/gbp/place-actions
+POST   /v1/accounts/{id}/gbp/place-actions
+PATCH  /v1/accounts/{id}/gbp/place-actions/{linkId}
+DELETE /v1/accounts/{id}/gbp/place-actions/{linkId}
+GET    /v1/accounts/{id}/gbp/verification
+POST   /v1/accounts/{id}/gbp/verification/start
+POST   /v1/accounts/{id}/gbp/verification/complete
+GET    /v1/accounts/{id}/gbp/performance
+POST   /v1/accounts/{id}/gbp/assign
+```
+
+Reads need the `accounts` scope. Writes need `publish` as well, because they change what the listing shows to the public.
+
+Responses relay Google's own shape, so a field you know from the Business Profile APIs is the field you get back. Requests are snake_case, and a `PATCH` changes only the fields it carries:
+
+```json
+{ "title": "Corner Bakery", "primary_phone": "+1 555 0100" }
+```
+
+`menus` and `services` are `PUT` rather than `PATCH`, because Google replaces the whole set — send the list you want to end up with.
+
+A photo comes from your media library, never from a URL:
+
+```json
+{ "media_id": "a3f1…", "category": "INTERIOR", "description": "Front counter" }
+```
+
+The asset has to be in a workspace you can reach, and JPEG or PNG. Anything else is a `400`.
+
+`performance` takes `start_date` and `end_date`, and repeats `daily_metrics` for each metric you want. Pass `keywords=true` for the monthly search terms instead of the daily series. `attributes` takes `available=true` to list what Google offers for the location's category rather than what is set on it.
+
+`assign` hands the location to another workspace you own, moving the connection and every row keyed to it in one transaction:
+
+```json
+{ "workspace_id": "b7c2…" }
+```
+
+Every route here answers `503 configuration_error` until Google grants this deployment Business Profile API access.
 
 ## Next
 
