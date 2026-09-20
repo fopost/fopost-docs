@@ -201,7 +201,7 @@ GET   /v1/accounts/{id}/discord/identity
 PATCH /v1/accounts/{id}/discord/identity
 ```
 
-`channels` lists the text channels the bot can post to, with `is_current` on the one this account uses; `channels/current` takes `{ "channel_id": "..." }` and moves the account to another one in the same server. `identity` is the nickname and avatar the bot wears there:
+`channels` lists the server's text channels, each with `can_post` — false when a channel permission in Discord shuts the bot out — and `is_current` on the one this account uses. `channels/current` takes `{ "channel_id": "..." }` and moves the account to another one in the same server; a channel the bot cannot post in answers `409 channel_not_writable`. `identity` is the nickname and avatar the bot wears there:
 
 ```json
 { "username": "Release Bot", "avatar_url": "https://yourbrand.com/bot.png" }
