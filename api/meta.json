@@ -23,6 +23,7 @@
     "broadcasts",
     "sequences",
     "ads",
+    "ads-google",
     "---Operations---",
     "rate-limits",
     "ai"
