@@ -10,6 +10,28 @@ What actually protects your account and your audience's data, in the order you w
 
 You sign in at [fopost.com/dashboard](https://fopost.com/dashboard) with an email address and password, or with Google or GitHub. Passwords are stored hashed: nobody, including us, can read one back. A dashboard session lasts up to 90 days before you sign in again, and signing out ends it immediately.
 
+### Devices
+
+**Settings → Security → Devices** lists every device your account is currently signed in on, with its browser, network address, and when it was last active. Sign one out and its session stops working on the next request, everywhere in the product. **Sign Out Everywhere** ends every session but the one you are using.
+
+Changing your email address or turning off two-step verification also ends every other session, since both change what it takes to get in.
+
+## Audit log
+
+Security-relevant changes are recorded where you can read them back: **Settings → Activity**, filtered to **Security**. Each row carries who did it, what changed, and when.
+
+| Recorded when |
+|:--------------|
+| Someone joins the team, or is removed |
+| A member's role or workspace access changes |
+| A member is suspended or reactivated |
+| Two-step verification is turned on or off |
+| A passkey is added or removed |
+| Single sign-on is configured or removed |
+| A device is signed out, here or everywhere |
+
+Audit rows are append-only: nothing in FoPost rewrites one, and unlike the rest of the activity log they are never aged out. Over the API they are `GET /v1/activity?kind=security` — see [Workspaces](/api/workspaces#activity).
+
 ## API keys
 
 Programmatic access goes through API keys, managed at **Settings → API Keys**, and only there: managing keys requires a signed-in dashboard session, so a leaked key cannot be used to mint more keys.
