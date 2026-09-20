@@ -1,7 +1,7 @@
 ---
 icon: social-google-business
 title: Google Business Profile
-description: Posts to a business location, with a photo and a call-to-action link.
+description: Update, event and offer posts on a business location, and reviews in the inbox.
 ---
 
 Google Business Profile posts appear on your business listing in Search and Maps.
@@ -15,11 +15,33 @@ Google Business Profile posts appear on your business listing in Search and Maps
 | Limit | Value |
 |:------|:------|
 | Text | 1,500 characters |
-| Image | One JPEG or PNG, between 10 KB and 5 MB, at least 250×250 |
-| Link | Becomes a **Learn more** button on the post |
-| Title, tags, video | Not supported |
+| Image | One JPEG or PNG, between 10 KB and 5 MB, at least 400×300 |
+| Video | Not supported; a video attachment is blocked before publishing |
+| Tags | Not supported |
 
-Posts publish as standard updates. Offer and event post types are not supported today.
+### Post types
+
+Pick the type in the composer's Google Business section.
+
+| Type | What it is | What it needs |
+|:-----|:-----------|:--------------|
+| Update | A plain post with an optional photo and button | Nothing beyond the text |
+| Event | A dated happening shown with its schedule | A title and a start and end time |
+| Offer | A promotion with a coupon and redemption terms | A title and a schedule; the coupon, link and terms are optional |
+
+### Buttons
+
+An update or event carries one call-to-action: **Book**, **Order Online**, **Shop**, **Learn More**, **Sign Up** or **Call Now**, or no button at all. Every one but Call Now takes a link; Call Now uses the phone number on the listing. An offer renders its own redemption button instead, so it takes no separate call-to-action.
+
+Through the API these arrive as per-account platform settings: `post_type`, `cta_action`, `cta_url`, `event_title`, `event_start`, `event_end`, `offer_coupon_code`, `offer_redeem_url` and `offer_terms`.
+
+## Reviews
+
+Reviews left on the location arrive in the inbox under **Reviews**, each with its star rating and the reviewer's name. Answering one posts the response on Google as the business; Google allows a single response per review, so sending again replaces the previous one.
+
+Facebook Page recommendations land in the same place, under the same type. A recommendation has no stars of its own, so a positive one reads as five and a negative one as one.
+
+Reviews are read through the Business Profile API, which Google grants per project. Until that grant is in place the inbox lists Google Business under **Soon** and the reply endpoint answers `503`.
 
 ## Analytics
 
