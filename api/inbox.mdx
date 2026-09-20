@@ -62,10 +62,13 @@ An item looks like this:
   "pinned": false,
   "reaction": null,
   "editedAt": null,
+  "moderationStatus": "published",
   "post": { "id": "3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10", "title": "Autumn drop" },
   "account": { "id": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4", "platform": "instagram", "username": "yourbrand" }
 }
 ```
+
+`moderationStatus` is the platform's own state for a comment where it reports one: `published`, `held` (waiting on a decision, invisible on the post until then), `spam`, or `rejected`. It is `null` on the networks that do not say.
 
 The `can*` flags tell you what the platform allows for that item before you try. A platform whose API reads comments but cannot answer them returns `canReply: false`. An action the platform does not offer answers `409` with `unsupported_platform`.
 
@@ -238,7 +241,7 @@ GET /v1/inbox/platforms
 GET /v1/inbox/unread-count
 ```
 
-`/accounts` lists every active connected account with `inboxSupported` and `dmSupported`, so a filter can tell the truth about what it reads, plus `canStartConversation` for accounts that can open a DM by handle. `/platforms` lists which networks feed the inbox today and which are coming.
+`/accounts` lists every active connected account with `inboxSupported` and `dmSupported`, so a filter can tell the truth about what it reads, plus `canStartConversation` for accounts that can open a DM by handle. An account with `reconnectRequired: true` was connected before the inbox asked for a permission it needs and is not polled until someone reconnects it; everything else that account does keeps working. `/platforms` lists which networks feed the inbox today and which are coming.
 
 ## Poll now
 
