@@ -1,0 +1,253 @@
+---
+title: Google Ads
+description: Search, Display and Performance Max campaigns, keywords, assets, conversions and GAQL.
+icon: megaphone
+---
+
+Google Ads is a second ad network alongside Meta, reached through the same `/v1/ads` endpoints: campaigns, ad groups, ads, audiences and insights all work the same way, dispatched by the connection you name. What has no equivalent on another network lives under `/v1/ads/google/*` — keywords, negative keyword lists, assets, Performance Max asset groups, Local Services leads and conversions — plus a raw GAQL query at `POST /v1/ads/insights/query`.
+
+These endpoints need the `ads` scope, and every one that changes what a live account serves or bids also needs `publish`.
+
+<Callout type="warn">
+  Google Ads requires a developer token approved for Basic access. Until the deployment has one, Google Ads is listed as coming soon, no connection can be made, and every route here answers `503 not_configured`.
+</Callout>
+
+## Ids
+
+A Google object is addressed by a resource name with slashes, which cannot travel in a URL path segment, so every id here carries the account it belongs to:
+
+```
+1234567890~campaign~55        a campaign
+1234567890~adGroup~77         an ad group (an "ad set" on the shared routes)
+1234567890~ad~77~88           an ad, which names its ad group too
+1234567890~keyword~77~9900    a keyword
+1234567890~asset~4321         an asset
+1234567890~assetGroup~8080    a Performance Max asset group
+```
+
+The leading number is the Google Ads customer id, digits only, and it has to be an account the connection's grant reaches. An id naming any other account answers `404`, exactly as an unknown id does.
+
+Amounts are in the account's currency, in minor units: `1500` is $15.00 on a USD account. Google's own micros never appear in a request or a response.
+
+## Connect
+
+```http
+POST /v1/ads/connections/google/authorize
+GET  /v1/ads/connections
+DELETE /v1/ads/connections/{id}?workspace_id=
+```
+
+Authorize returns the Google login URL for the `workspaceId` you pass. The user who calls it has to finish the login in their own browser session, because the callback checks that the same user came back. The grant is long-lived; there is no separate Page step, because a Google ad runs as the account itself rather than as a Page.
+
+```http
+GET /v1/ads/sources
+```
+
+lists each connection with the accounts its grant reaches. A Google connection reports its customer ids and an empty `pages` list.
+
+## What the shared routes do on Google
+
+| Shared route | On Google |
+|:-------------|:----------|
+| `POST /v1/ads/campaigns` | A campaign plus the budget resource Google requires; `goal` picks the channel — `traffic` is Search, `engagement` and `awareness` are Display, `video_views` is Video |
+| `POST /v1/ads/ad-sets` | An ad group. The budget lives on the campaign on Google, so a budget here resizes the campaign's |
+| `POST /v1/ads/creatives` | Returns a creative reference, not a stored object: Google keeps no creative, the ad carries its own headlines and links |
+| `POST /v1/ads/ads` | A responsive search ad or responsive display ad built from that reference. Google needs three headlines and two descriptions, and short input is padded to reach them |
+| `GET /v1/ads/insights` | GAQL behind the scenes, with `daily` and the `age`, `gender`, `placement` and `country` breakdowns. `reach` is always `0`: Google reports unique reach on video campaigns only |
+| `POST /v1/ads/audiences` | A customer-list audience; emails are hashed before they leave FoPost. Lookalike and website audiences are Meta-only and answer `400` |
+| `GET /v1/ads/targeting/search` | Geo targets by name. Interest, behavior and income searches are Meta-only |
+| `POST /v1/ads/boost` | Not applicable: there is no post on Google to promote, and the capability is declared off |
+| `/v1/ads/lead-forms` | Not applicable: Google's equivalent is Local Services, below |
+
+## Keywords
+
+```http
+GET    /v1/ads/google/keywords?workspace_id=&connection_id=&customer_id=&ad_group_id=
+POST   /v1/ads/google/keywords
+PATCH  /v1/ads/google/keywords/{id}
+DELETE /v1/ads/google/keywords/{id}
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/google/keywords \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "customerId": "1234567890",
+    "adGroupId": "1234567890~adGroup~77",
+    "text": "running shoes",
+    "matchType": "EXACT",
+    "cpcBidMinor": 180
+  }'
+```
+
+`matchType` is `EXACT`, `PHRASE` or `BROAD`. `PATCH` takes `status` (`active` or `paused`) and `cpcBidMinor`; `DELETE` takes the same scope fields in its body.
+
+### Ideas and history
+
+```http
+POST /v1/ads/google/keyword-ideas
+POST /v1/ads/google/keyword-metrics
+GET  /v1/ads/google/search-terms?…&since=&until=
+```
+
+Ideas take `seeds`, a `url`, or both, with optional `languageId` and `geoTargetIds`. Each result carries `avgMonthlySearches`, `competition` and the top-of-page bid range in minor units. `/keyword-metrics` reads the same shape for keywords you already have. `/search-terms` reports what people actually typed, with the metrics each term earned over the date range.
+
+### Negative keyword lists
+
+```http
+GET  /v1/ads/google/negative-keywords
+POST /v1/ads/google/negative-keywords
+POST /v1/ads/google/negative-keywords/keywords
+POST /v1/ads/google/negative-keywords/attach
+```
+
+Create a list, add keywords to it, then attach it to a campaign. One list can serve any number of campaigns.
+
+## Bid strategies and ad schedule
+
+```http
+GET  /v1/ads/google/bid-strategies
+POST /v1/ads/google/bid-strategies
+GET  /v1/ads/google/ad-schedule?…&campaign_id=
+PUT  /v1/ads/google/ad-schedule
+```
+
+`type` is `TARGET_SPEND`, `MAXIMIZE_CONVERSIONS`, `MAXIMIZE_CONVERSION_VALUE`, `TARGET_CPA` or `TARGET_ROAS`, with `targetMinor` where the strategy takes a target.
+
+The schedule is replaced whole, not patched, because Google has no partial edit for one: send every slot the campaign should have.
+
+```json
+{
+  "workspaceId": "…",
+  "connectionId": "…",
+  "customerId": "1234567890",
+  "campaignId": "1234567890~campaign~55",
+  "slots": [
+    { "dayOfWeek": "MONDAY", "startHour": 9, "endHour": 18, "bidModifier": 1.2 },
+    { "dayOfWeek": "SATURDAY", "startHour": 10, "endHour": 16 }
+  ]
+}
+```
+
+## Assets
+
+```http
+GET    /v1/ads/google/assets
+POST   /v1/ads/google/assets
+POST   /v1/ads/google/assets/attach
+DELETE /v1/ads/google/assets/{id}
+```
+
+Sitelinks, callouts and structured snippets. Create the asset, then attach it to the account or to one campaign:
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/google/assets \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "…",
+    "connectionId": "…",
+    "customerId": "1234567890",
+    "spec": {
+      "kind": "sitelink",
+      "text": "Size guide",
+      "description1": "Find your fit in a minute",
+      "finalUrl": "https://yourbrand.com/size-guide"
+    }
+  }'
+```
+
+`spec.kind` is `sitelink` (with `finalUrl`), `callout` (`text` only) or `snippet` (a `header` and three to ten `values`). The listing returns the assets and, separately, the links that put each one under an ad, so an asset with no links is in the library and serving nowhere.
+
+`DELETE` removes those links rather than the asset: an asset itself is permanent on Google.
+
+### Performance Max asset groups
+
+```http
+GET    /v1/ads/google/asset-groups?…&campaign_id=
+POST   /v1/ads/google/asset-groups
+PATCH  /v1/ads/google/asset-groups/{id}
+DELETE /v1/ads/google/asset-groups/{id}
+```
+
+An asset group belongs to a Performance Max campaign and carries its own `finalUrls`. `PATCH` renames it or moves it between `active` and `paused`; the shared `POST /v1/ads/status` pauses or resumes one too.
+
+## Local Services leads
+
+```http
+GET /v1/ads/google/local-services?…&since=&until=
+```
+
+Leads from Local Services Ads over the date range, read live on every call and never stored by FoPost. Each carries the category and service, the contact details the lead left, its status and when it arrived.
+
+## Conversions
+
+```http
+GET  /v1/ads/google/conversions
+POST /v1/ads/google/conversions
+POST /v1/ads/google/conversions/upload
+POST /v1/ads/google/conversions/adjustments
+```
+
+List or create a conversion action, then send conversions against it:
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/google/conversions/upload \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "…",
+    "connectionId": "…",
+    "customerId": "1234567890",
+    "conversions": [
+      {
+        "gclid": "Cj0KCQjw...",
+        "conversionActionId": "987654321",
+        "conversionDateTime": "2026-09-20 12:32:45+00:00",
+        "valueMinor": 4999,
+        "currencyCode": "USD",
+        "orderId": "A-10023"
+      }
+    ]
+  }'
+```
+
+A conversion is matched to a click by `gclid`, `gbraid` or `wbraid`; at least one is required. `conversionDateTime` has to be `yyyy-MM-dd HH:mm:ss` with an offset, the only shape Google accepts. Adjustments take the same scope with `adjustmentType` set to `RESTATEMENT`, `RETRACTION` or `ENHANCEMENT`.
+
+## Run a GAQL query
+
+```http
+POST /v1/ads/insights/query
+```
+
+A raw Google Ads Query Language read, for anything the shaped endpoints do not cover.
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/insights/query \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "customerId": "1234567890",
+    "query": "SELECT campaign.name, metrics.clicks, metrics.cost_micros FROM campaign WHERE segments.date DURING LAST_30_DAYS"
+  }'
+```
+
+The response is `{ "data": { "rows": [...] } }`, each row exactly as Google returns it. Three things to know:
+
+- The account read is `customerId`, never anything named inside the query text.
+- Only a `SELECT` runs. Anything else is refused before the connection is touched.
+- This route is Google-only. A connection on another network answers `400`.
+
+## Errors
+
+| Status | Meaning |
+|:-------|:--------|
+| `400` | The request is malformed, or asks for something Google does not do |
+| `403` | No access to the workspace, or the key is missing `ads` or `publish` |
+| `404` | The connection, the account or the object is not one this connection reaches |
+| `422` | Google refused the request; `message` carries its reason |
+| `503` | Google Ads is not configured on this deployment |
