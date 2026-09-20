@@ -38,13 +38,15 @@ The token belongs to one workspace and reaches nothing else. It is not an API ke
 
 Listing supports `filter=userName eq "someone@yourcompany.com"` and the `startIndex` and `count` parameters. Group provisioning is not available yet and answers `501`.
 
+The endpoints only ever show and change the members your directory created, plus anyone it later claims by pushing the same address. People invited by hand, including guests from other companies, are invisible to SCIM and cannot be changed through it. Manage those in **Team**.
+
 Responses use `application/scim+json`. The `id` of a user is stable for as long as the person exists, so it is safe to store as the link between your directory and FoPost.
 
 ## What each operation does
 
-**Create.** A new member joins the workspace with the **member** role. If the person already has a FoPost account on that address, the existing account is reused rather than duplicated. Roles are managed in FoPost, not pushed from the directory, so promoting someone to admin is done in **Team**.
+**Create.** A new member joins the workspace with the **member** role. If the person already has a FoPost account on that address, the existing account is reused rather than duplicated, and an existing membership on that address is taken over by the directory rather than refused. Roles are managed in FoPost, not pushed from the directory, so promoting someone to admin is done in **Team**.
 
-**Update.** A display name change is applied. An address change is applied only when the new address is on the same verified domain; anything else is refused with `400` so the mismatch shows up in your provisioning log instead of failing quietly.
+**Update.** A display name change is applied. An address change is applied only when both the old and the new address are on the verified domain; anything else is refused with `400` so the mismatch shows up in your provisioning log instead of failing quietly.
 
 **Deactivate.** Setting `active` to `false`, or sending `DELETE`, removes the person's access to the workspace and ends their signed-in sessions within a minute.
 
@@ -67,6 +69,6 @@ Errors follow the SCIM error format.
 |:-------|:--------|
 | `400` | The request is malformed, or the address is outside the verified domain |
 | `401` | The bearer token is missing, wrong, or revoked, or the domain is no longer verified |
-| `404` | No such user in this workspace |
-| `409` | A member with that `userName` already exists |
+| `404` | No such directory-managed user in this workspace |
+| `409` | The directory already manages a member with that `userName` |
 | `501` | Group provisioning, which is not available yet |
