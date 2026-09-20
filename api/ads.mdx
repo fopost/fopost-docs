@@ -4,7 +4,9 @@ description: Boost published posts and run Meta ads, audiences and lead forms.
 icon: megaphone
 ---
 
-Ads run on a Meta Ads connection: a Meta business or user login that reaches ad accounts and Facebook Pages, separate from the account used for posting. With one in place you can boost a post FoPost already published, create an ad in one call or build its campaign, ad set, creative and ad one at a time, manage everything already on the ad account, read insights, build audiences and collect leads from Instant Forms. These endpoints need the `ads` scope, and every one that can start or stop spend also needs `publish`.
+Ads run on a Meta Ads connection: a Meta business or user login that reaches ad accounts and Facebook Pages, separate from the account used for posting. With one in place you can boost a post FoPost already published, create an ad in one call or build its campaign, ad set, creative and ad one at a time, manage everything already on the ad account, read insights, build audiences and collect leads from Instant Forms. These endpoints need the `ads` scope, and every one that can start or stop spend, or change what the public sees on an ad, also needs `publish`.
+
+The same endpoints run [TikTok Ads](/docs/api/ads-tiktok) — the connection you pass decides which network a call reaches. `GET /v1/ads/providers` lists every network with a `capabilities` block; read that rather than branching on a network's name.
 
 | Endpoint | Scopes |
 |:---------|:-------|
@@ -14,6 +16,7 @@ Ads run on a Meta Ads connection: a Meta business or user login that reaches ad 
 | `DELETE /v1/ads/{id}` | `ads`, `publish` |
 | `POST`, `PATCH`, `DELETE` and `/duplicate` on `/v1/ads/campaigns`, `/v1/ads/ad-sets` and `/v1/ads/ads` | `ads`, `publish` |
 | `POST /v1/ads/status` | `ads`, `publish` |
+| `POST`, `DELETE` on `/v1/ads/comments/{id}` and its `/reply` and `/hide` | `ads`, `publish` |
 | Everything else under `/v1/ads` | `ads` |
 
 Amounts are in the ad account's currency, in minor units: `1500` is $15.00 on a USD account.
