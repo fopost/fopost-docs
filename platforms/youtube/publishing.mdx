@@ -27,6 +27,47 @@ A YouTube post is one video. The post title becomes the video title, the body be
 
 Attach an image (or set one per post) and it becomes the video's custom thumbnail after upload. YouTube's conditions apply and come back as a warning rather than failing the post: JPEG or PNG, under YouTube's 2 MB thumbnail limit, and the channel must be verified in YouTube Studio.
 
+## Playlists
+
+The composer carries a playlist picker for each YouTube destination. A published video joins the playlist picked for that post; **Make Default** stores one on the connection, and every later post starts there. Failing to join a playlist never fails the upload, it comes back as a warning on the already-live video.
+
+```bash
+# Playlists on the channel, with the stored default marked
+curl https://api.fopost.com/v1/accounts/{account_id}/youtube/playlists \
+  -H "X-API-Key: $FOPOST_API_KEY"
+
+# Create one
+curl -X POST https://api.fopost.com/v1/accounts/{account_id}/youtube/playlists \
+  -H "X-API-Key: $FOPOST_API_KEY" -H "Content-Type: application/json" \
+  -d '{"title": "Tutorials", "privacy": "public"}'
+
+# Set the default, or null to clear it
+curl -X PUT https://api.fopost.com/v1/accounts/{account_id}/youtube/playlists/default \
+  -H "X-API-Key: $FOPOST_API_KEY" -H "Content-Type: application/json" \
+  -d '{"playlist_id": "PLxxxxxxxx"}'
+```
+
+Pass a playlist id as the `playlist_id` platform setting to override the default for one post.
+
+## Captions and transcripts
+
+Once a video is live, its post page lists the caption tracks on it and reads any of them back as a transcript. Uploading a track takes the subtitle file itself: YouTube accepts SRT and WebVTT and works out which from the bytes, so the format is not declared.
+
+```bash
+# Tracks on a video
+curl https://api.fopost.com/v1/accounts/{account_id}/youtube/videos/{video_id}/captions \
+  -H "X-API-Key: $FOPOST_API_KEY"
+
+# Upload a track
+curl -X POST https://api.fopost.com/v1/accounts/{account_id}/youtube/videos/{video_id}/captions \
+  -H "X-API-Key: $FOPOST_API_KEY" -H "Content-Type: application/json" \
+  -d '{"language": "en", "name": "English", "body": "1\n00:00:01,000 --> 00:00:04,000\nHello\n"}'
+
+# Read one back
+curl https://api.fopost.com/v1/accounts/{account_id}/youtube/captions/{caption_id} \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
 ## Deleting
 
 Deleting the post in FoPost deletes the video from the channel. This cannot be undone.

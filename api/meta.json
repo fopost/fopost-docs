@@ -19,7 +19,11 @@
     "webhooks",
     "---Engagement---",
     "inbox",
+    "contacts",
+    "broadcasts",
+    "sequences",
     "ads",
+    "ads-google",
     "---Operations---",
     "rate-limits",
     "ai"
