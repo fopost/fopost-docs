@@ -45,7 +45,7 @@ Attach labels with the `labels` array when creating a post, or apply them to man
 
 ## Activity
 
-`GET /v1/activity` lists what happened in your workspaces, newest first. It needs the `analytics` scope. Events are kept for 90 days.
+`GET /v1/activity` lists what happened in your workspaces, newest first. It needs the `analytics` scope. Events are kept for 90 days, except `security` events, which are append-only and kept indefinitely.
 
 | Kind | Recorded when |
 |:-----|:--------------|
@@ -55,6 +55,7 @@ Attach labels with the `labels` array when creating a post, or apply them to man
 | `inbox` | A reply is sent from the inbox |
 | `automation` | An automation run completes or fails |
 | `billing` | A usage invoice is issued, covered by credit, or fails to charge |
+| `security` | The audit log: members joining, leaving, or changing role or access, and changes to two-step verification, passkeys, single sign-on, and signed-in devices |
 
 | Parameter | What it does |
 |:----------|:-------------|
@@ -63,6 +64,8 @@ Attach labels with the `labels` array when creating a post, or apply them to man
 | `from`, `to` | ISO 8601 time window |
 | `cursor` | `meta.next_cursor` from the previous page |
 | `limit` | 1 to 100, default 50 |
+
+Filtering to `kind=security` gives you the audit log: who changed access or a security setting, and when. Those rows are never rewritten and never expire.
 
 Each event carries a `summary` and an `actor`: the `type` (`user`, `api_key`, `agent`, or `system`) and a `name` where there is one. `GET /v1/logs` is separate: it lists raw API requests, not workspace events.
 
