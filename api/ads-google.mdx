@@ -9,7 +9,7 @@ Google Ads is a second ad network alongside Meta, reached through the same `/v1/
 These endpoints need the `ads` scope, and every one that changes what a live account serves or bids also needs `publish`.
 
 <Callout type="warn">
-  Google Ads requires a developer token approved for Basic access. Until the deployment has one, Google Ads is listed as coming soon, no connection can be made, and every route here answers `503 not_configured`.
+  Google Ads access is granted to the Google Cloud project behind the OAuth client, at one of four levels: Test, Explorer, Basic or Standard. Until the deployment has that client, Google Ads is listed as coming soon, no connection can be made, and every route here answers `503 not_configured`. Below Basic, Google itself limits which accounts and how many operations a day the connection reaches, and says so in its own error rather than as a FoPost one.
 </Callout>
 
 ## Ids
