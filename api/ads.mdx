@@ -1,10 +1,10 @@
 ---
 title: Ads
-description: Boost published posts and run Meta ads, audiences and lead forms.
+description: Boost published posts and run ads, audiences and lead forms on a connected network.
 icon: megaphone
 ---
 
-Ads run on a Meta Ads connection: a Meta business or user login that reaches ad accounts and Facebook Pages, separate from the account used for posting. With one in place you can boost a post FoPost already published, create an ad in one call or build its campaign, ad set, creative and ad one at a time, manage everything already on the ad account, read insights, build audiences and collect leads from Instant Forms. These endpoints need the `ads` scope, and every one that can start or stop spend also needs `publish`.
+Ads run on an ad connection: a login to an ad network that reaches ad accounts and Pages, separate from the account used for posting. This page is written against Meta, the first network FoPost supported; [LinkedIn](/api/ads-linkedin) answers the same endpoints and its own page covers what differs. With one in place you can boost a post FoPost already published, create an ad in one call or build its campaign, ad set, creative and ad one at a time, manage everything already on the ad account, read insights, build audiences and collect leads from Instant Forms. These endpoints need the `ads` scope, and every one that can start or stop spend also needs `publish`.
 
 | Endpoint | Scopes |
 |:---------|:-------|
@@ -21,18 +21,19 @@ Amounts are in the ad account's currency, in minor units: `1500` is $15.00 on a 
 ## Connect
 
 ```http
+GET /v1/ads/providers
 GET /v1/ads/connections
-POST /v1/ads/connections/meta/authorize
+POST /v1/ads/connections/{provider}/authorize
 DELETE /v1/ads/connections/{id}?workspace_id=
 ```
 
-Authorize returns the Meta login URL for the `workspaceId` you pass. The user who calls it has to finish the login in their own browser session, because the callback checks that the same user came back. Removing a connection also deletes every ad record FoPost created through it.
+`/providers` lists the networks this deployment knows, each with what it supports and whether it can be connected yet; `configured: false` means the network is not available and authorizing answers `503`. `{provider}` is an id from that list, such as `meta`. Authorize returns the network's login URL for the `workspaceId` you pass. The user who calls it has to finish the login in their own browser session, because the callback checks that the same user came back. Removing a connection also deletes every ad record FoPost created through it.
 
 ```http
 GET /v1/ads/sources
 ```
 
-lists each connection with the ad accounts (`act_…`) and Pages its grant reaches. You need one of each to create an ad.
+lists each connection with its `provider`, the ad accounts (`act_…` on Meta) and the Pages its grant reaches. You need one of each to create an ad; ids are the network's own, and you pass them back as they came.
 
 ## Boost a post
 
@@ -187,6 +188,7 @@ Pass `workspaceId`, `connectionId`, `adAccountId`, `pageId` and a `targeting` bl
 | `gender` | `all`, `male`, or `female` |
 | `locations` | Regions, cities, postcodes or metro areas below country level |
 | `interests`, `behaviors`, `income` | Meta catalogue entries |
+| `facets` | Entries for the facets a network defines for itself, keyed by search type |
 | `audienceIds` | Custom audiences to include |
 
 Everything below country level comes from the catalogue:
@@ -195,7 +197,7 @@ Everything below country level comes from the catalogue:
 GET /v1/ads/targeting/search?connection_id=&type=&q=
 ```
 
-`type` is one of `country`, `region`, `city`, `zip`, `metro`, `interest`, `behavior`, or `income`. Each result has an `id` and `name` you pass back as-is; a location also needs its `type`.
+`type` is one of `country`, `region`, `city`, `zip`, `metro`, `interest`, `behavior`, or `income` on Meta. What a network accepts is its `targetingFacets` on `GET /v1/ads/providers`, so read that rather than hard-coding the list; a type the network does not serve answers `400` with `error: "unsupported"`. Each result has an `id` and `name` you pass back as-is; a location also needs its `type`.
 
 ## Manage
 
@@ -221,13 +223,15 @@ GET /v1/ads/audiences?connection_id=&ad_account_id=
 POST /v1/ads/audiences
 ```
 
-Create one of three kinds by `spec.subtype`:
+Create one by `spec.subtype`. Meta takes the first three; which subtypes a network takes follows its capabilities:
 
 | Subtype | Fields | What it is |
 |:--------|:-------|:-----------|
 | `CUSTOM` | `emails` | A customer list. Emails are hashed before they leave the API |
 | `LOOKALIKE` | `originAudienceId`, `country`, `ratio` | People who resemble an existing audience |
 | `WEBSITE` | `pixelId`, `retentionDays`, `urlContains` | Visitors your pixel saw |
+| `COMPANY_LIST` | `companies` | A list of companies rather than people |
+| `ENGAGEMENT` | `source`, `sourceId`, `retentionDays` | People who engaged with a page, ad, form or video |
 
 The list endpoint also returns the ad account's `pixels`.
 
@@ -238,7 +242,7 @@ DELETE /v1/ads/audiences/{id}?workspace_id=&connection_id=
 POST /v1/ads/audiences/{id}/users?workspace_id=&connection_id=
 ```
 
-`PATCH` renames an audience or changes its `description`. `/users` adds more `emails` to a customer list after it was created; they are hashed before they leave the API.
+`PATCH` renames an audience or changes its `description`. `/users` adds more `emails` to a customer list after it was created; they are hashed before they leave the API. `POST /v1/ads/audiences/{id}/companies` does the same for a company list.
 
 ## Lead forms
 
@@ -274,11 +278,12 @@ Comments on a Facebook ad, including an ad made only for Ads Manager and never p
 
 ## Errors
 
-A `422` means Meta refused the request and `message` carries Meta's reason, such as an ad account without a payment method or a Page the connection does not manage. A `403` with `error: "no_ads_access"` means the connection's grant does not reach ads on that account.
+A `422` means the network refused the request and `message` carries its reason, such as an ad account without a payment method or a Page the connection does not manage. A `403` with `error: "no_ads_access"` means the connection's grant does not reach ads on that account. A `400` with `error: "unsupported"` means the network cannot do what was asked at all.
 
 ## Next
 
 <Cards>
+  <Card title="LinkedIn Ads" href="/api/ads-linkedin" />
   <Card title="Inbox" href="/api/inbox" />
   <Card title="Authentication" href="/api/authentication" />
 </Cards>

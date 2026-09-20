@@ -1,0 +1,265 @@
+---
+title: LinkedIn Ads
+description: Run LinkedIn campaigns, B2B audiences, forecasts, conversions and lead gen forms.
+icon: megaphone
+---
+
+LinkedIn is a second ad network behind the same `/v1/ads` endpoints as [Meta](/api/ads). Everything on that page works here: the campaign tree, creatives, audiences, insights, lead forms. This page covers what is different, plus the endpoints only a business-to-business network answers — forecasts, conversion rules and the public ad library.
+
+LinkedIn's Advertising API is a restricted product. Until it is approved on the deployment you are calling, `GET /v1/ads/providers` reports LinkedIn with `configured: false` and connecting answers `503`.
+
+## What a connection can do
+
+```http
+GET /v1/ads/providers
+```
+
+Each network reports what it supports, so you never have to hard-code it:
+
+```json
+{
+  "id": "linkedin",
+  "name": "LinkedIn Ads",
+  "configured": true,
+  "connectMethods": ["ads"],
+  "capabilities": {
+    "campaigns": true,
+    "boost": true,
+    "creatives": true,
+    "audiences": true,
+    "targetingSearch": true,
+    "insights": true,
+    "leadForms": true,
+    "pixels": true,
+    "externalAds": true,
+    "conversions": true,
+    "forecasts": true,
+    "adLibrary": true
+  },
+  "targetingFacets": ["country", "industry", "job_title", "seniority"],
+  "trackingMacros": [
+    { "token": "{{LINKEDIN_CAMPAIGN_ID}}", "description": "The campaign the click came from" }
+  ]
+}
+```
+
+An endpoint whose capability is `false` answers `400` with `error: "unsupported"` rather than failing at the network.
+
+## Connect
+
+```http
+POST /v1/ads/connections/linkedin/authorize
+```
+
+Same body as any network: `workspaceId`, an optional dashboard `returnTo`, and an optional `method` — LinkedIn offers one, `ads`. The user who calls it finishes the login in their own browser, because the callback checks that the same user came back.
+
+## Ids are URNs
+
+Meta addresses objects with numbers and `act_…`; LinkedIn uses URNs, and FoPost passes them through unchanged:
+
+| What | Shape |
+|:-----|:------|
+| Ad account | `urn:li:sponsoredAccount:123` |
+| Organization (the Page equivalent) | `urn:li:organization:123` |
+| Campaign | `urn:li:sponsoredCampaignGroup:123` |
+| Ad set | `urn:li:sponsoredCampaign:123` |
+| Ad | `urn:li:sponsoredCreative:123` |
+| Creative | `urn:li:share:123` |
+| Audience | `urn:li:adSegment:123` |
+| Lead form | `urn:li:leadGenForm:123` |
+| Conversion rule | `urn:li:conversion:123` |
+
+LinkedIn's own tree is campaign group → campaign → creative. FoPost maps that onto the campaign → ad set → ad it uses everywhere else, so `/v1/ads/campaigns`, `/v1/ads/ad-sets`, `/v1/ads/ads`, `/duplicate`, `/v1/ads/status` and `/v1/ads/accounts/{id}/tree` behave exactly as they do on Meta. Read an id from a listing and pass it back as-is.
+
+## Creatives
+
+`format` is `image` or `video`. A LinkedIn creative is the post the ad points at, so creating one publishes a post that is visible only as an ad and never appears in the organization's feed; `POST /v1/ads/ads` then puts it in an ad set. Carousels are not supported and answer `400` with `error: "unsupported"`.
+
+Boosting works the same way as on Meta, for a LinkedIn post FoPost already published.
+
+### Tracking parameters
+
+`urlTags` is appended to the creative's destination, and LinkedIn expands its own macros at delivery:
+
+| Macro | Value |
+|:------|:------|
+| `{{LINKEDIN_CAMPAIGN_ID}}` | The campaign the click came from |
+| `{{LINKEDIN_CAMPAIGN_NAME}}` | The campaign name |
+| `{{LINKEDIN_CREATIVE_ID}}` | The creative the click came from |
+| `{{LINKEDIN_ACCOUNT_ID}}` | The ad account |
+| `{{LINKEDIN_ACCOUNT_NAME}}` | The ad account name |
+
+`trackingMacros` on `GET /v1/ads/providers` is the list for whichever network you are on, so a UTM builder can read it rather than ship a copy.
+
+## Targeting
+
+`targeting` keeps the same shape. `countries`, `ageMin`, `ageMax`, `gender`, `locations` and `audienceIds` mean what they do on Meta; LinkedIn buckets ages, so a range is widened to the buckets it overlaps. What is new is `facets`, a map keyed by the same `type` you searched with:
+
+```json
+{
+  "countries": ["US"],
+  "ageMin": 25,
+  "ageMax": 54,
+  "gender": "all",
+  "facets": {
+    "job_title": [{ "id": "urn:li:title:100", "name": "Head of Marketing" }],
+    "company_size": [{ "id": "urn:li:staffCountRange:(201,500)", "name": "201-500" }],
+    "industry": [{ "id": "urn:li:industry:96", "name": "Software Development" }]
+  }
+}
+```
+
+```http
+GET /v1/ads/targeting/search?connection_id=&type=&q=
+```
+
+On LinkedIn `type` is one of `country`, `region`, `city`, `interest`, `company`, `company_size`, `company_category`, `industry`, `job_title`, `job_function`, `seniority`, `years_of_experience`, `skill`, `degree`, `field_of_study` or `member_group`. Ask `GET /v1/ads/providers` for `targetingFacets` rather than hard-coding the list; a type the network does not serve answers `400` with `error: "unsupported"`. Each result has an `id` and `name` you pass back as-is.
+
+## Audiences
+
+`CUSTOM` (a customer list, emails hashed before they leave) and `WEBSITE` (visitors your Insight Tag saw, so `pixelId` is the tag id) work as they do on Meta. `LOOKALIKE` is not supported. Two more are:
+
+| Subtype | Fields | What it is |
+|:--------|:-------|:-----------|
+| `COMPANY_LIST` | `companies` | A list of companies rather than people |
+| `ENGAGEMENT` | `source`, `sourceId`, `retentionDays` | People who engaged with a `page`, `ad`, `lead_form` or `video` |
+
+Each company row needs at least one of `name`, `domain`, `pageUrl` or `ticker`, and may carry `country`:
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/audiences \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "adAccountId": "urn:li:sponsoredAccount:512334455",
+    "name": "Target accounts Q4",
+    "spec": {
+      "subtype": "COMPANY_LIST",
+      "companies": [
+        { "name": "Northwind Traders", "domain": "northwind.example" },
+        { "pageUrl": "https://www.linkedin.com/company/contoso" }
+      ]
+    }
+  }'
+```
+
+```http
+POST /v1/ads/audiences/{id}/companies?workspace_id=&connection_id=
+```
+
+adds more rows to a company list after it exists, in the same shape. The answer is `{ "added": n }`. The rows travel with the request and are never stored.
+
+## Forecasts
+
+Two reads that say what an audience costs before you commit to it. Both take `workspaceId`, `connectionId`, `adAccountId`, `goal` and a `targeting` block, and both are open to any network whose `capabilities.forecasts` is true.
+
+```http
+POST /v1/ads/linkedin/bid-pricing
+```
+
+adds an optional `bidType` of `CPC`, `CPM` or `CPV` and answers what the auction currently costs, in minor units of the ad account currency:
+
+```json
+{
+  "data": {
+    "currency": "USD",
+    "suggestedBidMinor": 1450,
+    "minBidMinor": 800,
+    "maxBidMinor": 4200,
+    "dailyBudgetFloorMinor": 1000
+  }
+}
+```
+
+```http
+POST /v1/ads/linkedin/supply-forecast
+```
+
+adds an optional `budgetMinor` and answers what that budget would deliver: `impressions`, `clicks`, `spendMinor` and the `windowDays` the numbers cover. `ready` is `false` while the network has no answer for that audience.
+
+`POST /v1/ads/reach-estimate` still answers how many people the targeting reaches, on every network.
+
+## Conversions
+
+A conversion rule is how the network attributes a sale or a sign-up back to an ad set.
+
+```http
+GET  /v1/ads/linkedin/conversion-rules?workspace_id=&connection_id=&ad_account_id=
+POST /v1/ads/linkedin/conversion-rules
+GET  /v1/ads/linkedin/conversion-rules/{id}?workspace_id=&connection_id=
+PATCH  /v1/ads/linkedin/conversion-rules/{id}?workspace_id=&connection_id=
+DELETE /v1/ads/linkedin/conversion-rules/{id}?workspace_id=&connection_id=
+```
+
+Create one with `workspaceId`, `connectionId`, `adAccountId`, a `name`, a `type` of `purchase`, `lead`, `sign_up`, `add_to_cart`, `download`, `install`, `key_page_view` or `other`, an `attribution` of `last_touch` or `each_campaign`, and the attribution windows `postClickWindowDays` (default 30) and `viewThroughWindowDays` (default 7). `valueMinor` and `currency` set what one conversion is worth. `DELETE` turns the rule off rather than removing it, because the network keeps the history; it answers `204`.
+
+### Attach it to an ad set
+
+```http
+POST   /v1/ads/linkedin/conversion-rules/{id}/associations?workspace_id=&connection_id=
+DELETE /v1/ads/linkedin/conversion-rules/{id}/associations?workspace_id=&connection_id=
+```
+
+Body is `{ "campaignId": "urn:li:sponsoredCampaign:123" }` — an ad set on the same connection. Both answer the rule with its updated `campaignIds`.
+
+### Read what it recorded
+
+```http
+GET /v1/ads/linkedin/conversion-rules/{id}/metrics?workspace_id=&connection_id=&since=&until=
+```
+
+`since` and `until` are `YYYY-MM-DD`, inclusive. The answer is `conversions`, `postClickConversions`, `viewThroughConversions`, `valueMinor` and `costPerConversionMinor`.
+
+### Send conversions back
+
+```http
+POST /v1/ads/linkedin/conversion-rules/{id}/events?workspace_id=&connection_id=
+```
+
+For conversions that happen off the website, where no tag fires. Up to 100 events per call, each needing an `email` or a `clickId`:
+
+```bash
+curl -X POST "https://api.fopost.com/v1/ads/linkedin/conversion-rules/urn:li:conversion:987/events?workspace_id=$WS&connection_id=$CONN" \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "events": [
+      {
+        "happenedAt": 1758326400000,
+        "valueMinor": 249900,
+        "currency": "USD",
+        "eventId": "order-10482",
+        "email": "buyer@northwind.example"
+      }
+    ]
+  }'
+```
+
+`happenedAt` is epoch milliseconds. `eventId` is your own id, so sending the same event twice is counted once. The address is hashed inside the API: the network never receives it, and FoPost stores nothing about an event. The answer is `{ "accepted": n }`.
+
+## Ad library
+
+```http
+GET /v1/ads/ad-library?workspace_id=&connection_id=&keyword=&advertiser=&countries=&since=&until=&cursor=
+```
+
+Searches the ads the network publishes for everyone, not the ads on your account. `countries` is a comma-separated list of ISO 3166-1 alpha-2 codes, `since` and `until` are `YYYY-MM-DD`. Each result carries the advertiser, the copy, the countries it ran in, the first and last impression, the paying entity where the network discloses one, and a link. Pass `nextCursor` back as `cursor` for the next page. Available wherever `capabilities.adLibrary` is true.
+
+## Lead forms
+
+Lead gen forms belong to an organization, so `pageId` is a `urn:li:organization:…`. Creating, reading, listing leads and archiving all work as on Meta.
+
+The leads feed (`POST /v1/ads/lead-pages`) is webhook-driven and LinkedIn has no per-organization subscription, so subscribing a LinkedIn organization answers `400` with `error: "unsupported"`. Read leads with `GET /v1/ads/lead-forms/{formId}/leads` instead.
+
+## Errors
+
+A `400` with `error: "unsupported"` means the network cannot do what was asked — a carousel creative, a lookalike audience, a targeting type it does not serve. A `422` means the network refused the request and `message` carries its reason. A `503` means the Advertising API product is not approved on this deployment yet.
+
+## Next
+
+<Cards>
+  <Card title="Ads" href="/api/ads" />
+  <Card title="Authentication" href="/api/authentication" />
+</Cards>
