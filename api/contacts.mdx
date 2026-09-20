@@ -1,0 +1,262 @@
+---
+title: Contacts
+description: The people behind the inbox, and the fields you keep about them.
+icon: users
+---
+
+Every comment, mention and message names an author. A contact is that person rather than that message: one row per human, carrying every handle they write from, when you first and last heard from them, and whatever fields your workspace decided to keep.
+
+Contacts are built for you. An inbound inbox item files its author, a reply files whoever you answered, and both fold into a contact that already holds the handle. You can also create one by hand or import a list. These endpoints need the `inbox` scope: a key that may read a message may read who sent it.
+
+Contacts never cross a workspace. The same handle seen in two workspaces is two contacts, and nothing about a contact leaves the workspace that met them.
+
+## List contacts
+
+```http
+GET /v1/contacts
+```
+
+```bash
+curl "https://api.fopost.com/v1/contacts?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90&search=ada" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+| Parameter | Description |
+|:----------|:------------|
+| `workspace_id` | One workspace. Omit it to span every workspace the key can reach; each contact then carries `workspace_id` |
+| `search` | Matches a display name or any of their handles |
+| `platform` | Only contacts with a handle on this network |
+| `source` | `inbox`, `radar`, or `import` — what first created the row |
+| `page`, `per_page` | Pagination, `per_page` up to 100 |
+
+Most recently active first.
+
+```json
+{
+  "data": [
+    {
+      "id": "6b0e9a4c-2d71-4f3a-9c18-5e7d0a1b2c34",
+      "display_name": "Ada Okafor",
+      "channels": [
+        { "platform": "instagram", "handle": "adaokafor", "externalId": "178414" },
+        { "platform": "x", "handle": "ada_writes", "externalId": null }
+      ],
+      "source": "inbox",
+      "note": null,
+      "first_seen_at": "2026-04-02T09:14:00.000Z",
+      "last_seen_at": "2026-09-18T14:30:00.000Z",
+      "fields": { "plan_tier": "Pro", "region": "EMEA" },
+      "labels": [{ "id": "1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f", "name": "VIP", "color": "#0070f3" }]
+    }
+  ],
+  "pagination": { "page": 1, "per_page": 25, "total": 1 }
+}
+```
+
+### Channels
+
+A channel is one handle on one network. `handle` is always lower-cased with no leading `@`. `externalId` is the platform's own id for that person when the network gave us one, and it is what a merge prefers: a handle can be changed, an id cannot.
+
+Two channels with the same `platform` and `handle` are one channel. When you send a channel that another contact already holds, the write folds into that contact instead of creating a second row.
+
+## Get a contact
+
+```http
+GET /v1/contacts/{id}
+```
+
+A contact in a workspace you cannot reach answers `404`, exactly as an id that never existed does.
+
+## Create a contact
+
+```http
+POST /v1/contacts
+```
+
+```bash
+curl -X POST "https://api.fopost.com/v1/contacts" \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "display_name": "Ada Okafor",
+    "channels": [{ "platform": "x", "handle": "ada_writes" }],
+    "fields": { "plan_tier": "Pro" }
+  }'
+```
+
+| Field | Description |
+|:------|:------------|
+| `workspace_id` | Required |
+| `channels` | Required, at least one |
+| `display_name` | Optional |
+| `note` | Optional, free text |
+| `fields` | Optional, keyed by field key |
+
+Answers `201` with the contact. If the first channel already belongs to someone on file, you get that contact back with your details merged in — creating a duplicate of a person the inbox already knows is not possible through this endpoint.
+
+## Update a contact
+
+```http
+PATCH /v1/contacts/{id}
+```
+
+```bash
+curl -X PATCH "https://api.fopost.com/v1/contacts/6b0e9a4c-2d71-4f3a-9c18-5e7d0a1b2c34" \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "display_name": "Ada O.", "fields": { "plan_tier": "Enterprise", "region": null } }'
+```
+
+Send only what changes. A field set to `null` or `""` is cleared. A field key with no definition in the workspace answers `400` naming it, rather than being dropped silently. Sending `channels` replaces the list.
+
+## Delete a contact
+
+```http
+DELETE /v1/contacts/{id}
+```
+
+Removes the contact and its field values. The messages they sent stay in the inbox, so a later message from the same handle files them again.
+
+## What a contact wrote
+
+```http
+GET /v1/contacts/{id}/conversations
+```
+
+```bash
+curl "https://api.fopost.com/v1/contacts/6b0e9a4c-2d71-4f3a-9c18-5e7d0a1b2c34/conversations" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+The threads this person appears in, newest first. Matched on their channels, so a contact merged from two handles brings both threads with it.
+
+```json
+{
+  "data": [
+    {
+      "key": "t_182736",
+      "account_id": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4",
+      "account_username": "yourbrand",
+      "platform": "instagram",
+      "messages": 14,
+      "received": 9,
+      "sent": 5,
+      "last_message_at": "2026-09-18T14:30:00.000Z",
+      "last_item_id": "0f1c4a1e-8f3c-4c62-9f6a-2a4b1a9e77d1"
+    }
+  ]
+}
+```
+
+`key` is how the inbox groups a thread: the DM thread id, else the post the comments hang off, else the handle. `last_item_id` is an inbox item id you can read through `GET /v1/inbox`.
+
+## Import a CSV
+
+```http
+POST /v1/contacts/import
+```
+
+```bash
+curl -X POST "https://api.fopost.com/v1/contacts/import" \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "csv": "platform,handle,display_name,plan_tier\nx,ada_writes,Ada Okafor,Pro\ninstagram,samrivera,Sam Rivera,Free"
+  }'
+```
+
+`platform` and `handle` are required columns. `external_id`, `display_name` and `note` are optional. Every other column is read as a custom field key, and a column matching no field is reported rather than stored.
+
+```json
+{
+  "data": {
+    "created": 1,
+    "merged": 1,
+    "skipped": [{ "row": 4, "reason": "platform and handle are both required" }],
+    "unknownColumns": ["lifetime_value"]
+  }
+}
+```
+
+A row whose handle is already on file merges into that contact, so importing the same file twice does not duplicate anyone. Up to 5,000 rows per import.
+
+## Custom fields
+
+A custom field is a column your workspace invented. The `key` is the machine name, also the CSV column header, and it is fixed once created; the `name` is what people read and can be changed.
+
+```http
+GET    /v1/contacts/fields?workspace_id={id}
+POST   /v1/contacts/fields?workspace_id={id}
+PATCH  /v1/contacts/fields/{id}
+DELETE /v1/contacts/fields/{id}
+```
+
+```bash
+curl -X POST "https://api.fopost.com/v1/contacts/fields?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90" \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "key": "plan_tier", "name": "Plan Tier", "type": "select", "options": ["Free", "Pro", "Enterprise"] }'
+```
+
+| Field | Description |
+|:------|:------------|
+| `key` | Lower-case letters, digits and underscores, starting with a letter |
+| `name` | What the dashboard shows |
+| `type` | `text`, `number`, `date`, `select`, or `boolean` |
+| `options` | Allowed values; required when `type` is `select` |
+
+A duplicate `key` answers `409`. Deleting a field removes every answer to it. A workspace keeps up to 50 fields.
+
+## Labelling a contact
+
+Workspace labels go on contacts and on conversations, not only on posts. In a workflow, the **Add Label** and **Remove Label** nodes take a target of `post`, `contact` or `conversation`; with `contact` or `conversation` the node acts on whoever triggered the run. A node built before targets existed carries none and keeps labelling the post.
+
+## Per-conversation analytics
+
+```http
+GET /v1/analytics/inbox/conversations
+```
+
+Inbox analytics broken out per thread: what each one carried and how long it waited for a reply. This one needs the `analytics` scope.
+
+```bash
+curl "https://api.fopost.com/v1/analytics/inbox/conversations?days=30&sort=slowest" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+| Parameter | Description |
+|:----------|:------------|
+| `workspace_id`, `accountId` | Narrow the accounts counted |
+| `days` | Reporting period, 1 to 365, default 7 |
+| `sort` | `volume` (default), `slowest`, or `recent` |
+| `page`, `per_page` | Pagination, `per_page` up to 100 |
+
+```json
+{
+  "data": {
+    "conversations": [
+      {
+        "key": "9f2c7a10b4e83d5612ff0a8c4d1e6b73",
+        "accountId": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4",
+        "platform": "instagram",
+        "received": 9,
+        "sent": 5,
+        "answered": 5,
+        "open": 1,
+        "medianResponseMinutes": 47,
+        "firstMessageAt": "2026-09-01T08:02:00.000Z",
+        "lastMessageAt": "2026-09-18T14:30:00.000Z"
+      }
+    ],
+    "total": 128,
+    "page": 1,
+    "per_page": 25
+  }
+}
+```
+
+Counts and timings only: no message text and no author, so these numbers sit next to the rest of your analytics.
+
+`key` here is an opaque handle for the thread, stable across pages and across requests, so you can line the same conversation up between two calls. It is deliberately not the thread id or handle the inbox groups on: that is a person, and an `analytics` key reads the numbers rather than who they are about. To go from a number back to a thread, read the same person through `GET /v1/contacts/{id}/conversations`, which needs the `inbox` scope.

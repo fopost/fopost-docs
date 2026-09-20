@@ -6,7 +6,7 @@ icon: megaphone
 
 Ads run on an ad network connection, and this page covers Meta. Google Ads uses these same endpoints through its own connection, plus a Search-only surface of its own: see [Google Ads](/docs/api/ads-google).
 
-A Meta Ads connection is a Meta business or user login that reaches ad accounts and Facebook Pages, separate from the account used for posting. With one in place you can boost a post FoPost already published, create an ad in one call or build its campaign, ad set, creative and ad one at a time, manage everything already on the ad account, read insights, build audiences and collect leads from Instant Forms. These endpoints need the `ads` scope, and every one that can start or stop spend also needs `publish`.
+A Meta Ads connection is a Meta business or user login that reaches ad accounts and Facebook Pages, separate from the account used for posting. With one in place you can boost a post FoPost already published, create an ad in one call or build its campaign, ad set, creative and ad one at a time, manage everything already on the ad account, read insights, build audiences, run product catalogs, predict reach, search the public ad archive and collect leads from Instant Forms. These endpoints need the `ads` scope, and every one that can start or stop spend also needs `publish`.
 
 | Endpoint | Scopes |
 |:---------|:-------|
@@ -16,6 +16,8 @@ A Meta Ads connection is a Meta business or user login that reaches ad accounts 
 | `DELETE /v1/ads/{id}` | `ads`, `publish` |
 | `POST`, `PATCH`, `DELETE` and `/duplicate` on `/v1/ads/campaigns`, `/v1/ads/ad-sets` and `/v1/ads/ads` | `ads`, `publish` |
 | `POST /v1/ads/status` | `ads`, `publish` |
+| `POST`, `PATCH` and `DELETE` under `/v1/ads/catalogs` | `ads`, `publish` |
+| `POST /v1/ads/reach-frequency/{id}/reserve` and `/cancel` | `ads`, `publish` |
 | Everything else under `/v1/ads` | `ads` |
 
 Amounts are in the ad account's currency, in minor units: `1500` is $15.00 on a USD account.
@@ -69,7 +71,7 @@ curl -X POST https://api.fopost.com/v1/ads/boost \
 | `adAccountId` | Yes | `act_…`, from `/sources` |
 | `postId`, `accountId` | Yes | The post and the account it was delivered to, from `/boostable` |
 | `name` | Yes | What the campaign is called on Meta |
-| `goal` | Yes | `engagement`, `traffic`, `awareness`, or `video_views` |
+| `goal` | Yes | `engagement`, `traffic`, `awareness`, or `video_views`. A boost carries a post that already exists, so the goals that need their own destination are for standalone ads |
 | `budget` | Yes | `minor` plus `type` of `daily` or `lifetime`, optional `endAt` |
 | `targeting` | Yes | See below |
 | `paused` | No | Default `true`. Set `false` to start delivering at once |
@@ -85,6 +87,29 @@ POST /v1/ads
 Same fields as a boost, minus `postId` and `accountId`, plus the creative: `pageId` (from `/sources`), `text` (up to 125 characters), optional `headline`, `destinationUrl`, `mediaUrl` (a media library asset) and `urlTags`, a query string such as `utm_source=meta&utm_medium=paid` appended to every link in the ad.
 
 This one call creates a campaign, an ad set, a creative and an ad on Meta. The next section builds the same four objects one at a time, and Meta receives exactly the same requests either way.
+
+### Goals
+
+```http
+GET /v1/ads/goals?connection_id=
+```
+
+answers with the goals that connection can run right now. Ask rather than assume: a goal the deployment is not set up for is absent from that list and answers `400 unsupported` if you send it anyway.
+
+| Goal | What the ad does | Also needs |
+|:-----|:-----------------|:-----------|
+| `engagement` | Reactions, comments and shares on the ad | — |
+| `traffic` | Clicks to `destinationUrl` | `destinationUrl` |
+| `awareness` | Reach, as cheaply as possible | — |
+| `video_views` | Plays of the video in the ad | — |
+| `messages` | Opens a chat thread | `messagingDestination` |
+| `calls` | Dials you from the ad | `phoneNumber` |
+| `whatsapp` | Opens a WhatsApp thread | Absent unless the deployment has a WhatsApp business number |
+| `sales` | A catalog ad built from a product set | `productSetId` |
+
+`messagingDestination` is `messenger`, `instagram_direct` or `whatsapp`; the WhatsApp destination is refused for the same reason the `whatsapp` goal is hidden. `phoneNumber` is E.164, such as `+14155550123`. `productSetId` comes from [Catalogs](#product-catalogs) and turns the ad into a catalog ad: Meta fills the cards from the set, so `text` is the copy above them and `headline` and `description` may use `{{product.name}}` and `{{product.description}}`.
+
+The same three fields work on `POST /v1/ads/ad-sets`, so a goal behaves identically whether you build the chain in one call or four.
 
 ## The campaign tree
 
@@ -158,8 +183,10 @@ The list is the ad account's creative library. Create one with `adAccountId`, `p
 | `image` | Optional `mediaUrl`, a library image |
 | `video` | `mediaUrl`, a library video, plus an optional `thumbnailMediaUrl`. Without one, Meta picks a frame |
 | `carousel` | `cards`: 2 to 10, each with a library image `mediaUrl` and optional `destinationUrl`, `headline` and `description` |
+| `catalog` | No media: `productSetId` instead, and Meta fills the cards from the set. See [Product catalogs](#product-catalogs) |
+| `partnership` | No media: `creatorPostId`, and `creatorInstagramUserId` for an Instagram post. See [Partnership ads](#partnership-ads) |
 
-All three take optional `headline`, `destinationUrl`, `callToAction` (`LEARN_MORE` by default, or `SHOP_NOW`, `SIGN_UP`, `SUBSCRIBE`, `CONTACT_US`, `DOWNLOAD`, `GET_OFFER`, `BOOK_NOW`, `APPLY_NOW`, `WATCH_MORE`) and `urlTags`. A creative runs nowhere until an ad uses it.
+Every format takes optional `headline`, `destinationUrl`, `callToAction` (`LEARN_MORE` by default, or `SHOP_NOW`, `SIGN_UP`, `SUBSCRIBE`, `CONTACT_US`, `DOWNLOAD`, `GET_OFFER`, `BOOK_NOW`, `APPLY_NOW`, `WATCH_MORE`) and `urlTags`. `text` is required except on `partnership`, where the creator's post carries its own copy. A creative runs nowhere until an ad uses it.
 
 ## Insights
 
@@ -269,6 +296,180 @@ GET /v1/ads/leads?form_id=&page_id=&cursor=&limit=
 ```
 
 Subscribe a Page (body: `workspaceId`, `connectionId`, `pageId`) and every new lead on any of its forms arrives in the feed as it is submitted. Subscribing also backfills the most recent leads of each form. `GET /v1/ads/leads` lists leads across every subscribed Page in your workspaces, newest first, up to 100 at a time; pass `nextCursor` back as `cursor`. Unsubscribing stops new leads; the ones already in the feed stay. Removing the connection deletes its leads from the feed.
+
+## Product catalogs
+
+A catalog holds your products; a **product set** is the slice of it one catalog ad runs from. Catalogs live on the connection's business portfolio, so a connection that reaches no portfolio cannot create one.
+
+```http
+GET    /v1/ads/catalogs?connection_id=
+POST   /v1/ads/catalogs
+GET    /v1/ads/catalogs/{id}?connection_id=
+PATCH  /v1/ads/catalogs/{id}
+DELETE /v1/ads/catalogs/{id}?workspace_id=&connection_id=
+```
+
+Create one with `workspaceId`, `connectionId`, `name` and an optional `vertical` (`commerce` by default). Deleting a catalog deletes every product, feed and set in it.
+
+### Products
+
+```http
+GET  /v1/ads/catalogs/{id}/products?connection_id=&after=
+POST /v1/ads/catalogs/{id}/products
+```
+
+The list pages 50 at a time; pass `nextCursor` back as `after`. Write up to 500 products in one batch, keyed by your own `retailerId`:
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/catalogs/500123456789/products \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "products": [
+      {
+        "op": "upsert",
+        "retailerId": "SKU-1042",
+        "name": "Trail Runner",
+        "url": "https://yourbrand.com/shop/trail-runner",
+        "imageUrl": "https://yourbrand.com/img/trail-runner.jpg",
+        "priceMinor": 12900,
+        "currency": "USD",
+        "availability": "in stock"
+      },
+      { "op": "delete", "retailerId": "SKU-0007" }
+    ]
+  }'
+```
+
+Upserts and deletes travel in the same batch. `priceMinor` is minor units of `currency`. `availability` is `in stock`, `out of stock`, `preorder`, `available for order` or `discontinued`; `condition` is `new`, `refurbished` or `used`.
+
+### Feeds
+
+A feed keeps the catalog in step with a product file you host.
+
+```http
+GET    /v1/ads/catalogs/{id}/feeds?connection_id=
+POST   /v1/ads/catalogs/{id}/feeds
+DELETE /v1/ads/catalogs/{id}/feeds/{feedId}?workspace_id=&connection_id=
+GET    /v1/ads/catalogs/{id}/feeds/{feedId}/uploads?connection_id=
+POST   /v1/ads/catalogs/{id}/feeds/{feedId}/uploads
+```
+
+Create one with `name`, and `url` plus an optional `schedule` of `HOURLY`, `DAILY` or `WEEKLY` when Meta should fetch it for you. `POST .../uploads` fetches it now, optionally from a one-off `url`; `GET .../uploads` lists each run with its error and warning counts.
+
+### Product sets
+
+```http
+GET    /v1/ads/catalogs/{id}/product-sets?connection_id=
+POST   /v1/ads/catalogs/{id}/product-sets
+PATCH  /v1/ads/catalogs/{id}/product-sets/{setId}
+DELETE /v1/ads/catalogs/{id}/product-sets/{setId}?workspace_id=&connection_id=
+```
+
+A set takes a `name` and an optional `filter`, Meta's own product-set filter shape. Without one the set is the whole catalog.
+
+### Running a catalog ad
+
+A catalog ad is the ordinary chain with a product set attached at two points:
+
+```json
+{ "goal": "sales", "productSetId": "501234567890" }
+```
+
+on the campaign and ad set, then a creative with `"format": "catalog"` and the same `productSetId`, then an ad. Or send all of it to `POST /v1/ads` in one call. A product set on a catalog your connection does not reach answers `404`, before anything is created on Meta.
+
+## Reach and frequency
+
+A prediction prices a fixed flight before you buy it. Nothing is reserved until you say so, and a reservation holds inventory on the ad account.
+
+```http
+GET  /v1/ads/reach-frequency?connection_id=&ad_account_id=
+POST /v1/ads/reach-frequency
+GET  /v1/ads/reach-frequency/{id}?connection_id=&ad_account_id=
+POST /v1/ads/reach-frequency/{id}/reserve
+POST /v1/ads/reach-frequency/{id}/cancel
+```
+
+Create one with `adAccountId`, `name`, `targeting`, `placements`, `budgetMinor`, `startAt` and `endAt` (ISO 8601), and an optional `frequencyCap`. The prediction carries `reach`, `impressions`, the budget it priced and `reserved`. Reserve and cancel take `workspaceId`, `connectionId` and `adAccountId` in the body and answer with the prediction as it now stands.
+
+## Ad Library
+
+The public ad archive: ads anyone is running, not just yours.
+
+```http
+GET /v1/ads/library?connection_id=&countries=&q=&page_ids=&active_status=&limit=&after=
+```
+
+`countries` is a comma-separated list of two-letter codes the ad reached and is required. Search by `q` (keyword or Page name) or by `page_ids`, up to ten. `active_status` is `ACTIVE`, `INACTIVE` or `ALL`.
+
+Results are read from Meta on every request and stored nowhere, so what you get back is what the archive holds right now: an ad that stops running is simply absent from the next search. Each entry carries the Page, the creative bodies and titles, the platforms it runs on, its delivery dates and a `snapshotUrl` into the archive. The spend and impression ranges are only on the archive's disclosure entries; ordinary ads have none.
+
+## Partnership ads
+
+A partnership ad runs a creator's own post as your ad, under the permission they granted you.
+
+```http
+GET    /v1/ads/partnership/creators?connection_id=&page_id=
+POST   /v1/ads/partnership/creators
+DELETE /v1/ads/partnership/creators/{creatorId}?workspace_id=&connection_id=&page_id=
+```
+
+The list is the creators who allowlisted that Page. `POST` (body: `workspaceId`, `connectionId`, `pageId`, `creatorId`) asks a creator for permission and answers with the list as it now stands.
+
+Once a creator has allowlisted you, promote one of their posts with a creative of `"format": "partnership"`, `creatorPostId` (their Instagram media id, or their Page post as `{page}_{post}`) and, for an Instagram post, `creatorInstagramUserId`. The post carries its own copy, so `text` is not required.
+
+## Account settings
+
+Everything the ad account itself holds, read through a connection and never stored.
+
+```http
+GET /v1/ads/account/activity?connection_id=&ad_account_id=&since=&until=
+```
+
+is the change log: who changed what, and when. `since` and `until` are `YYYY-MM-DD`.
+
+```http
+GET    /v1/ads/account/labels?connection_id=&ad_account_id=
+POST   /v1/ads/account/labels
+PATCH  /v1/ads/account/labels/{id}
+DELETE /v1/ads/account/labels/{id}?workspace_id=&connection_id=&ad_account_id=
+POST   /v1/ads/account/labels/{id}/apply
+```
+
+Labels group campaigns, ad sets and ads for reporting. `apply` takes `objectId` and a `level` of `campaign`, `ad_set` or `ad`, and keeps whatever labels the object already carries.
+
+```http
+GET    /v1/ads/account/studies?connection_id=&ad_account_id=
+POST   /v1/ads/account/studies
+GET    /v1/ads/account/studies/{id}?connection_id=&ad_account_id=
+DELETE /v1/ads/account/studies/{id}?workspace_id=&connection_id=&ad_account_id=
+```
+
+An A/B study splits traffic evenly across its `cells`, two to five of them, each with a `name` and the `objectIds` it tests, over `startAt` to `endAt`.
+
+```http
+GET /v1/ads/account/ios-limits?connection_id=&ad_account_id=
+```
+
+is how many iOS 14 campaigns the account may run at once, per app.
+
+```http
+GET    /v1/ads/account/high-demand-periods?connection_id=&ad_account_id=
+POST   /v1/ads/account/high-demand-periods
+DELETE /v1/ads/account/high-demand-periods/{id}?workspace_id=&connection_id=&ad_account_id=
+```
+
+A high-demand period tells Meta to expect heavier spend over a window, so pacing allows for it. Create one with `startAt`, `endAt`, `budgetValue` and a `budgetValueType` of `ABSOLUTE` or `MULTIPLIER`.
+
+```http
+GET    /v1/ads/account/value-rule-sets?connection_id=&ad_account_id=
+POST   /v1/ads/account/value-rule-sets
+DELETE /v1/ads/account/value-rule-sets/{id}?workspace_id=&connection_id=&ad_account_id=
+```
+
+A value rule set weights conversions so some audiences count for more than others: a `name` and one to twenty `rules`, each a `condition` and a `multiplier`.
 
 ## Comments on ads
 
