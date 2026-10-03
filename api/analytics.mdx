@@ -88,3 +88,51 @@ Use it after publishing something you want to measure now. Do not put it on a ti
   <Card title="Analytics guide" href="/guide/analytics" />
   <Card title="Rate Limits" href="/api/rate-limits" />
 </Cards>
+
+## Per-network metrics
+
+```http
+GET /v1/accounts/{id}/insights?raw=true
+```
+
+```bash
+curl "https://api.fopost.com/v1/accounts/$ACCOUNT_ID/insights?raw=true" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+Every endpoint above answers in one vocabulary, so a number can be compared across networks. This one does the opposite: it answers in the network's own vocabulary, keyed by the metric names the platform itself uses.
+
+That is where the numbers live that have no equivalent anywhere else. Facebook reports ad-break earnings for a monetised Page and splits impressions into paid and organic. Instagram reports how viewers left a story, split into taps forward, taps back, exits and swipes. TikTok reports its four video counts. YouTube reports a daily views series and, per video, an audience-retention curve. LinkedIn reports reactions split by type and page views split by surface. Google Business reports how people found the listing and which search terms surfaced it.
+
+```json
+{
+  "data": {
+    "platform": "facebook",
+    "account": {
+      "fetched_at": "2026-09-20T02:00:00.000Z",
+      "metrics": [
+        { "key": "page_impressions", "label": "Page Impressions", "kind": "count", "value": 41800 },
+        {
+          "key": "page_daily_video_ad_break_earnings",
+          "label": "Ad Break Earnings",
+          "kind": "currency_usd",
+          "value": 42.15
+        }
+      ]
+    },
+    "post": {
+      "external_post_id": "1234567890_9876543210",
+      "fetched_at": "2026-09-20T02:00:00.000Z",
+      "metrics": [
+        { "key": "post_impressions_paid", "label": "Paid Impressions", "kind": "count", "value": 1500 }
+      ]
+    }
+  }
+}
+```
+
+`key` is the platform's own metric name and never changes. `label` is ours and may be reworded, so read `key` if you are storing anything. `kind` tells you how to render the value: `count`, `duration_ms`, `currency_usd`, `ratio`, or `series` for a value that is an array of points rather than a number.
+
+Both blocks come from the newest collected snapshot, not a live call to the network, so `fetched_at` is when the numbers were true. A network that reports nothing per post answers an empty `post.metrics`.
+
+Reads are throttled the same way the rest of the API is, and the endpoint needs the `analytics` scope. Some networks gate their metrics behind an access grant we have requested and not yet received; those answer `503` with `platform_metrics_unavailable` rather than an empty set, so a pending grant never reads as a zero.

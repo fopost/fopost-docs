@@ -34,7 +34,8 @@ Each network reports what it supports, so you never have to hard-code it:
     "externalAds": true,
     "conversions": true,
     "forecasts": true,
-    "adLibrary": true
+    "adLibrary": true,
+    "catalogs": false
   },
   "targetingFacets": ["country", "industry", "job_title", "seniority"],
   "trackingMacros": [
@@ -242,10 +243,12 @@ curl -X POST "https://api.fopost.com/v1/ads/linkedin/conversion-rules/urn:li:con
 ## Ad library
 
 ```http
-GET /v1/ads/ad-library?workspace_id=&connection_id=&keyword=&advertiser=&countries=&since=&until=&cursor=
+GET /v1/ads/library?connection_id=&countries=&q=&page_ids=&limit=&after=
 ```
 
-Searches the ads the network publishes for everyone, not the ads on your account. `countries` is a comma-separated list of ISO 3166-1 alpha-2 codes, `since` and `until` are `YYYY-MM-DD`. Each result carries the advertiser, the copy, the countries it ran in, the first and last impression, the paying entity where the network discloses one, and a link. Pass `nextCursor` back as `cursor` for the next page. Available wherever `capabilities.adLibrary` is true.
+The same endpoint [Meta](/docs/api/ads) serves: it searches the ads the network publishes for everyone, not the ads on your account. `countries` is required, a comma-separated list of two-letter codes. `q` searches the ad copy and the advertiser name, and `page_ids` narrows to named advertisers.
+
+Each entry carries the advertiser, the creative bodies and titles, the dates it ran and a `snapshotUrl` into the library. LinkedIn's library discloses an impression band rather than spend, so the spend and impression range fields come back null. Pass `nextCursor` back as `after` for the next page. Available wherever `capabilities.adLibrary` is true.
 
 ## Lead forms
 

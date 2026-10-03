@@ -1,4 +1,9 @@
 {
   "title": "Facebook",
-  "pages": ["index", "publishing", "analytics"]
+  "pages": [
+    "index",
+    "publishing",
+    "analytics",
+    "messaging"
+  ]
 }
