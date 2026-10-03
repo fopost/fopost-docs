@@ -4,7 +4,7 @@ description: Search, Display and Performance Max campaigns, keywords, assets, co
 icon: megaphone
 ---
 
-Google Ads is a second ad network alongside Meta, reached through the same `/v1/ads` endpoints: campaigns, ad groups, ads, audiences and insights all work the same way, dispatched by the connection you name. What has no equivalent on another network lives under `/v1/ads/google/*` — keywords, negative keyword lists, assets, Performance Max asset groups, Local Services leads and conversions — plus a raw GAQL query at `POST /v1/ads/insights/query`.
+Google Ads is a second ad network alongside Meta, reached through the same `/v1/ads` endpoints: campaigns, ad groups, ads, audiences and insights all work the same way, dispatched by the connection you name. What has no equivalent on another network lives under `/v1/ads/google/*` — recommendations, the optimization score, keywords, negative keyword lists, assets, Performance Max asset groups, Local Services leads and conversions — plus a raw GAQL query at `POST /v1/ads/insights/query`.
 
 These endpoints need the `ads` scope, and every one that changes what a live account serves or bids also needs `publish`.
 
@@ -58,6 +58,69 @@ lists each connection with the accounts its grant reaches. A Google connection r
 | `GET /v1/ads/targeting/search` | Geo targets by name. Interest, behavior and income searches are Meta-only |
 | `POST /v1/ads/boost` | Not applicable: there is no post on Google to promote, and the capability is declared off |
 | `/v1/ads/lead-forms` | Not applicable: Google's equivalent is Local Services, below |
+| `/v1/ads/account/activity` | Google's change history. Google keeps 30 days, so a wider range returns the 30 days that still exist |
+| `/v1/ads/account/labels` | Labels, applied to a campaign, an ad group or an ad through the join resource each level uses |
+| `/v1/ads/account/studies` | Experiments. Creating one sets it up but does not schedule it: starting an experiment changes what live campaigns serve, so that stays an explicit step in Google Ads |
+| `/v1/ads/account/value-rule-sets` | Conversion value rules. A condition reads `device:<TYPE>`, `geo:<id>` or `audience:<id>`; anything else is refused rather than guessed at, because a wrong rule changes what a conversion is worth |
+| `/v1/ads/reach-frequency` | Not applicable: Google forecasts reach but never reserves it, so a prediction is not an object that can be stored, booked or cancelled |
+
+## Recommendations and the optimization score
+
+```http
+GET  /v1/ads/google/recommendations?connection_id=&customer_id=&types=
+GET  /v1/ads/google/optimization-score?connection_id=&customer_id=
+POST /v1/ads/google/recommendations/apply
+POST /v1/ads/google/recommendations/dismiss
+```
+
+Google's own read on what the account should change next. Each row carries the recommendation `type`, the campaign or ad group it affects, and the `impact` Google projects — clicks, conversions and spend, as they stand now and as they would be if you applied it. `types` narrows to a comma-separated list such as `KEYWORD,TARGET_CPA_OPT_IN`.
+
+```bash
+curl "https://api.fopost.com/v1/ads/google/recommendations?connection_id=$CONNECTION&customer_id=1234567890" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+```json
+{
+  "data": [
+    {
+      "id": "customers/1234567890/recommendations/ABC~1",
+      "type": "KEYWORD",
+      "campaignId": "1234567890~campaign~55",
+      "adGroupId": null,
+      "dismissed": false,
+      "impact": {
+        "baseClicks": 10,
+        "potentialClicks": 25,
+        "baseCostMinor": 100,
+        "potentialCostMinor": 250,
+        "baseConversions": 1,
+        "potentialConversions": 3
+      }
+    }
+  ]
+}
+```
+
+An `id` here is the Google resource name rather than the `~` form the other objects use, because a recommendation is not an object you address again. It is what apply and dismiss take, and it has to name a recommendation on the `customerId` you passed; any other answers `404`.
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/google/recommendations/apply \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "...",
+    "connectionId": "...",
+    "customerId": "1234567890",
+    "ids": ["customers/1234567890/recommendations/ABC~1"]
+  }'
+```
+
+<Callout type="warn">
+  Applying a recommendation changes what the live account serves or bids, straight away. Both writes need `publish` on top of `ads`. Dismiss only hides the recommendation so Google stops surfacing it.
+</Callout>
+
+The optimization score is Google's estimate of how well the account is set up, from 0 to 1, with the score of each live campaign beside it. `weight` is how much this account's score counts relative to others under the same manager.
 
 ## Keywords
 
