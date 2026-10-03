@@ -1,0 +1,79 @@
+---
+title: Claude Code Plugin
+description: Install FoPost in Claude Code in two commands, with skills for the flows you run every week.
+icon: puzzle
+---
+
+The FoPost plugin wires Claude Code to the [hosted MCP server](/mcp) and adds skills for the work people actually repeat: filling next week's calendar, clearing the inbox, and writing the weekly report.
+
+There is no API key to copy and nothing running on your machine. The plugin points at the hosted server, and Claude Code signs you in through the browser.
+
+## Install
+
+```bash
+claude plugin marketplace add fopost/fopost-mcp
+claude plugin install fopost@fopost
+```
+
+Restart Claude Code, then check what landed:
+
+```bash
+claude plugin details fopost@fopost
+```
+
+```
+fopost 0.1.0
+  Component inventory
+    Skills (3)  schedule-a-week, triage-the-inbox, weekly-report
+    MCP servers (1)  fopost
+```
+
+The first time a tool runs, Claude Code opens your browser to sign in to FoPost. Pick the workspace the assistant works in; the connection stays locked to it, and **Settings → Connected Apps** cuts it off at any time.
+
+## Skills
+
+A skill fires on its own when what you ask matches it. You can also invoke one by name.
+
+### `schedule-a-week`
+
+Fires when you ask to fill next week's calendar, draft a batch of posts, or top up the queue.
+
+It reads the ground first: which accounts are healthy, what is already scheduled, which queue slots are free, and the brand you named. Then it drafts one variant per network, previews them, and places them in the queue. Nothing publishes: it hands you one plan to approve, not twelve separate asks.
+
+> "Fill next week from these three blog posts, one LinkedIn and one X post a day."
+
+### `triage-the-inbox`
+
+Fires when you ask to triage, clear, or catch up on the inbox.
+
+It sorts the unread pile into four buckets, answer, acknowledge, route, and drop, then drafts replies for the first and labels the third. Replies are drafted for approval, never sent. It closes with the counts and the number of drafts waiting on you.
+
+> "Catch me up on the inbox and draft replies for anything that is a real question."
+
+### `weekly-report`
+
+Fires when you ask how last week went, or for a summary or recap.
+
+It pulls what published, how it performed against the week before, the inbox numbers, every failed delivery, and what competitors did, then writes one page. A failed delivery is never rounded away, and a section with no data is skipped rather than padded.
+
+> "Write the weekly report for last week."
+
+## What the plugin can do
+
+The hosted server serves the same tools as the [FoPost Agent](/guide/agent): drafting and editing posts, the calendar, the inbox, analytics, Radar, and more. Each tool needs the permission that covers it.
+
+Anything that publishes, schedules, or sends waits for your approval. The assistant proposes it; nothing reaches a network until you approve.
+
+## Updating and removing
+
+```bash
+claude plugin update fopost@fopost
+claude plugin uninstall fopost@fopost
+claude plugin marketplace remove fopost
+```
+
+## Other clients
+
+The plugin is Claude Code only. Every other MCP client connects to the same hosted server directly, or runs the stdio package: see the [MCP server page](/mcp).
+
+Source and issues: [github.com/fopost/fopost-mcp](https://github.com/fopost/fopost-mcp). MIT licensed.

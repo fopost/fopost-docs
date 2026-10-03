@@ -188,6 +188,128 @@ PATCH /v1/accounts/{id}/slack/identity
 
 Omitted fields keep their value and `null` clears one. Set `icon_url` or `icon_emoji` (like `:rocket:`), not both. A webhook connection answers `409 webhook_connection`. All four need the `accounts` scope.
 
+## Discord server
+
+A Discord account connected as the bot (not a webhook) exposes the server it was installed into. Every route answers `409 webhook_connection` on a webhook connection, and `502` when Discord itself does not answer.
+
+Channels and the posting identity:
+
+```http
+GET   /v1/accounts/{id}/discord/channels
+PATCH /v1/accounts/{id}/discord/channels/current
+GET   /v1/accounts/{id}/discord/identity
+PATCH /v1/accounts/{id}/discord/identity
+```
+
+`channels` lists the server's text channels, each with `can_post` — false when a channel permission in Discord shuts the bot out — and `is_current` on the one this account uses. `channels/current` takes `{ "channel_id": "..." }` and moves the account to another one in the same server; a channel the bot cannot post in answers `409 channel_not_writable`. `identity` is the nickname and avatar the bot wears there:
+
+```json
+{ "username": "Release Bot", "avatar_url": "https://yourbrand.com/bot.png" }
+```
+
+Omitted fields keep their value and `null` clears one.
+
+Messages, in the account's channel:
+
+```http
+GET    /v1/accounts/{id}/discord/messages/pinned
+DELETE /v1/accounts/{id}/discord/messages/{messageId}
+POST   /v1/accounts/{id}/discord/messages/{messageId}/pin
+DELETE /v1/accounts/{id}/discord/messages/{messageId}/pin
+POST   /v1/accounts/{id}/discord/messages/{messageId}/crosspost
+POST   /v1/accounts/{id}/discord/messages/{messageId}/thread
+POST   /v1/accounts/{id}/discord/dm
+```
+
+`crosspost` publishes an announcement-channel message to every server following the channel. `thread` takes `{ "name": "...", "auto_archive_duration": 1440 }`. `dm` takes `{ "member_id": "...", "content": "..." }` and sends one message to that member.
+
+Scheduled events, members and roles:
+
+```http
+GET    /v1/accounts/{id}/discord/events
+POST   /v1/accounts/{id}/discord/events
+GET    /v1/accounts/{id}/discord/events/{eventId}
+PATCH  /v1/accounts/{id}/discord/events/{eventId}
+DELETE /v1/accounts/{id}/discord/events/{eventId}
+GET    /v1/accounts/{id}/discord/members
+GET    /v1/accounts/{id}/discord/members/{memberId}
+GET    /v1/accounts/{id}/discord/roles
+POST   /v1/accounts/{id}/discord/roles
+PATCH  /v1/accounts/{id}/discord/roles/{roleId}
+DELETE /v1/accounts/{id}/discord/roles/{roleId}
+PUT    /v1/accounts/{id}/discord/roles/{roleId}/members/{memberId}
+DELETE /v1/accounts/{id}/discord/roles/{roleId}/members/{memberId}
+```
+
+An event names either a `channel_id` (a voice or stage channel) or a `location` with an `end_time`:
+
+```json
+{
+  "name": "Launch stream",
+  "start_time": "2026-10-01T18:00:00Z",
+  "end_time": "2026-10-01T19:00:00Z",
+  "location": "https://yourbrand.com/live"
+}
+```
+
+`members` takes `q` to search by username or nickname prefix, and `limit`. A member's `id` is the `member_id` for a DM and for a role assignment.
+
+Everything here needs the `accounts` scope. The routes that put something on the server — deleting, pinning, unpinning, crossposting, starting a thread and sending a DM — need the `publish` scope as well.
+## Google Business Profile
+
+A connected Google Business location is managed under `gbp`:
+
+```http
+GET    /v1/accounts/{id}/gbp/location
+PATCH  /v1/accounts/{id}/gbp/location
+GET    /v1/accounts/{id}/gbp/attributes
+PATCH  /v1/accounts/{id}/gbp/attributes
+GET    /v1/accounts/{id}/gbp/menus
+PUT    /v1/accounts/{id}/gbp/menus
+GET    /v1/accounts/{id}/gbp/services
+PUT    /v1/accounts/{id}/gbp/services
+GET    /v1/accounts/{id}/gbp/media
+POST   /v1/accounts/{id}/gbp/media
+DELETE /v1/accounts/{id}/gbp/media/{mediaKey}
+GET    /v1/accounts/{id}/gbp/place-actions
+POST   /v1/accounts/{id}/gbp/place-actions
+PATCH  /v1/accounts/{id}/gbp/place-actions/{linkId}
+DELETE /v1/accounts/{id}/gbp/place-actions/{linkId}
+GET    /v1/accounts/{id}/gbp/verification
+POST   /v1/accounts/{id}/gbp/verification/start
+POST   /v1/accounts/{id}/gbp/verification/complete
+GET    /v1/accounts/{id}/gbp/performance
+POST   /v1/accounts/{id}/gbp/assign
+```
+
+Reads need the `accounts` scope. Writes need `publish` as well, because they change what the listing shows to the public.
+
+Responses relay Google's own shape, so a field you know from the Business Profile APIs is the field you get back. Requests are snake_case, and a `PATCH` changes only the fields it carries:
+
+```json
+{ "title": "Corner Bakery", "primary_phone": "+1 555 0100" }
+```
+
+`menus` and `services` are `PUT` rather than `PATCH`, because Google replaces the whole set — send the list you want to end up with.
+
+A photo comes from your media library, never from a URL:
+
+```json
+{ "media_id": "a3f1…", "category": "INTERIOR", "description": "Front counter" }
+```
+
+The asset has to be in a workspace you can reach, and JPEG or PNG. Anything else is a `400`.
+
+`performance` takes `start_date` and `end_date`, and repeats `daily_metrics` for each metric you want. Pass `keywords=true` for the monthly search terms instead of the daily series. `attributes` takes `available=true` to list what Google offers for the location's category rather than what is set on it.
+
+`assign` hands the location to another workspace you own, moving the connection and every row keyed to it in one transaction:
+
+```json
+{ "workspace_id": "b7c2…" }
+```
+
+Every route here answers `503 configuration_error` until Google grants this deployment Business Profile API access.
+
 ## Next
 
 <Cards>

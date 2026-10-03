@@ -1,0 +1,78 @@
+---
+icon: social-facebook
+title: Messaging
+description: Ice breakers, the persistent menu, the greeting, webhook health, and handing a thread to another app.
+---
+
+Messenger settings live in the account's **Messaging Settings** drawer in **Connections**: open the card's menu and pick **Messaging Settings**. Everything on that drawer is saved on the Page itself, so it takes effect for everyone who messages you, whether or not they came through FoPost.
+
+## Webhook health
+
+The first row reports whether Meta is delivering events for this Page. When it reads **Not Subscribed**, the Page is not sending comments or messages to FoPost and the inbox will look quiet even when it is not. The fields Meta is not delivering are listed underneath.
+
+**Re-subscribe** puts the subscription back for every field the Page needs. A subscription can lapse on its own — a permission change, a token refresh, or a Page transfer is usually behind it — so this is the first thing to check when the inbox stops filling.
+
+Over the API: `GET /v1/accounts/{id}/webhook-subscription` reports `subscribed`, the `fields` Meta lists, and any `missing_fields`; `POST` to the same path re-subscribes.
+
+## Ice breakers
+
+The tappable prompts Messenger shows before someone has typed anything. Up to four, each an 80-character question paired with a payload your webhook or automation receives when it is tapped.
+
+Over the API: `GET`, `PUT` and `DELETE /v1/accounts/{id}/messaging/ice-breakers`.
+
+```json
+{
+  "ice_breakers": [
+    { "question": "What are your hours?", "payload": "HOURS" },
+    { "question": "Where do you ship?", "payload": "SHIPPING" }
+  ]
+}
+```
+
+## Persistent menu
+
+The always-visible menu at the bottom of a Messenger conversation. Up to three items, each either a **postback** that sends a payload to your webhook, or a **link** that opens an `https` URL. Titles are 30 characters.
+
+The drawer edits the default menu, the one every language falls back to. The API takes one entry per locale, so a multilingual Page can set several.
+
+Over the API: `GET`, `PUT` and `DELETE /v1/accounts/{id}/messaging/persistent-menu`.
+
+```json
+{
+  "persistent_menu": [
+    {
+      "locale": "default",
+      "call_to_actions": [
+        { "type": "postback", "title": "Talk to Us", "payload": "HUMAN" },
+        { "type": "web_url", "title": "Shop", "url": "https://example.com/shop" }
+      ]
+    }
+  ]
+}
+```
+
+## Greeting
+
+The text shown before a conversation starts, up to 160 characters, one entry per locale.
+
+Over the API: `GET`, `PUT` and `DELETE /v1/accounts/{id}/messaging/greeting`.
+
+## Handing a thread to another app
+
+Messenger lets several apps share one Page, with one of them holding the conversation at a time. Pass a thread to another app when a bot should take over, and take it back when the handoff is done.
+
+`POST /v1/inbox/conversations/{id}/handover` with the account the thread belongs to. An `app_id` passes control to that Meta app; leaving it out takes control back.
+
+```json
+{ "account_id": "acct_...", "app_id": "263902037430900" }
+```
+
+The other app has to be subscribed to the same Page for Meta to accept the handoff. This route needs both the `inbox` and `publish` scopes.
+
+## Next
+
+<Cards>
+  <Card title="Publishing to Facebook" href="/platforms/facebook/publishing" />
+  <Card title="Facebook Analytics" href="/platforms/facebook/analytics" />
+  <Card title="Inbox" href="/guide/inbox" />
+</Cards>

@@ -1,10 +1,10 @@
 ---
 title: Inbox
-description: Comments, mentions and direct messages across every connected account.
+description: Comments, mentions, reviews and direct messages across every connected account.
 icon: inbox
 ---
 
-The inbox collects what people say to your accounts: comments under your posts, mentions of your accounts elsewhere, and direct messages. Every item is stored once, tagged with the account it arrived on, and can be answered, liked, resolved, snoozed, hidden or deleted from the API. These endpoints need the `inbox` scope. Anything that acts on a platform beyond a plain reply (a like, a pin, an edit, a reaction, a new conversation, an attachment) also needs the `publish` scope.
+The inbox collects what people say to your accounts: comments under your posts, mentions of your accounts elsewhere, reviews left on your business, and direct messages. Every item is stored once, tagged with the account it arrived on, and can be answered, liked, resolved, snoozed, hidden or deleted from the API. These endpoints need the `inbox` scope. Anything that acts on a platform beyond a plain reply (a like, a pin, an edit, a reaction, a new conversation, an attachment) also needs the `publish` scope.
 
 ## List items
 
@@ -20,7 +20,7 @@ curl "https://api.fopost.com/v1/inbox?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6
 | Parameter | Description |
 |:----------|:------------|
 | `workspace_id` | One workspace. Omit it to span every workspace the key can reach; each item then carries `workspaceId` |
-| `type` | `comment`, `mention`, or `dm` |
+| `type` | `comment`, `mention`, `review`, or `dm` |
 | `state` | `unread`, `read`, `resolved`, or `snoozed` |
 | `platform` | A platform slug, such as `instagram` |
 | `account_id` | One connected account |
@@ -57,16 +57,22 @@ An item looks like this:
   "canSendMedia": false,
   "canQuickReply": false,
   "canPrivateReply": true,
+  "rating": null,
   "liked": false,
   "pinned": false,
   "reaction": null,
   "editedAt": null,
+  "moderationStatus": "published",
   "post": { "id": "3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10", "title": "Autumn drop" },
   "account": { "id": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4", "platform": "instagram", "username": "yourbrand" }
 }
 ```
 
+`moderationStatus` is the platform's own state for a comment where it reports one: `published`, `held` (waiting on a decision, invisible on the post until then), `spam`, or `rejected`. It is `null` on the networks that do not say.
+
 The `can*` flags tell you what the platform allows for that item before you try. A platform whose API reads comments but cannot answer them returns `canReply: false`. An action the platform does not offer answers `409` with `unsupported_platform`.
+
+A `review` item is a rating left on the business itself rather than a comment on a post: a Google Business review or a Facebook Page recommendation. It carries `rating`, the stars out of five, which is `null` on every other type. Its `postExternalId` is the review itself, so listing by that pair returns the review and your response as one thread.
 
 DM attachments are listed under `attachments`, each with a `url` served by the API. That link grants nothing on its own: workspace membership is checked on every request, and the bytes come through FoPost rather than from a platform URL.
 
@@ -79,7 +85,7 @@ GET /v1/inbox/posts
 GET /v1/inbox/conversations
 ```
 
-`/posts` returns one row per platform post that has collected comments, with counts and the latest comment. Pass `kind=mentions` for the posts your account was tagged in instead. `/conversations` returns one row per DM thread, latest first. Both accept `workspace_id`, `platform`, `account_id`, `state`, `q`, `sort` and pagination.
+`/posts` returns one row per platform post that has collected comments, with counts and the latest comment. Pass `kind=mentions` for the posts your account was tagged in, or `kind=reviews` for one row per review, each carrying its `rating`. `/conversations` returns one row per DM thread, latest first. Both accept `workspace_id`, `platform`, `account_id`, `state`, `q`, `sort` and pagination.
 
 To read a thread, list items with the pair the row gives you:
 
@@ -101,7 +107,7 @@ curl -X POST https://api.fopost.com/v1/inbox/0f1c4a1e-8f3c-4c62-9f6a-2a4b1a9e77d
   -d '{ "text": "It does. Blue lands next week." }'
 ```
 
-The reply is posted on the platform as the connected account and the item is settled. The response carries the updated `item` and a `reply` with the platform's id and link for it. A `409` means the account is disconnected or the platform cannot reply; a `502` means the platform refused the reply and `message` says why.
+The reply is posted on the platform as the connected account and the item is settled. The response carries the updated `item` and a `reply` with the platform's id and link for it. A `409` means the account is disconnected or the platform cannot reply; a `502` means the platform refused the reply and `message` says why; a `503` means this deployment holds no credentials for that platform's API yet.
 
 A reply to a DM can carry more than text, where the item allows it. Both need the `publish` scope.
 
@@ -235,7 +241,7 @@ GET /v1/inbox/platforms
 GET /v1/inbox/unread-count
 ```
 
-`/accounts` lists every active connected account with `inboxSupported` and `dmSupported`, so a filter can tell the truth about what it reads, plus `canStartConversation` for accounts that can open a DM by handle. `/platforms` lists which networks feed the inbox today and which are coming.
+`/accounts` lists every active connected account with `inboxSupported` and `dmSupported`, so a filter can tell the truth about what it reads, plus `canStartConversation` for accounts that can open a DM by handle. An account with `reconnectRequired: true` was connected before the inbox asked for a permission it needs and is not polled until someone reconnects it; everything else that account does keeps working. `/platforms` lists which networks feed the inbox today and which are coming.
 
 ## Poll now
 

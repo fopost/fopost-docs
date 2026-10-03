@@ -1,0 +1,217 @@
+---
+title: Broadcasts
+description: One message, sent into every conversation you already have with a segment of your contacts.
+icon: paper-airplane
+---
+
+A broadcast is written once and delivered into the direct-message threads your contacts already opened with you. It is not a post, and it is not a cold DM: every message lands in a conversation that person started.
+
+Who it goes to is an audience filter over your [contacts](/docs/api/contacts) — networks, labels, source, custom fields — resolved when you send, not when you write. Reading a broadcast needs the `inbox` scope; sending or cancelling one also needs `publish`.
+
+## The messaging window
+
+This is the rule that shapes everything here.
+
+Messenger and Instagram allow a business-initiated message only within **24 hours** of that person's last message to you. Outside that window, FoPost does not attempt the send. The recipient is recorded as `skipped` with the reason `window_closed`, and nothing reaches the platform.
+
+| Network | Window |
+|:--------|:-------|
+| Facebook (Messenger) | 24 hours since their last message |
+| Instagram | 24 hours since their last message |
+| Telegram, Slack, Bluesky, Reddit | None — the thread only has to exist |
+
+So the number of messages sent is often lower than the size of the audience, and that is the API working correctly rather than failing. Check the recipients list to see who was skipped and why.
+
+A contact who has never written to the sending account is skipped as `no_conversation`, on every network.
+
+## List broadcasts
+
+```http
+GET /v1/broadcasts
+```
+
+```bash
+curl "https://api.fopost.com/v1/broadcasts?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+| Parameter | Description |
+|:----------|:------------|
+| `workspace_id` | One workspace. Omit it to span every workspace the key can reach; each broadcast then carries `workspace_id` |
+| `status` | `draft`, `scheduled`, `sending`, `sent`, or `cancelled` |
+| `page`, `per_page` | Pagination, `per_page` up to 100 |
+
+Newest first.
+
+```json
+{
+  "data": [
+    {
+      "id": "3f8a1d92-6c40-4b7e-a15d-90b2c4e6f8a1",
+      "name": "September check-in",
+      "text": "New colours just landed. Want a look?",
+      "account_id": "b41e7c05-9d38-4a2f-8e60-1c7d5b3a9f24",
+      "audience": { "platforms": ["instagram"], "label_ids": ["..."] },
+      "status": "sent",
+      "scheduled_at": null,
+      "sent_at": "2026-09-19T10:04:00.000Z",
+      "created_at": "2026-09-19T09:58:00.000Z",
+      "counts": { "total": 412, "sent": 268, "skipped": 141, "failed": 3, "pending": 0 }
+    }
+  ],
+  "pagination": { "page": 1, "per_page": 25, "total": 1 }
+}
+```
+
+`counts.skipped` is usually the messaging window doing its job.
+
+## Create a broadcast
+
+```http
+POST /v1/broadcasts
+```
+
+```bash
+curl -X POST "https://api.fopost.com/v1/broadcasts" \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "account_id": "b41e7c05-9d38-4a2f-8e60-1c7d5b3a9f24",
+    "name": "September check-in",
+    "text": "New colours just landed. Want a look?",
+    "audience": { "platforms": ["instagram"] }
+  }'
+```
+
+| Field | Description |
+|:------|:------------|
+| `workspace_id` | Required |
+| `account_id` | Required. The connected account the messages go out from |
+| `name` | Required. What you call it; never sent to anyone |
+| `text` | Required. The message itself |
+| `media_id` | An asset from your media library to attach |
+| `audience` | Who it goes to (below). Omitted means every contact in the workspace |
+| `scheduled_at` | Send it at this time instead of on demand |
+
+Creating never sends. With `scheduled_at` the broadcast goes out on its own at that time; without it, call send.
+
+### The audience filter
+
+Every clause narrows: a contact has to match all of them.
+
+```json
+{
+  "platforms": ["instagram", "facebook"],
+  "label_ids": ["0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d"],
+  "source": "inbox",
+  "fields": [
+    { "key": "plan", "op": "is", "value": "pro" },
+    { "key": "churn_risk", "op": "is_not_set" }
+  ]
+}
+```
+
+| Clause | Description |
+|:-------|:------------|
+| `platforms` | Contacts with a handle on at least one of these networks |
+| `label_ids` | Labels the contact carries |
+| `source` | `inbox`, `radar`, or `import` |
+| `fields` | Custom field clauses, by field key. `op` is `is`, `is_not`, `contains`, `is_set` or `is_not_set` |
+
+## Update a broadcast
+
+```http
+PATCH /v1/broadcasts/{id}
+```
+
+Only a `draft` or `scheduled` broadcast can be edited. Once it is sending, the text is fixed.
+
+## Send a broadcast
+
+```http
+POST /v1/broadcasts/{id}/send
+```
+
+```bash
+curl -X POST "https://api.fopost.com/v1/broadcasts/3f8a1d92-6c40-4b7e-a15d-90b2c4e6f8a1/send" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+```json
+{ "data": { "id": "3f8a1d92-...", "status": "sending", "recipients": 412 } }
+```
+
+The audience is resolved and frozen into a recipient list, then messages go out in the background on a queue of their own, so a large broadcast never delays your scheduled posts. `recipients` is how many contacts matched, not how many will be messaged — the window decides that.
+
+Sending is idempotent per contact: a retried job resumes the list rather than messaging anyone twice.
+
+Needs the `publish` scope as well as `inbox`.
+
+## Cancel a broadcast
+
+```http
+POST /v1/broadcasts/{id}/cancel
+```
+
+Stops it where it stands. Anyone not yet written to stays unsent. Messages already delivered are not recalled — nothing can recall them.
+
+Needs the `publish` scope as well as `inbox`.
+
+## List recipients
+
+```http
+GET /v1/broadcasts/{id}/recipients
+```
+
+```bash
+curl "https://api.fopost.com/v1/broadcasts/3f8a1d92-6c40-4b7e-a15d-90b2c4e6f8a1/recipients?status=skipped" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+| Parameter | Description |
+|:----------|:------------|
+| `status` | `pending`, `sent`, `skipped`, or `failed` |
+| `page`, `per_page` | Pagination, `per_page` up to 200 |
+
+```json
+{
+  "data": [
+    {
+      "contact_id": "6b0e9a4c-2d71-4f3a-9c18-5e7d0a1b2c34",
+      "display_name": "Ada Okafor",
+      "status": "sent",
+      "skip_reason": null,
+      "sent_at": "2026-09-19T10:04:12.000Z",
+      "error": null
+    },
+    {
+      "contact_id": "9c2f7b31-5a08-4d16-b7e3-42c9a0d8e1f5",
+      "display_name": "Sam Rivera",
+      "status": "skipped",
+      "skip_reason": "window_closed",
+      "sent_at": null,
+      "error": null
+    }
+  ],
+  "pagination": { "page": 1, "per_page": 50, "total": 2 }
+}
+```
+
+| `skip_reason` | What happened |
+|:--------------|:--------------|
+| `window_closed` | The network's messaging window had shut. Nothing was attempted |
+| `no_conversation` | This contact has never written to the sending account |
+| `unsupported_platform` | The account's network takes no messages |
+
+## Delete a broadcast
+
+```http
+DELETE /v1/broadcasts/{id}
+```
+
+Removes the broadcast and its recipient records. Messages already sent stay in the conversations they went to. Cancel it first if it is still sending. This cannot be undone.
+
+## Billing
+
+Each delivered message is metered as one message. A monthly allowance is included, and messages past it are billed on your usual invoice. Skipped recipients cost nothing — no message, no charge.

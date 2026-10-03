@@ -18,6 +18,13 @@ claude mcp add --transport http fopost https://api.fopost.com/mcp
 
 Claude Code opens your browser to sign in the first time you use the server.
 
+Or install the [plugin](/mcp/plugin), which adds the same server plus skills for scheduling a week, triaging the inbox, and writing the weekly report:
+
+```bash
+claude plugin marketplace add fopost/fopost-mcp
+claude plugin install fopost@fopost
+```
+
 ### Claude, ChatGPT, Cursor, and others
 
 Add a custom connector (or remote MCP server) and paste the URL:
@@ -118,6 +125,7 @@ Give the key the narrowest scopes that do the job (a key without `ai` cannot spe
 ## Next
 
 <Cards>
+  <Card title="Claude Code Plugin" href="/mcp/plugin" />
   <Card title="Tools Reference" href="/mcp/tools" />
   <Card title="Authentication" href="/api/authentication" />
   <Card title="FoPost Agent" href="/guide/agent" />

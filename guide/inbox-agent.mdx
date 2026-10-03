@@ -1,0 +1,57 @@
+---
+title: Inbox Agent
+description: Teach FoPost your answers once, and every drafted reply uses them.
+icon: lightbulb
+---
+
+A drafted reply is only useful if it is true. Without anything to go on, AI writes a reply that sounds right and states a refund window nobody agreed to.
+
+The knowledge base is what it reads first. You save your own answers, your own pages and your own files; a drafted reply quotes them instead of inventing something.
+
+## What you can save
+
+<Cards>
+  <Card title="FAQ" description="Questions and answers you already give people, one pair per paragraph." />
+  <Card title="Note" description="Anything else worth writing down once." />
+  <Card title="URL" description="A page on your own site. Re-read whenever you sync it." />
+  <Card title="File" description="A plain-text or CSV file from your media library." />
+</Cards>
+
+Add them under **Settings → Knowledge**. Each source is indexed in the background and shows **Ready** when it can be used.
+
+## How a reply uses it
+
+When you ask for a suggested reply in the [inbox](./inbox), FoPost looks up the passages closest to what the person actually asked and puts them in front of the model with an instruction not to go beyond them. A reply about your shipping times comes from your shipping page.
+
+If nothing you saved answers the question, nothing is added. The reply is drafted without it rather than padded with a passage that nearly fits — a nearly-right answer is worse than a general one.
+
+Nothing sends on its own. A drafted reply still waits for you, exactly as it did before.
+
+## In an automation
+
+The **AI** step in a [workflow](./automations) has a **knowledge** switch. Turned on, that step reads the knowledge base the same way a suggested reply does. It is off by default, so a workflow you already built keeps answering exactly as it did.
+
+## Scoped to your workspace
+
+A source belongs to one workspace and is never read from another. An agency answering for three clients cannot have one client's policy end up in another client's reply.
+
+A source can also be narrowed to a single [brand](./brand-voices), for an account that runs more than one.
+
+## Keeping it current
+
+A `URL` source is a snapshot, not a live read. Edit the page and the old text keeps answering until you press **Sync Now**. Editing a saved FAQ or note re-indexes it automatically.
+
+Delete a source and its passages go with it.
+
+## Billing
+
+Indexing a source and looking one up are both billed as AI usage from your prepaid balance. A sync is charged once per run, however long the source is, and nothing is charged if your balance is empty or the run fails.
+
+## Next
+
+<Cards>
+  <Card title="Inbox" href="./inbox" />
+  <Card title="Agent" href="./agent" />
+  <Card title="Brands" href="./brand-voices" />
+  <Card title="Automations" href="./automations" />
+</Cards>
