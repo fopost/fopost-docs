@@ -4,9 +4,9 @@ description: Boost published posts and run Meta ads, audiences and lead forms.
 icon: megaphone
 ---
 
-Ads run on an ad network connection, and this page covers Meta. Google Ads uses these same endpoints through its own connection, plus a Search-only surface of its own: see [Google Ads](/docs/api/ads-google).
+Ads run on an ad network connection, and this page covers Meta. Google Ads and TikTok Ads use these same endpoints through their own connections, each with a surface of its own: see [Google Ads](/docs/api/ads-google) and [TikTok Ads](/docs/api/ads-tiktok). `GET /v1/ads/providers` lists every network with a `capabilities` block; read that rather than branching on a network's name.
 
-A Meta Ads connection is a Meta business or user login that reaches ad accounts and Facebook Pages, separate from the account used for posting. With one in place you can boost a post FoPost already published, create an ad in one call or build its campaign, ad set, creative and ad one at a time, manage everything already on the ad account, read insights, build audiences, run product catalogs, predict reach, search the public ad archive and collect leads from Instant Forms. These endpoints need the `ads` scope, and every one that can start or stop spend also needs `publish`.
+A Meta Ads connection is a Meta business or user login that reaches ad accounts and Facebook Pages, separate from the account used for posting. With one in place you can boost a post FoPost already published, create an ad in one call or build its campaign, ad set, creative and ad one at a time, manage everything already on the ad account, read insights, build audiences, run product catalogs, predict reach, search the public ad archive and collect leads from Instant Forms. These endpoints need the `ads` scope, and every one that can start or stop spend, or change what the public sees on an ad, also needs `publish`.
 
 | Endpoint | Scopes |
 |:---------|:-------|
@@ -18,6 +18,7 @@ A Meta Ads connection is a Meta business or user login that reaches ad accounts 
 | `POST /v1/ads/status` | `ads`, `publish` |
 | `POST`, `PATCH` and `DELETE` under `/v1/ads/catalogs` | `ads`, `publish` |
 | `POST /v1/ads/reach-frequency/{id}/reserve` and `/cancel` | `ads`, `publish` |
+| `POST`, `DELETE` on `/v1/ads/comments/{id}` and its `/reply` and `/hide` | `ads`, `publish` |
 | Everything else under `/v1/ads` | `ads` |
 
 Amounts are in the ad account's currency, in minor units: `1500` is $15.00 on a USD account.

@@ -1,0 +1,268 @@
+---
+title: TikTok Ads
+description: Run TikTok campaigns, Spark ads, Smart+, conversions and ad comments.
+icon: megaphone
+---
+
+TikTok Ads is a second network on the same [Ads](/docs/api/ads) endpoints. Connect a TikTok for Business account, and every ads route dispatches to TikTok by the connection you pass: campaigns, ad groups, ads, audiences, pixels, targeting search and insights all work the way they do on Meta. This page covers what is different and what only TikTok has.
+
+Amounts are in the ad account's currency, in minor units: `1500` is $15.00 on a USD account. These endpoints need the `ads` scope, and every one that can start or stop spend, or change what the public sees on an ad, also needs `publish`.
+
+<Callout>
+  A network answers `503 not_configured` on authorize until this deployment has its credentials. `GET /v1/ads/providers` reports `configured` for each network, so check that before offering a connect button.
+</Callout>
+
+## Connect
+
+```http
+GET /v1/ads/providers
+POST /v1/ads/connections/tiktok/authorize
+DELETE /v1/ads/connections/{id}?workspace_id=
+```
+
+Authorize returns the TikTok for Business login URL for the `workspaceId` you pass. TikTok has one login method, `business`. The user who calls it has to finish the login in their own browser session, because the callback checks that the same user came back.
+
+```json
+{
+  "data": [
+    {
+      "id": "tiktok",
+      "name": "TikTok Ads",
+      "logo": "tiktok",
+      "configured": true,
+      "connectMethods": ["business"],
+      "capabilities": {
+        "campaigns": true,
+        "boost": true,
+        "creatives": true,
+        "audiences": true,
+        "targetingSearch": true,
+        "insights": true,
+        "leadForms": false,
+        "pixels": true,
+        "externalAds": true,
+        "identities": true,
+        "sparkAds": true,
+        "smartPlus": true,
+        "conversions": true,
+        "adComments": true
+      }
+    }
+  ]
+}
+```
+
+Read `capabilities` rather than branching on the network's name. A capability a network lacks answers `400 unsupported`.
+
+## Ad accounts, Business Centers and identities
+
+```http
+GET /v1/ads/sources?workspace_id=
+GET /v1/ads/tiktok/business-centers?workspace_id=&connection_id=
+GET /v1/ads/tiktok/identities?workspace_id=&connection_id=&ad_account_id=
+```
+
+`/sources` is the shared read: each connection with the ad accounts its grant reaches, and the accounts an ad can run as. On TikTok those are **identities**, and an identity id is what every route calls `pageId`.
+
+The two TikTok-named routes are the only ones in the ads section that carry a network name, because TikTok groups ad accounts into Business Centers and distinguishes identity kinds in a way no other network has an equivalent for.
+
+```json
+{
+  "data": [
+    {
+      "id": "7012345678901234567",
+      "type": "CUSTOMIZED_USER",
+      "name": "Your Brand",
+      "avatarUrl": "https://p16-sign.tiktokcdn.com/..."
+    }
+  ]
+}
+```
+
+## Spark ads
+
+A Spark ad promotes a post already live on TikTok. The post keeps its own caption, sound, comments and engagement — nothing is uploaded and nothing is re-rendered.
+
+```http
+GET /v1/ads/spark-posts?workspace_id=&connection_id=&ad_account_id=&identity_id=
+```
+
+```json
+{
+  "data": [
+    {
+      "id": "7298765432109876543",
+      "identityId": "7012345678901234567",
+      "caption": "Behind the scenes on the autumn shoot",
+      "thumbnailUrl": "https://p16-sign.tiktokcdn.com/...",
+      "createdAt": "2026-09-02T14:31:00.000Z",
+      "views": 48213
+    }
+  ]
+}
+```
+
+Pass one as `sparkPostId` on `POST /v1/ads`:
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "adAccountId": "7011111111111111111",
+    "pageId": "7012345678901234567",
+    "sparkPostId": "7298765432109876543",
+    "name": "Autumn shoot spark",
+    "goal": "traffic",
+    "destinationUrl": "https://yourbrand.com/autumn",
+    "budget": { "minor": 2000, "type": "daily" },
+    "targeting": { "countries": ["US", "CA"], "ageMin": 18, "ageMax": 44, "gender": "all" }
+  }'
+```
+
+| Field | Required | Description |
+|:------|:---------|:------------|
+| `pageId` | Yes | The identity that owns the post, from `/tiktok/identities` |
+| `sparkPostId` | Yes for a Spark ad | A post id from `/spark-posts` |
+| `text`, `headline`, `mediaUrl` | No | Ignored on a Spark ad; the post carries its own |
+| `destinationUrl` | Yes for `traffic` | Where the ad sends people |
+
+Needs `ads` and `publish`. A network without `capabilities.sparkAds` answers `400 unsupported`.
+
+## Smart+ campaigns
+
+Smart+ hands targeting, bidding and creative rotation to TikTok. Set `smartPlus` on the campaign:
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/campaigns \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "adAccountId": "7011111111111111111",
+    "name": "Autumn Smart+",
+    "goal": "traffic",
+    "smartPlus": true
+  }'
+```
+
+The campaign starts paused unless you send `"paused": false`. Needs `ads` and `publish`.
+
+## Audiences, pixels and targeting
+
+```http
+GET /v1/ads/audiences?workspace_id=&connection_id=&ad_account_id=
+POST /v1/ads/audiences
+POST /v1/ads/audiences/{id}/users
+GET /v1/ads/targeting/search?workspace_id=&connection_id=&type=&q=
+```
+
+On TikTok, `POST /v1/ads/audiences` creates a customer-list audience only — `subtype` has to be `CUSTOM`. Emails are hashed before anything leaves FoPost. Lookalike and website audiences answer `400 unsupported`.
+
+Targeting search accepts `country`, `region`, `city`, `zip`, `metro`, `interest` and `behavior`. `income` answers `400 unsupported`; TikTok does not target by income bracket. Country codes in a `targeting` block are resolved to TikTok's own location ids for you.
+
+The same read returns the ad account's pixels, which is where a pixel id for conversions comes from.
+
+## Offline conversions
+
+Events that happened away from your site, attributed to one of the ad account's pixels.
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/conversions \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "adAccountId": "7011111111111111111",
+    "pixelId": "C8ABCDEFGHIJKLMNOPQR",
+    "events": [
+      {
+        "eventName": "CompletePayment",
+        "occurredAt": "2026-09-18T10:04:00Z",
+        "email": "buyer@example.com",
+        "valueMinor": 4999,
+        "currency": "USD",
+        "orderId": "ORD-10241"
+      }
+    ]
+  }'
+```
+
+```json
+{ "data": { "accepted": 1 } }
+```
+
+Up to 1000 events per call. `email` and `phone` are hashed before they leave FoPost; the raw values never reach the network. The pixel has to belong to the ad account you named, or the call answers `404`.
+
+## Ad comments
+
+Comments on the ads themselves, read live from TikTok and never stored.
+
+```http
+GET /v1/ads/comments?workspace_id=&connection_id=&ad_id=&after=
+POST /v1/ads/comments/{id}/reply
+POST /v1/ads/comments/{id}/hide
+DELETE /v1/ads/comments/{id}
+```
+
+```json
+{
+  "data": {
+    "comments": [
+      {
+        "id": "7299000000000000001",
+        "adId": "7298000000000000001",
+        "text": "where can I get this?",
+        "authorName": "someone",
+        "authorAvatarUrl": "https://p16-sign.tiktokcdn.com/...",
+        "createdAt": "2026-09-18T09:12:00.000Z",
+        "likes": 3,
+        "replyCount": 0,
+        "hidden": false,
+        "parentId": null
+      }
+    ],
+    "nextCursor": "2"
+  }
+}
+```
+
+Page by passing the previous `nextCursor` as `after`. The write routes take the comment id in the path and the ad in the body:
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/comments/7299000000000000001/reply \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "adId": "7298000000000000001",
+    "text": "It goes live on Friday — we will post the link."
+  }'
+```
+
+Reply, hide and delete all need `ads` and `publish`. Deleting a comment that is already gone on TikTok answers `200`, not `404`. In the dashboard these are the **Ads** tab in the Inbox.
+
+## Not on TikTok
+
+| Endpoint | Result |
+|:---------|:-------|
+| `/v1/ads/lead-forms` and everything under it | `400 unsupported` |
+| `POST /v1/ads/audiences` with `LOOKALIKE` or `WEBSITE` | `400 unsupported` |
+| `GET /v1/ads/targeting/search?type=income` | `400 unsupported` |
+| `PATCH /v1/ads/ads/{id}` with `creativeId` | `400 unsupported`; create a new ad instead |
+| A carousel creative | `400 unsupported` |
+
+## Errors
+
+| Status | Error | Meaning |
+|:-------|:------|:--------|
+| `400` | `unsupported` | TikTok cannot do what was asked; never retried |
+| `403` | `forbidden` | No access to that workspace |
+| `404` | `not_found` | Unknown, or on an ad account this connection cannot reach |
+| `422` | `platform_error` | TikTok refused the request; `message` carries its reason |
+| `503` | `not_configured` | TikTok Ads is not set up on this deployment |
