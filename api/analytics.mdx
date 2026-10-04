@@ -1,6 +1,6 @@
 ---
 title: Analytics
-description: Overview totals, time series, top posts, demographics, and label roll-ups.
+description: Overview totals, time series, top posts, decay, cadence, demographics, and label roll-ups.
 icon: chart-trending-up
 ---
 
@@ -71,6 +71,70 @@ GET /v1/analytics/posts-table
 
 Posts with their per-account delivery breakdown, for building a table rather than a chart.
 
+## Content decay
+
+```http
+GET /v1/analytics/decay
+```
+
+```bash
+curl "https://api.fopost.com/v1/analytics/decay?days=30" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+How long a post keeps earning. Each post is measured many times as it ages, so the readings can be grouped into age bands: under an hour, 1-3 hours, and so on up to a week. Every band reports where the average post had got to by that age and `shareOfFinal`, what fraction of everything it eventually earned that was.
+
+`halfLifeBucket` is the first band where the average post had passed half its final engagement. On most networks that lands inside the first few hours, which is the number worth arguing with your posting schedule about.
+
+`days` filters by publish time, not reading time: it selects posts published in the window, then uses every reading taken of them. A post published a minute ago contributes nothing useful yet, and a band with `posts: 0` means nothing was measured at that age rather than that nothing happened.
+
+## Posting frequency
+
+```http
+GET /v1/analytics/frequency
+```
+
+Whether posting more earned more. Weeks run Monday to Sunday in UTC and are grouped into cadence bands by their own post count, so a week with four posts is compared against other four-post weeks rather than against the average. Each band reports the engagement the average post in those weeks earned, and `best` names the cadence that earned the most per post.
+
+A week with no posts belongs to no band and is left out, so an idle month does not drag a cadence down.
+
+## Post timeline
+
+```http
+GET /v1/analytics/posts/{id}/timeline
+```
+
+Every reading held for one post, oldest first, with one timeline per delivery, because the same post on two networks decays differently. Each point carries the reading and `delta`, what moved since the point before it.
+
+`id` is a FoPost post id, or the URL-encoded permalink of a post made natively on the network:
+
+```bash
+curl "https://api.fopost.com/v1/analytics/posts/$(printf %s 'https://x.com/acme/status/1' | jq -sRr @uri)/timeline" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+A post in a workspace you are not in answers `404`, the same as one that does not exist.
+
+## Changes since
+
+```http
+GET /v1/analytics/changes?since=2026-03-02T00:00:00Z
+```
+
+Readings recorded after `since`, oldest first, with a `cursor` to pass as the next `since`. This is how you mirror our metrics into your own store without refetching the whole history: poll on whatever interval suits you, store `cursor`, pass it back.
+
+Omitting `since` gives the last seven days. `hasMore` tells you the page was full and another call will return more; `cursor` is null when nothing changed.
+
+## Posts made outside FoPost
+
+```http
+GET /v1/accounts/{id}/native-posts
+```
+
+Posts that exist on the account but never went out through FoPost, newest first, with the freshest metrics held for each. Useful for reconciling an account you started managing partway through, or for seeing what a client posted by hand.
+
+Paginate with `page` and `per_page`; `days` narrows to posts published recently. An API key needs the `analytics` scope as well as `accounts`.
+
 ## Collect on demand
 
 ```http
@@ -80,6 +144,14 @@ POST /v1/analytics/collect
 Forces a collection run for the active accounts instead of waiting for the next scheduled one. It is throttled per user: when you are over the limit, the `429` body carries `retryAfter` in seconds.
 
 Use it after publishing something you want to measure now. Do not put it on a timer, since the scheduled collection is already doing that.
+
+To refresh a single post rather than every account:
+
+```http
+POST /v1/posts/{id}/analytics/collect
+```
+
+`id` is a FoPost post id or a URL-encoded permalink, the same as the timeline endpoint. One post is still a call to the network, so it spends the same per-user budget as the full run and answers the same `429` with `retryAfter`. An API key needs the `analytics` scope as well as `posts`.
 
 ## Next
 
