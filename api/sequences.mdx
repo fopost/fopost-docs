@@ -1,0 +1,193 @@
+---
+title: Sequences
+description: A series of messages sent on a delay after someone is enrolled.
+icon: layers
+---
+
+A sequence is a list of steps. Each step is a message and how long to wait after the previous one. Enroll a contact and they start walking it: the first step fires after its delay, then the next, until the sequence runs out.
+
+Like a [broadcast](/docs/api/broadcasts), every message lands in a direct-message thread the contact already opened with you, and the same messaging window applies. Reading needs the `inbox` scope; enrolling and unenrolling also need `publish`.
+
+## The messaging window applies to every step
+
+Messenger and Instagram take a business-initiated message only within 24 hours of that person's last message. A step that comes due outside the window is **skipped, not sent** — and the enrollment carries on to the next step, because a later one may well fall inside a window they reopen by writing to you again.
+
+So a contact can complete a sequence having received only some of its messages. Telegram, Slack, Bluesky and Reddit have no window, so every due step goes out.
+
+## List sequences
+
+```http
+GET /v1/sequences
+```
+
+```bash
+curl "https://api.fopost.com/v1/sequences?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+| Parameter | Description |
+|:----------|:------------|
+| `workspace_id` | One workspace. Omit it to span every workspace the key can reach; each sequence then carries `workspace_id` |
+| `page`, `per_page` | Pagination, `per_page` up to 100 |
+
+```json
+{
+  "data": [
+    {
+      "id": "b7d41e60-3c29-4f85-91ab-6d0e2f7c8a13",
+      "name": "New follower welcome",
+      "account_id": "b41e7c05-9d38-4a2f-8e60-1c7d5b3a9f24",
+      "steps": [
+        { "delay_hours": 0, "text": "Thanks for the follow — anything I can help with?" },
+        { "delay_hours": 48, "text": "Here is what people usually ask us first." }
+      ],
+      "status": "active",
+      "created_at": "2026-09-12T08:00:00.000Z",
+      "enrollments": { "total": 190, "active": 44, "completed": 138, "stopped": 8, "failed": 0 }
+    }
+  ],
+  "pagination": { "page": 1, "per_page": 25, "total": 1 }
+}
+```
+
+## Create a sequence
+
+```http
+POST /v1/sequences
+```
+
+```bash
+curl -X POST "https://api.fopost.com/v1/sequences" \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "account_id": "b41e7c05-9d38-4a2f-8e60-1c7d5b3a9f24",
+    "name": "New follower welcome",
+    "steps": [
+      { "delay_hours": 0, "text": "Thanks for the follow — anything I can help with?" },
+      { "delay_hours": 48, "text": "Here is what people usually ask us first." }
+    ]
+  }'
+```
+
+| Field | Description |
+|:------|:------------|
+| `workspace_id` | Required |
+| `account_id` | Required. The connected account every step is sent from |
+| `name` | Required. Internal only |
+| `steps` | Required. Up to 20, in order |
+| `status` | `active` (default) or `paused` |
+
+Each step carries `delay_hours` (measured from the previous step, so `0` on the first step means "as soon as they are enrolled"), `text`, and an optional `media_id`.
+
+Creating a sequence enrolls nobody.
+
+## Update a sequence
+
+```http
+PATCH /v1/sequences/{id}
+```
+
+Set `status` to `paused` and nothing fires for anyone, without ending a single enrollment; set it back to `active` and everyone picks up where they stood.
+
+Editing `steps` changes what people still on the sequence will receive from their current position onward.
+
+## Enroll contacts
+
+```http
+POST /v1/sequences/{id}/enroll
+```
+
+```bash
+curl -X POST "https://api.fopost.com/v1/sequences/b7d41e60-3c29-4f85-91ab-6d0e2f7c8a13/enroll" \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "contact_ids": ["6b0e9a4c-2d71-4f3a-9c18-5e7d0a1b2c34"] }'
+```
+
+Name contacts outright with `contact_ids`, or give the same `audience` filter a broadcast takes:
+
+```json
+{ "audience": { "platforms": ["instagram"], "source": "inbox" } }
+```
+
+```json
+{ "data": { "id": "b7d41e60-...", "enrolled": 1 } }
+```
+
+Re-enrolling someone already on the sequence restarts their walk from the first step rather than running two in parallel.
+
+Needs the `publish` scope as well as `inbox`.
+
+## Unenroll contacts
+
+```http
+POST /v1/sequences/{id}/unenroll
+```
+
+```bash
+curl -X POST "https://api.fopost.com/v1/sequences/b7d41e60-3c29-4f85-91ab-6d0e2f7c8a13/unenroll" \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "contact_ids": ["6b0e9a4c-2d71-4f3a-9c18-5e7d0a1b2c34"] }'
+```
+
+```json
+{ "data": { "id": "b7d41e60-...", "stopped": 1 } }
+```
+
+Nothing further fires for them. This is what you call when someone asks to stop hearing from you.
+
+Needs the `publish` scope as well as `inbox`.
+
+## List enrollments
+
+```http
+GET /v1/sequences/{id}/enrollments
+```
+
+| Parameter | Description |
+|:----------|:------------|
+| `page`, `per_page` | Pagination, `per_page` up to 200 |
+
+```json
+{
+  "data": [
+    {
+      "id": "c81f3a27-40d6-4e93-8b52-7fa1c0d9e263",
+      "contact_id": "6b0e9a4c-2d71-4f3a-9c18-5e7d0a1b2c34",
+      "display_name": "Ada Okafor",
+      "step": 1,
+      "next_at": "2026-09-21T08:00:00.000Z",
+      "status": "active",
+      "last_sent_at": "2026-09-19T08:00:00.000Z",
+      "error": null
+    }
+  ],
+  "pagination": { "page": 1, "per_page": 50, "total": 1 }
+}
+```
+
+`step` counts the steps already sent, so it is also the index of the next one. `next_at` is when that one comes due, and is null once nothing is left.
+
+| `status` | Meaning |
+|:---------|:--------|
+| `active` | Still walking the sequence |
+| `completed` | Every step has come due |
+| `stopped` | Unenrolled |
+| `failed` | The sending account became unavailable |
+
+When a step is skipped rather than sent, `error` carries the reason — `window_closed` or `no_conversation` — and the enrollment stays active for the next step.
+
+## Delete a sequence
+
+```http
+DELETE /v1/sequences/{id}
+```
+
+Removes the sequence and every enrollment on it. Messages already sent stay in the conversations they went to. This cannot be undone.
+
+## Billing
+
+Each delivered message is metered as one message, the same as a broadcast. A monthly allowance is included, and messages past it are billed on your usual invoice. A skipped step costs nothing.

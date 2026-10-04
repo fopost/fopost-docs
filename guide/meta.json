@@ -24,6 +24,7 @@
     "sources",
     "analytics",
     "inbox",
+    "inbox-agent",
     "---Teams and agencies---",
     "workspaces",
     "team-collaboration",

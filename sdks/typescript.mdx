@@ -106,10 +106,26 @@ Keep the key server side. An SDK call from browser code ships the key to everyon
 
 Failed requests throw with the status and the API's `error` code, so you can branch on the code rather than parsing a message. `402` means AI credits ran out and should not be retried; `429` carries `Retry-After`.
 
+## Chat adapter
+
+`@fopost/sdk/chat-adapter` is a second entry point that wraps the inbox conversation and reply endpoints in a send/receive interface, for plugging FoPost into a chatbot framework:
+
+```ts
+import { createChatAdapter } from '@fopost/sdk/chat-adapter';
+
+const chat = createChatAdapter({ client: fopost, workspaceId, webhookSecret });
+const event = await chat.parseWebhook(rawBody, request.headers);
+const message = await chat.receiveOne(event);
+if (message) await chat.send({ replyTo: message.id, text: 'On it.' });
+```
+
+Full walkthrough: [chat adapter](/sdks/chat-adapter).
+
 ## Next
 
 <Cards>
   <Card title="API Reference" href="/api/overview" />
+  <Card title="Chat Adapter" href="/sdks/chat-adapter" />
   <Card title="MCP Server" href="/mcp" />
   <Card title="Webhooks" href="/webhooks" />
 </Cards>
