@@ -159,7 +159,7 @@ client
 
 ## Media
 
-Up to five files per call, 50 MB each, counted against the plan's storage allowance and reachable with the `posts` scope. Upload first, then attach the returned asset to a block:
+Up to five files per call, each within your account's [per-file limit](/api/media#limits) and the 100 MB this route carries, counted against the storage allowance and reachable with the `posts` scope. Upload first, then attach the returned asset to a block:
 
 ```elixir
 {:ok, [asset]} =

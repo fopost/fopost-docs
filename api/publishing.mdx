@@ -50,9 +50,24 @@ curl -X POST https://api.fopost.com/v1/posts \
 | `summary` | string | No | Summary, for platforms that take one |
 | `auto_plug` | boolean | No | Post a follow-up comment after publishing |
 
-Media items take `type` (`image`, `video`, `gif`), `name`, and `url`, plus optional `alt` and `thumbnail`. Upload files first through the [media endpoints](/api/media) and pass what they return.
+Media items take `type` (`image`, `video`, `gif`), `name`, and `url`, plus optional `alt` and `thumbnail`. Upload files first through the [media endpoints](/api/media) and pass what they return, or send them with the post as below.
 
 The response is the created post, with `id` and `status`.
+
+### Create a post with files
+
+The same endpoint takes `multipart/form-data`: the JSON body goes in a `post` field and up to five files under `files`. The files are stored in the workspace library and attached to the first content block, so one request does it all.
+
+```bash
+curl -X POST https://api.fopost.com/v1/posts \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -F 'post={"workspace_id":"7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90","accounts":["3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10"],"content":[{"text":"Doors open Monday."}],"status":"draft"}' \
+  -F "files=@launch.mp4"
+```
+
+`PUT /v1/posts/{id}` takes the same form; the files join the first block of the `content` you send, or of the stored content when you send none.
+
+A multipart request passes through the API, so each file is capped at 100 MB here as well as at your [account's limit](/api/media#limits). A bigger file, a 2 GB video for YouTube say, goes through [direct upload](/api/media#direct-upload) first and is attached by `url`. The SDKs hide the split: pass a file to `posts.create` and the client picks the route by size. A file over either ceiling answers `413` with `file_too_large` and `max_file_bytes`.
 
 ## Publish it
 

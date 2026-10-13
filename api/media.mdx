@@ -24,16 +24,53 @@ curl -X POST https://api.fopost.com/v1/media/upload \
 | Limit | Value |
 |:------|:------|
 | Files per request | 5 |
-| Size per file | 50 MB |
+| Size per file | Your account's limit, at most 100 MB on this route |
 | Types | jpeg, png, gif, webp, mp4, mov, webm, pdf, txt, csv |
 
 The declared type is verified against the actual file contents, so renaming an executable to `.png` does not get it through.
 
+This route carries the whole request through the API, so it stops at 100 MB per file whatever your limit is. A larger file goes through [direct upload](#direct-upload), which has no such cap. A file over either ceiling answers `413` with `file_too_large` and `max_file_bytes`, never an HTML error page.
+
 Pass `workspaceId` to also save the files to that workspace's media library, where they are reusable and count against the account's storage allowance. Leave it out for a one-off attachment.
+
+## Limits
+
+```http
+GET /v1/media/limits?workspaceId=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90
+```
+
+The largest file your account can upload grows with the number of connected accounts on the billing account:
+
+| Connected accounts | Largest file |
+|:-------------------|:-------------|
+| Up to 2 | 100 MB |
+| Up to 7 | 400 MB |
+| Up to 15 | 2 GB |
+| 16 and more | 5 GB |
+
+The **Large Uploads** add-on (Settings → Billing) lifts any account to 5 GB for a flat monthly fee. The endpoint answers the ceiling in force, what set it, the multipart ceiling, and whether direct upload is available:
+
+```json
+{
+  "data": {
+    "maxFileBytes": 419430400,
+    "source": "accounts",
+    "connectedAccounts": 5,
+    "largeUploadsEnabled": false,
+    "nextTier": { "upToAccounts": 15, "maxFileBytes": 2147483648 },
+    "multipartMaxFileBytes": 104857600,
+    "maxFilesPerUpload": 5,
+    "directUploadAvailable": true,
+    "allowedTypes": ["image/jpeg", "image/png", "..."]
+  }
+}
+```
+
+Read it before an upload to pick the route and to show the person the real number. `source` is `accounts`, `add_on`, or `bypass`.
 
 ## Direct upload
 
-For a large file, or a client that should not proxy bytes through your server, upload straight to storage through a signed URL. It is three calls.
+For anything over 100 MB, or a client that should not proxy bytes through your server, upload straight to storage through a signed URL. The bytes never pass through the API, so the only ceiling is your account's limit, up to 5 GB in one PUT. It is three calls.
 
 **1. Sign the upload.**
 
@@ -50,6 +87,8 @@ POST /v1/media/presign
 }
 ```
 
+`folderId`, `brandRole`, `brandVoiceId`, `personConsent`, and `origin` are accepted here too, with the same meaning as on upload, so the finished item lands exactly where a multipart upload would.
+
 ```json
 {
   "data": {
@@ -57,12 +96,13 @@ POST /v1/media/presign
     "uploadUrl": "https://…",
     "method": "PUT",
     "headers": { "Content-Type": "video/mp4" },
-    "expiresAt": "2026-09-19T14:00:00.000Z"
+    "expiresAt": "2026-09-19T14:00:00.000Z",
+    "maxFileBytes": 419430400
   }
 }
 ```
 
-The same types and the 50 MB ceiling apply as for upload, and the storage allowance is checked here too. `size` is part of the signature, so the PUT is refused if the byte count differs.
+The same types apply as for upload, `size` is checked against your account's limit (`413` `file_too_large` when over), and the storage allowance is checked here too. `size` is part of the signature, so the PUT is refused if the byte count differs.
 
 **2. PUT the bytes.**
 
@@ -78,7 +118,7 @@ Send exactly the returned headers and no API key. The URL accepts one PUT and st
 POST /v1/media/presign/{uploadId}/complete
 ```
 
-Completion reads the object back and runs the same checks as an upload: allowed type, content matching the declared type, size, storage allowance. It answers with the same item shape as upload, including `previewUrl`. A refused object is deleted; `409` means the upload was already completed and `410` that it expired. An upload that is never completed is discarded after 24 hours and never appears in the library.
+Completion verifies the object where it sits and promotes it into the library with the same checks as an upload: allowed type, content matching the declared type, size, storage allowance. It answers with the same item shape as upload, including `previewUrl`. A refused object is deleted; `409` means the upload was already completed and `410` that it expired. An upload that is never completed is discarded after 24 hours and never appears in the library.
 
 The SDKs wrap all three calls in one helper (`media.uploadDirect` or the language equivalent).
 
@@ -100,7 +140,9 @@ Removes the item from the library. Posts that already published with it are unaf
 
 ## Attaching to a post
 
-Take what upload returns and put it in a content block:
+Two ways. A post can carry its files in the same request: send `POST /v1/posts` (or `PUT /v1/posts/{id}`) as `multipart/form-data` with the JSON body in a `post` field and the files under `files`. They are stored in the workspace library and attached to the first content block. The multipart ceiling of 100 MB per file applies; see [publishing](/api/publishing#create-a-post-with-files).
+
+Or upload first and take what upload returns into a content block:
 
 ```json
 {
