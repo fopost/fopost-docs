@@ -29,7 +29,7 @@ curl -X POST https://api.fopost.com/v1/media/upload \
 
 The declared type is verified against the actual file contents, so renaming an executable to `.png` does not get it through.
 
-This route carries the whole request through the API, so it stops at 100 MB per file whatever your limit is. A larger file goes through [direct upload](#direct-upload), which has no such cap. A file over either ceiling answers `413` with `file_too_large` and `max_file_bytes`, never an HTML error page.
+This route carries the whole request through the API's edge, which refuses any request body over 100 MB before it reaches FoPost. A file that large on this route gets the edge's own `413` page, not a FoPost error, so keep multipart under 100 MB per file and send anything bigger through [direct upload](#direct-upload), which has no such cap. Within 100 MB, a file over your account's limit answers `413` with `file_too_large` and `max_file_bytes`.
 
 Pass `workspaceId` to also save the files to that workspace's media library, where they are reusable and count against the account's storage allowance. Leave it out for a one-off attachment.
 

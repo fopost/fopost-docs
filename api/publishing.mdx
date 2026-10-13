@@ -67,7 +67,7 @@ curl -X POST https://api.fopost.com/v1/posts \
 
 `PUT /v1/posts/{id}` takes the same form; the files join the first block of the `content` you send, or of the stored content when you send none.
 
-A multipart request passes through the API, so each file is capped at 100 MB here as well as at your [account's limit](/api/media#limits). A bigger file, a 2 GB video for YouTube say, goes through [direct upload](/api/media#direct-upload) first and is attached by `url`. The SDKs hide the split: pass a file to `posts.create` and the client picks the route by size. A file over either ceiling answers `413` with `file_too_large` and `max_file_bytes`.
+A multipart request passes through the API's edge, which refuses any request over 100 MB before FoPost sees it, so each file is capped at 100 MB here as well as at your [account's limit](/api/media#limits). A bigger file, a 2 GB video for YouTube say, goes through [direct upload](/api/media#direct-upload) first and is attached by `url`. The SDKs hide the split: pass a file to `posts.create` and the client picks the route by size. A file over either ceiling answers `413` with `file_too_large` and `max_file_bytes`.
 
 ## Publish it
 
