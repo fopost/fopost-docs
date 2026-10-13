@@ -12,6 +12,10 @@ Media endpoints use the `posts` scope, because media only exists to end up on a 
 POST /v1/media/upload
 ```
 
+<Callout title="Files over 100 MB">
+This route stops at 100 MB per file. For anything bigger, a long video for example, sign the upload first with [`POST /v1/media/presign`](#direct-upload) and PUT the file straight to storage: that path takes files up to your account's limit, 5 GB at most, and is what every SDK's `uploadDirect` does.
+</Callout>
+
 Send `multipart/form-data` with the files under the `files` field:
 
 ```bash
