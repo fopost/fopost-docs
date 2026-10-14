@@ -13,28 +13,47 @@ Every delivery is signed with the secret returned when the webhook was created. 
 | `Content-Type` | `application/json` |
 | `X-FoPost-Event` | The event name |
 | `X-FoPost-Delivery` | The delivery id, stable across retries of the same event, so it is your deduplication key |
-| `X-FoPost-Signature` | `sha256=` followed by the hex signature |
+| `X-FoPost-Timestamp` | Unix seconds, when this attempt was sent |
+| `X-FoPost-Signature-256` | `sha256=` followed by the hex HMAC-SHA256 of `<timestamp>.<rawBody>` |
+| `X-FoPost-Signature` | `sha256=` followed by the hex HMAC-SHA256 of the raw body alone. The legacy signature |
 
 ## Verify
 
-The signature is an HMAC-SHA256 of the raw request body, keyed with your webhook's signing secret: the body and nothing else. Compute it over the bytes you received, before any JSON parsing, and compare with a timing-safe comparison.
+Both signatures are HMAC-SHA256 keyed with your webhook's signing secret, computed over the raw bytes you received, before any JSON parsing. Check the timestamped one: it is what stops a captured delivery from being replayed later.
+
+1. Read the body as raw bytes
+2. Reject when `X-FoPost-Timestamp` is more than **5 minutes** (300 seconds) from now
+3. Compute HMAC-SHA256 over `<timestamp>.<rawBody>` and compare it to `X-FoPost-Signature-256` with a timing-safe comparison
+4. Only then parse the JSON
 
 ```javascript
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
-function verify(rawBody, header, secret) {
-  const expected = 'sha256=' + createHmac('sha256', secret).update(rawBody).digest('hex');
-  const a = Buffer.from(header ?? '');
+const TOLERANCE_SECONDS = 300;
+
+function verify(rawBody, timestamp, header, secret) {
+  if (!timestamp || !header) return false;
+  const sent = Number(timestamp);
+  if (!Number.isFinite(sent) || Math.abs(Date.now() / 1000 - sent) > TOLERANCE_SECONDS) return false;
+  const expected =
+    'sha256=' + createHmac('sha256', secret).update(`${timestamp}.${rawBody}`).digest('hex');
+  const a = Buffer.from(header.trim());
   const b = Buffer.from(expected);
   return a.length === b.length && timingSafeEqual(a, b);
 }
 ```
 
 ```php
-function verify(string $rawBody, ?string $header, string $secret): bool
+function verify(string $rawBody, ?string $timestamp, ?string $header, string $secret): bool
 {
-    $expected = 'sha256=' . hash_hmac('sha256', $rawBody, $secret);
-    return $header !== null && hash_equals($expected, $header);
+    if ($timestamp === null || $header === null) {
+        return false;
+    }
+    if (!is_numeric($timestamp) || abs(time() - (int) $timestamp) > 300) {
+        return false;
+    }
+    $expected = 'sha256=' . hash_hmac('sha256', $timestamp . '.' . $rawBody, $secret);
+    return hash_equals($expected, trim($header));
 }
 ```
 
@@ -44,7 +63,9 @@ Three mistakes account for nearly every "signature never matches" report:
 - **Comparing with `==`.** String comparison leaks timing; use your language's constant-time comparison
 - **Dropping the `sha256=` prefix on one side only.** Compare like with like
 
-The scheme has no timestamp component; the signature covers the body alone. Replay of an identical body therefore verifies, which is another reason to deduplicate on `X-FoPost-Delivery` and treat your handler as idempotent.
+### The legacy signature
+
+`X-FoPost-Signature` is the HMAC-SHA256 of the raw body alone, with no timestamp. It is still sent on every delivery so older receivers keep working, and a redelivery carries the original value because the body is identical. On its own it does not protect against replay, so a receiver that only checks it has to deduplicate on `X-FoPost-Delivery` and stay idempotent. Fall back to it only when no `X-FoPost-Timestamp` header is present.
 
 Several framework integrations verify for you: the [Symfony](/sdks/symfony), [Rails](/sdks/rails), [Django](/sdks/django), and [FastAPI](/sdks/fastapi) packages each ship a receiver that checks the signature and dispatches a native event.
 
