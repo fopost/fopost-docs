@@ -81,7 +81,7 @@ The two TikTok-named routes are the only ones in the ads section that carry a ne
 
 ## Spark ads
 
-A Spark ad promotes a post already live on TikTok. The post keeps its own caption, sound, comments and engagement — nothing is uploaded and nothing is re-rendered.
+A Spark ad promotes a post already live on TikTok. The post keeps its own caption, sound, comments and engagement: nothing is uploaded and nothing is re-rendered.
 
 ```http
 GET /v1/ads/spark-posts?workspace_id=&connection_id=&ad_account_id=&identity_id=
@@ -160,7 +160,7 @@ POST /v1/ads/audiences/{id}/users
 GET /v1/ads/targeting/search?workspace_id=&connection_id=&type=&q=
 ```
 
-On TikTok, `POST /v1/ads/audiences` creates a customer-list audience only — `subtype` has to be `CUSTOM`. Emails are hashed before anything leaves FoPost. Lookalike and website audiences answer `400 unsupported`.
+On TikTok, `POST /v1/ads/audiences` creates a customer-list audience only: `subtype` has to be `CUSTOM`. Emails are hashed before anything leaves FoPost. Lookalike and website audiences answer `400 unsupported`.
 
 Targeting search accepts `country`, `region`, `city`, `zip`, `metro`, `interest` and `behavior`. `income` answers `400 unsupported`; TikTok does not target by income bracket. Country codes in a `targeting` block are resolved to TikTok's own location ids for you.
 
@@ -241,11 +241,11 @@ curl -X POST https://api.fopost.com/v1/ads/comments/7299000000000000001/reply \
     "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
     "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
     "adId": "7298000000000000001",
-    "text": "It goes live on Friday — we will post the link."
+    "text": "It goes live on Friday, we will post the link."
   }'
 ```
 
-Reply, hide and delete all need `ads` and `publish`. Deleting a comment that is already gone on TikTok answers `200`, not `404`. In the dashboard these are the **Ads** tab in the Inbox.
+Reply, hide and delete all need `ads` and `publish`. Hide and delete answer `204` with no body, and deleting a comment that is already gone on TikTok answers `204` too, not `404`. In the dashboard these are the **Ads** tab in the Inbox.
 
 ## Not on TikTok
 

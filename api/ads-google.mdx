@@ -4,7 +4,7 @@ description: Search, Display and Performance Max campaigns, keywords, assets, co
 icon: megaphone
 ---
 
-Google Ads is a second ad network alongside Meta, reached through the same `/v1/ads` endpoints: campaigns, ad groups, ads, audiences and insights all work the same way, dispatched by the connection you name. What has no equivalent on another network lives under `/v1/ads/google/*` — recommendations, the optimization score, keywords, negative keyword lists, assets, Performance Max asset groups, Local Services leads and conversions — plus a raw GAQL query at `POST /v1/ads/insights/query`.
+Google Ads is a second ad network alongside Meta, reached through the same `/v1/ads` endpoints: campaigns, ad groups, ads, audiences and insights all work the same way, dispatched by the connection you name. What has no equivalent on another network lives under `/v1/ads/google/*`: recommendations, the optimization score, keywords, negative keyword lists, assets, Performance Max asset groups, Local Services leads and conversions, plus a raw GAQL query at `POST /v1/ads/insights/query`.
 
 These endpoints need the `ads` scope, and every one that changes what a live account serves or bids also needs `publish`.
 
@@ -49,7 +49,7 @@ lists each connection with the accounts its grant reaches. A Google connection r
 
 | Shared route | On Google |
 |:-------------|:----------|
-| `POST /v1/ads/campaigns` | A campaign plus the budget resource Google requires; `goal` picks the channel — `traffic` is Search, `engagement` and `awareness` are Display, `video_views` is Video |
+| `POST /v1/ads/campaigns` | A campaign plus the budget resource Google requires; `goal` picks the channel: `traffic` is Search, `engagement` and `awareness` are Display, `video_views` is Video |
 | `POST /v1/ads/ad-sets` | An ad group. The budget lives on the campaign on Google, so a budget here resizes the campaign's |
 | `POST /v1/ads/creatives` | Returns a creative reference, not a stored object: Google keeps no creative, the ad carries its own headlines and links |
 | `POST /v1/ads/ads` | A responsive search ad or responsive display ad built from that reference. Google needs three headlines and two descriptions, and short input is padded to reach them |
@@ -73,7 +73,7 @@ POST /v1/ads/google/recommendations/apply
 POST /v1/ads/google/recommendations/dismiss
 ```
 
-Google's own read on what the account should change next. Each row carries the recommendation `type`, the campaign or ad group it affects, and the `impact` Google projects — clicks, conversions and spend, as they stand now and as they would be if you applied it. `types` narrows to a comma-separated list such as `KEYWORD,TARGET_CPA_OPT_IN`.
+Google's own read on what the account should change next. Each row carries the recommendation `type`, the campaign or ad group it affects, and the `impact` Google projects: clicks, conversions and spend, as they stand now and as they would be if you applied it. `types` narrows to a comma-separated list such as `KEYWORD,TARGET_CPA_OPT_IN`.
 
 ```bash
 curl "https://api.fopost.com/v1/ads/google/recommendations?connection_id=$CONNECTION&customer_id=1234567890" \

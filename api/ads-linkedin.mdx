@@ -4,7 +4,7 @@ description: Run LinkedIn campaigns, B2B audiences, forecasts, conversions and l
 icon: megaphone
 ---
 
-LinkedIn is a second ad network behind the same `/v1/ads` endpoints as [Meta](/api/ads). Everything on that page works here: the campaign tree, creatives, audiences, insights, lead forms. This page covers what is different, plus the endpoints only a business-to-business network answers — forecasts, conversion rules and the public ad library.
+LinkedIn is a second ad network behind the same `/v1/ads` endpoints as [Meta](/api/ads). Everything on that page works here: the campaign tree, creatives, audiences, insights, lead forms. This page covers what is different, plus the endpoints only a business-to-business network answers: forecasts, conversion rules and the public ad library.
 
 LinkedIn's Advertising API is a restricted product. Until it is approved on the deployment you are calling, `GET /v1/ads/providers` reports LinkedIn with `configured: false` and connecting answers `503`.
 
@@ -52,7 +52,7 @@ An endpoint whose capability is `false` answers `400` with `error: "unsupported"
 POST /v1/ads/connections/linkedin/authorize
 ```
 
-Same body as any network: `workspaceId`, an optional dashboard `returnTo`, and an optional `method` — LinkedIn offers one, `ads`. The user who calls it finishes the login in their own browser, because the callback checks that the same user came back.
+Same body as any network: `workspaceId`, an optional dashboard `returnTo`, and an optional `method`. LinkedIn offers one, `ads`. The user who calls it finishes the login in their own browser, because the callback checks that the same user came back.
 
 ## Ids are URNs
 
@@ -150,7 +150,7 @@ curl -X POST https://api.fopost.com/v1/ads/audiences \
 POST /v1/ads/audiences/{id}/companies?workspace_id=&connection_id=
 ```
 
-adds more rows to a company list after it exists, in the same shape. The answer is `{ "added": n }`. The rows travel with the request and are never stored.
+adds more rows to a company list after it exists, in the same shape. The answer is `{ "data": { "id": "…", "added": n } }`. The rows travel with the request and are never stored.
 
 ## Forecasts
 
@@ -203,7 +203,7 @@ POST   /v1/ads/linkedin/conversion-rules/{id}/associations?workspace_id=&connect
 DELETE /v1/ads/linkedin/conversion-rules/{id}/associations?workspace_id=&connection_id=
 ```
 
-Body is `{ "campaignId": "urn:li:sponsoredCampaign:123" }` — an ad set on the same connection. Both answer the rule with its updated `campaignIds`.
+Body is `{ "campaignId": "urn:li:sponsoredCampaign:123" }`, an ad set on the same connection. Both answer the rule with its updated `campaignIds`.
 
 ### Read what it recorded
 
@@ -238,7 +238,7 @@ curl -X POST "https://api.fopost.com/v1/ads/linkedin/conversion-rules/urn:li:con
   }'
 ```
 
-`happenedAt` is epoch milliseconds. `eventId` is your own id, so sending the same event twice is counted once. The address is hashed inside the API: the network never receives it, and FoPost stores nothing about an event. The answer is `{ "accepted": n }`.
+`happenedAt` is epoch milliseconds. `eventId` is your own id, so sending the same event twice is counted once. The address is hashed inside the API: the network never receives it, and FoPost stores nothing about an event. The answer is `{ "data": { "accepted": n } }`.
 
 ## Ad library
 
@@ -258,7 +258,7 @@ The leads feed (`POST /v1/ads/lead-pages`) is webhook-driven and LinkedIn has no
 
 ## Errors
 
-A `400` with `error: "unsupported"` means the network cannot do what was asked — a carousel creative, a lookalike audience, a targeting type it does not serve. A `422` means the network refused the request and `message` carries its reason. A `503` means the Advertising API product is not approved on this deployment yet.
+A `400` with `error: "unsupported"` means the network cannot do what was asked: a carousel creative, a lookalike audience, a targeting type it does not serve. A `422` means the network refused the request and `message` carries its reason. A `503` with `error: "not_configured"` means the Advertising API product is not approved on this deployment yet.
 
 ## Next
 
