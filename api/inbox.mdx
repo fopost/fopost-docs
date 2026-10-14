@@ -19,7 +19,7 @@ curl "https://api.fopost.com/v1/inbox?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6
 
 | Parameter | Description |
 |:----------|:------------|
-| `workspace_id` | One workspace. Omit it to span every workspace the key can reach; each item then carries `workspaceId` |
+| `workspace_id` | One workspace. Omit it to span every workspace the key can reach; each item then carries `workspace_id` |
 | `type` | `comment`, `mention`, `review`, or `dm` |
 | `state` | `unread`, `read`, `resolved`, or `snoozed` |
 | `platform` | A platform slug, such as `instagram` |
@@ -37,42 +37,42 @@ An item looks like this:
 ```json
 {
   "id": "0f1c4a1e-8f3c-4c62-9f6a-2a4b1a9e77d1",
-  "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+  "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
   "platform": "instagram",
   "type": "comment",
   "state": "unread",
   "direction": "inbound",
-  "authorName": "Sam Rivera",
-  "authorHandle": "samrivera",
+  "author_name": "Sam Rivera",
+  "author_handle": "samrivera",
   "text": "Does this come in blue?",
   "permalink": "https://www.instagram.com/p/abc123/",
-  "platformCreatedAt": "2026-09-18T14:30:00.000Z",
-  "canReply": true,
-  "canHide": true,
-  "canDelete": true,
-  "canLike": true,
-  "canPin": false,
-  "canEdit": false,
-  "canReact": false,
-  "canSendMedia": false,
-  "canQuickReply": false,
-  "canPrivateReply": true,
+  "platform_created_at": "2026-09-18T14:30:00.000Z",
+  "can_reply": true,
+  "can_hide": true,
+  "can_delete": true,
+  "can_like": true,
+  "can_pin": false,
+  "can_edit": false,
+  "can_react": false,
+  "can_send_media": false,
+  "can_quick_reply": false,
+  "can_private_reply": true,
   "rating": null,
   "liked": false,
   "pinned": false,
   "reaction": null,
-  "editedAt": null,
-  "moderationStatus": "published",
+  "edited_at": null,
+  "moderation_status": "published",
   "post": { "id": "3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10", "title": "Autumn drop" },
   "account": { "id": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4", "platform": "instagram", "username": "yourbrand" }
 }
 ```
 
-`moderationStatus` is the platform's own state for a comment where it reports one: `published`, `held` (waiting on a decision, invisible on the post until then), `spam`, or `rejected`. It is `null` on the networks that do not say.
+`moderation_status` is the platform's own state for a comment where it reports one: `published`, `held` (waiting on a decision, invisible on the post until then), `spam`, or `rejected`. It is `null` on the networks that do not say.
 
-The `can*` flags tell you what the platform allows for that item before you try. A platform whose API reads comments but cannot answer them returns `canReply: false`. An action the platform does not offer answers `409` with `unsupported_platform`.
+The `can_*` flags tell you what the platform allows for that item before you try. A platform whose API reads comments but cannot answer them returns `can_reply: false`. An action the platform does not offer answers `409` with `unsupported_platform`.
 
-A `review` item is a rating left on the business itself rather than a comment on a post: a Google Business review or a Facebook Page recommendation. It carries `rating`, the stars out of five, which is `null` on every other type. Its `postExternalId` is the review itself, so listing by that pair returns the review and your response as one thread.
+A `review` item is a rating left on the business itself rather than a comment on a post: a Google Business review or a Facebook Page recommendation. It carries `rating`, the stars out of five, which is `null` on every other type. Its `post_external_id` is the review itself, so listing by that pair returns the review and your response as one thread.
 
 DM attachments are listed under `attachments`, each with a `url` served by the API. That link grants nothing on its own: workspace membership is checked on every request, and the bytes come through FoPost rather than from a platform URL.
 
@@ -114,8 +114,8 @@ A reply to a DM can carry more than text, where the item allows it. Both need th
 | Field | Description |
 |:------|:------------|
 | `text` | The message. Optional when `media_ids` is set |
-| `media_ids` | Up to 10 media library ids, sent as files. Needs `canSendMedia`. The platform receives a short-lived link to each file, never its stored address |
-| `quick_replies` | Up to 13 answer buttons, 20 characters each, shown under the message. Needs `canQuickReply` |
+| `media_ids` | Up to 10 media library ids, sent as files. Needs `can_send_media`. The platform receives a short-lived link to each file, never its stored address |
+| `quick_replies` | Up to 13 answer buttons, 20 characters each, shown under the message. Needs `can_quick_reply` |
 
 ```bash
 curl -X POST https://api.fopost.com/v1/inbox/0f1c4a1e-8f3c-4c62-9f6a-2a4b1a9e77d1/reply \
@@ -143,7 +143,7 @@ PATCH /v1/inbox/{id}
 PATCH /v1/inbox/{id}
 ```
 
-Send `{ "text": "..." }` instead of a state to change a comment your account wrote, on the platform. Available where `canEdit` is true, and needs the `publish` scope. The item comes back with the new `text` and an `editedAt` time.
+Send `{ "text": "..." }` instead of a state to change a comment your account wrote, on the platform. Available where `can_edit` is true, and needs the `publish` scope. The item comes back with the new `text` and an `edited_at` time.
 
 To read a whole thread at once, the way opening a chat does:
 
@@ -161,7 +161,7 @@ POST /v1/inbox/{id}/unhide
 DELETE /v1/inbox/{id}
 ```
 
-Hide and delete act on the platform, not just in FoPost. They are available where the item's `canHide` or `canDelete` is true. A hidden item stays in the inbox with `hidden: true`. Delete also removes a reply your account wrote; deleting your own reply needs the `publish` scope.
+Hide and delete act on the platform, not just in FoPost. They are available where the item's `can_hide` or `can_delete` is true. A hidden item stays in the inbox with `hidden: true`. Delete also removes a reply your account wrote; deleting your own reply needs the `publish` scope.
 
 ## Like and pin
 
@@ -172,7 +172,7 @@ POST /v1/inbox/{id}/pin
 POST /v1/inbox/{id}/unpin
 ```
 
-Like acts as the connected account: a like on most networks, an upvote on Reddit, a favourite on Mastodon. It is available where `canLike` is true, and the item then reports `liked: true`. Pin works on a comment your account wrote, where `canPin` is true. All four need the `publish` scope.
+Like acts as the connected account: a like on most networks, an upvote on Reddit, a favourite on Mastodon. It is available where `can_like` is true, and the item then reports `liked: true`. Pin works on a comment your account wrote, where `can_pin` is true. All four need the `publish` scope.
 
 ## Direct messages
 
@@ -185,8 +185,8 @@ POST /v1/inbox/conversations
 | Field | Description |
 |:------|:------------|
 | `account_id` | The account to send from, with `handle` |
-| `handle` | Who to message. Available on accounts whose `canStartConversation` is true |
-| `comment_id` | An inbox comment to answer privately instead of `account_id` and `handle`. This is how Facebook and Instagram open a DM, and it needs `canPrivateReply` on the comment |
+| `handle` | Who to message. Available on accounts whose `can_start_conversation` is true |
+| `comment_id` | An inbox comment to answer privately instead of `account_id` and `handle`. This is how Facebook and Instagram open a DM, and it needs `can_private_reply` on the comment |
 | `text` | The message |
 | `media_ids` | Optional files from the media library, where the platform takes them |
 
@@ -197,9 +197,9 @@ curl -X POST https://api.fopost.com/v1/inbox/conversations \
   -d '{ "comment_id": "0f1c4a1e-8f3c-4c62-9f6a-2a4b1a9e77d1", "text": "Sending you the details here." }'
 ```
 
-The response is `201` with the `conversationId` where the platform reports one and the sent `item`.
+The response is `201` with the `conversation_id` where the platform reports one and the sent `item`.
 
-React to a message, or remove your reaction with `null`, where `canReact` is true. Instagram has one reaction, a heart, so any emoji sends it.
+React to a message, or remove your reaction with `null`, where `can_react` is true. Instagram has one reaction, a heart, so any emoji sends it.
 
 ```http
 POST /v1/inbox/{id}/react
@@ -241,7 +241,7 @@ GET /v1/inbox/platforms
 GET /v1/inbox/unread-count
 ```
 
-`/accounts` lists every active connected account with `inboxSupported` and `dmSupported`, so a filter can tell the truth about what it reads, plus `canStartConversation` for accounts that can open a DM by handle. An account with `reconnectRequired: true` was connected before the inbox asked for a permission it needs and is not polled until someone reconnects it; everything else that account does keeps working. `/platforms` lists which networks feed the inbox today and which are coming.
+`/accounts` lists every active connected account with `inbox_supported` and `dm_supported`, so a filter can tell the truth about what it reads, plus `can_start_conversation` for accounts that can open a DM by handle. An account with `reconnect_required: true` was connected before the inbox asked for a permission it needs and is not polled until someone reconnects it; everything else that account does keeps working. `/platforms` lists which networks feed the inbox today and which are coming.
 
 ## Poll now
 

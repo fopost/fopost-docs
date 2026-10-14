@@ -6,7 +6,7 @@ icon: chart-trending-up
 
 Analytics endpoints need the `analytics` scope. Metrics are collected on a schedule in the background, so a post published a minute ago has not been measured yet.
 
-All of these accept `workspace_id` to scope the answer and `accountId` to narrow it to one account. Ranges are given either as `days` or as an explicit `from` and `to`.
+All of these accept `workspace_id` to scope the answer and `account_id` to narrow it to one account. Ranges are given either as `days` or as an explicit `from` and `to`.
 
 ## Overview
 
@@ -35,7 +35,7 @@ Daily buckets of engagement, followers, and post counts. Use `days`, or `from` a
 GET /v1/analytics/top-posts
 ```
 
-Posts ranked by engagement, or newest first with `sort=recent`. Takes `limit`, a range, `accountId`, and `label`.
+Posts ranked by engagement, or newest first with `sort=recent`. Takes `limit`, a range, `account_id`, and `label`.
 
 It includes posts published natively on the network, not only ones that went out through FoPost, so the ranking reflects the account rather than the tool.
 
@@ -82,9 +82,9 @@ curl "https://api.fopost.com/v1/analytics/decay?days=30" \
   -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
-How long a post keeps earning. Each post is measured many times as it ages, so the readings can be grouped into age bands: under an hour, 1-3 hours, and so on up to a week. Every band reports where the average post had got to by that age and `shareOfFinal`, what fraction of everything it eventually earned that was.
+How long a post keeps earning. Each post is measured many times as it ages, so the readings can be grouped into age bands: under an hour, 1-3 hours, and so on up to a week. Every band reports where the average post had got to by that age and `share_of_final`, what fraction of everything it eventually earned that was.
 
-`halfLifeBucket` is the first band where the average post had passed half its final engagement. On most networks that lands inside the first few hours, which is the number worth arguing with your posting schedule about.
+`half_life_bucket` is the first band where the average post had passed half its final engagement. On most networks that lands inside the first few hours, which is the number worth arguing with your posting schedule about.
 
 `days` filters by publish time, not reading time: it selects posts published in the window, then uses every reading taken of them. A post published a minute ago contributes nothing useful yet, and a band with `posts: 0` means nothing was measured at that age rather than that nothing happened.
 
@@ -121,9 +121,9 @@ A post in a workspace you are not in answers `404`, the same as one that does no
 GET /v1/analytics/changes?since=2026-03-02T00:00:00Z
 ```
 
-Readings recorded after `since`, oldest first, with a `cursor` to pass as the next `since`. This is how you mirror our metrics into your own store without refetching the whole history: poll on whatever interval suits you, store `cursor`, pass it back.
+Readings recorded after `since`, oldest first, with a `meta.next_cursor` to pass as the next `since`. This is how you mirror our metrics into your own store without refetching the whole history: poll on whatever interval suits you, store `next_cursor`, pass it back.
 
-Omitting `since` gives the last seven days. `hasMore` tells you the page was full and another call will return more; `cursor` is null when nothing changed.
+Omitting `since` gives the last seven days. `has_more` tells you the page was full and another call will return more; `next_cursor` is null when nothing changed.
 
 ## Posts made outside FoPost
 
@@ -141,7 +141,7 @@ Paginate with `page` and `per_page`; `days` narrows to posts published recently.
 POST /v1/analytics/collect
 ```
 
-Forces a collection run for the active accounts instead of waiting for the next scheduled one. It is throttled per user: when you are over the limit, the `429` body carries `retryAfter` in seconds.
+Forces a collection run for the active accounts instead of waiting for the next scheduled one. It is throttled per user: when you are over the limit, the `429` body carries `retry_after` in seconds.
 
 Use it after publishing something you want to measure now. Do not put it on a timer, since the scheduled collection is already doing that.
 
@@ -151,7 +151,7 @@ To refresh a single post rather than every account:
 POST /v1/posts/{id}/analytics/collect
 ```
 
-`id` is a FoPost post id or a URL-encoded permalink, the same as the timeline endpoint. One post is still a call to the network, so it spends the same per-user budget as the full run and answers the same `429` with `retryAfter`. An API key needs the `analytics` scope as well as `posts`.
+`id` is a FoPost post id or a URL-encoded permalink, the same as the timeline endpoint. One post is still a call to the network, so it spends the same per-user budget as the full run and answers the same `429` with `retry_after`. An API key needs the `analytics` scope as well as `posts`.
 
 ## Next
 
@@ -178,27 +178,25 @@ That is where the numbers live that have no equivalent anywhere else. Facebook r
 
 ```json
 {
-  "data": {
-    "platform": "facebook",
-    "account": {
-      "fetched_at": "2026-09-20T02:00:00.000Z",
-      "metrics": [
-        { "key": "page_impressions", "label": "Page Impressions", "kind": "count", "value": 41800 },
-        {
-          "key": "page_daily_video_ad_break_earnings",
-          "label": "Ad Break Earnings",
-          "kind": "currency_usd",
-          "value": 42.15
-        }
-      ]
-    },
-    "post": {
-      "external_post_id": "1234567890_9876543210",
-      "fetched_at": "2026-09-20T02:00:00.000Z",
-      "metrics": [
-        { "key": "post_impressions_paid", "label": "Paid Impressions", "kind": "count", "value": 1500 }
-      ]
-    }
+  "platform": "facebook",
+  "account": {
+    "fetched_at": "2026-09-20T02:00:00.000Z",
+    "metrics": [
+      { "key": "page_impressions", "label": "Page Impressions", "kind": "count", "value": 41800 },
+      {
+        "key": "page_daily_video_ad_break_earnings",
+        "label": "Ad Break Earnings",
+        "kind": "currency_usd",
+        "value": 42.15
+      }
+    ]
+  },
+  "post": {
+    "external_post_id": "1234567890_9876543210",
+    "fetched_at": "2026-09-20T02:00:00.000Z",
+    "metrics": [
+      { "key": "post_impressions_paid", "label": "Paid Impressions", "kind": "count", "value": 1500 }
+    ]
   }
 }
 ```

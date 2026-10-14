@@ -46,7 +46,7 @@ curl "https://api.fopost.com/v1/sequences?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3
       "enrollments": { "total": 190, "active": 44, "completed": 138, "stopped": 8, "failed": 0 }
     }
   ],
-  "pagination": { "page": 1, "per_page": 25, "total": 1 }
+  "meta": { "page": 1, "per_page": 25, "total": 1, "total_pages": 1 }
 }
 ```
 
@@ -113,7 +113,7 @@ Name contacts outright with `contact_ids`, or give the same `audience` filter a 
 ```
 
 ```json
-{ "data": { "id": "b7d41e60-...", "enrolled": 1 } }
+{ "id": "b7d41e60-...", "enrolled": 1 }
 ```
 
 Re-enrolling someone already on the sequence restarts their walk from the first step rather than running two in parallel.
@@ -134,7 +134,7 @@ curl -X POST "https://api.fopost.com/v1/sequences/b7d41e60-3c29-4f85-91ab-6d0e2f
 ```
 
 ```json
-{ "data": { "id": "b7d41e60-...", "stopped": 1 } }
+{ "id": "b7d41e60-...", "stopped": 1 }
 ```
 
 Nothing further fires for them. This is what you call when someone asks to stop hearing from you.
@@ -165,7 +165,7 @@ GET /v1/sequences/{id}/enrollments
       "error": null
     }
   ],
-  "pagination": { "page": 1, "per_page": 50, "total": 1 }
+  "meta": { "page": 1, "per_page": 50, "total": 1, "total_pages": 1 }
 }
 ```
 
@@ -186,7 +186,7 @@ When a step is skipped rather than sent, `error` carries the reason — `window_
 DELETE /v1/sequences/{id}
 ```
 
-Removes the sequence and every enrollment on it. Messages already sent stay in the conversations they went to. This cannot be undone.
+Removes the sequence and every enrollment on it, and answers `204` with no body. Messages already sent stay in the conversations they went to. This cannot be undone.
 
 ## Billing
 

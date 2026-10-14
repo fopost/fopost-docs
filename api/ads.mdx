@@ -32,7 +32,7 @@ POST /v1/ads/connections/{provider}/authorize
 DELETE /v1/ads/connections/{id}?workspace_id=
 ```
 
-`/providers` lists the networks this deployment knows, each with what it supports and whether it can be connected yet; `configured: false` means the network is not available and authorizing answers `503`. `{provider}` is an id from that list, such as `meta`. Authorize returns the network's login URL for the `workspaceId` you pass. The user who calls it has to finish the login in their own browser session, because the callback checks that the same user came back. Removing a connection also deletes every ad record FoPost created through it.
+`/providers` lists the networks this deployment knows, each with what it supports and whether it can be connected yet; `configured: false` means the network is not available and authorizing answers `503` with `error: "not_configured"`. `{provider}` is an id from that list, such as `meta`. Authorize returns the network's login URL for the `workspaceId` you pass. The user who calls it has to finish the login in their own browser session, because the callback checks that the same user came back. Removing a connection also deletes every ad record FoPost created through it.
 
 ```http
 GET /v1/ads/sources

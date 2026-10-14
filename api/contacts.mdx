@@ -49,7 +49,7 @@ Most recently active first.
       "labels": [{ "id": "1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f", "name": "VIP", "color": "#0070f3" }]
     }
   ],
-  "pagination": { "page": 1, "per_page": 25, "total": 1 }
+  "meta": { "page": 1, "per_page": 25, "total": 1, "total_pages": 1 }
 }
 ```
 
@@ -116,7 +116,7 @@ Send only what changes. A field set to `null` or `""` is cleared. A field key wi
 DELETE /v1/contacts/{id}
 ```
 
-Removes the contact and its field values. The messages they sent stay in the inbox, so a later message from the same handle files them again.
+Removes the contact and its field values, and answers `204` with no body. The messages they sent stay in the inbox, so a later message from the same handle files them again.
 
 ## What a contact wrote
 
@@ -171,12 +171,10 @@ curl -X POST "https://api.fopost.com/v1/contacts/import" \
 
 ```json
 {
-  "data": {
-    "created": 1,
-    "merged": 1,
-    "skipped": [{ "row": 4, "reason": "platform and handle are both required" }],
-    "unknownColumns": ["lifetime_value"]
-  }
+  "created": 1,
+  "merged": 1,
+  "skipped": [{ "row": 4, "reason": "platform and handle are both required" }],
+  "unknown_columns": ["lifetime_value"]
 }
 ```
 
@@ -207,7 +205,7 @@ curl -X POST "https://api.fopost.com/v1/contacts/fields?workspace_id=7d2b8c11-4e
 | `type` | `text`, `number`, `date`, `select`, or `boolean` |
 | `options` | Allowed values; required when `type` is `select` |
 
-A duplicate `key` answers `409`. Deleting a field removes every answer to it. A workspace keeps up to 50 fields.
+A duplicate `key` answers `409`. Deleting a field removes every answer to it and answers `204`. A workspace keeps up to 50 fields.
 
 ## Labelling a contact
 
@@ -228,32 +226,28 @@ curl "https://api.fopost.com/v1/analytics/inbox/conversations?days=30&sort=slowe
 
 | Parameter | Description |
 |:----------|:------------|
-| `workspace_id`, `accountId` | Narrow the accounts counted |
+| `workspace_id`, `account_id` | Narrow the accounts counted |
 | `days` | Reporting period, 1 to 365, default 7 |
 | `sort` | `volume` (default), `slowest`, or `recent` |
 | `page`, `per_page` | Pagination, `per_page` up to 100 |
 
 ```json
 {
-  "data": {
-    "conversations": [
-      {
-        "key": "9f2c7a10b4e83d5612ff0a8c4d1e6b73",
-        "accountId": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4",
-        "platform": "instagram",
-        "received": 9,
-        "sent": 5,
-        "answered": 5,
-        "open": 1,
-        "medianResponseMinutes": 47,
-        "firstMessageAt": "2026-09-01T08:02:00.000Z",
-        "lastMessageAt": "2026-09-18T14:30:00.000Z"
-      }
-    ],
-    "total": 128,
-    "page": 1,
-    "per_page": 25
-  }
+  "data": [
+    {
+      "key": "9f2c7a10b4e83d5612ff0a8c4d1e6b73",
+      "account_id": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4",
+      "platform": "instagram",
+      "received": 9,
+      "sent": 5,
+      "answered": 5,
+      "open": 1,
+      "median_response_minutes": 47,
+      "first_message_at": "2026-09-01T08:02:00.000Z",
+      "last_message_at": "2026-09-18T14:30:00.000Z"
+    }
+  ],
+  "meta": { "page": 1, "per_page": 25, "total": 128, "total_pages": 6 }
 }
 ```
 

@@ -14,7 +14,7 @@ All attempts of one event carry the same `X-FoPost-Delivery` id and an identical
 
 ## Auto-disable
 
-Every failed **attempt** increments the webhook's `failureCount`, visible on the webhook record. At 10 it is deactivated rather than retried forever, and since one completely failed event burns 5 attempts, two dead events in a row are enough to trip it. Any successful delivery resets the count to zero, so a brief outage costs you nothing as long as the endpoint recovers.
+Every failed **attempt** increments the webhook's `failure_count`, visible on the webhook record. At 10 it is deactivated rather than retried forever, and since one completely failed event burns 5 attempts, two dead events in a row are enough to trip it. Any successful delivery resets the count to zero, so a brief outage costs you nothing as long as the endpoint recovers.
 
 A deactivated webhook stays on the list with `active: false`. Fix the endpoint, then re-enable it:
 
@@ -39,7 +39,7 @@ POST /v1/webhooks/{id}/test
 
 Two behaviours to know before relying on it:
 
-- The test is dispatched as a `post.published` event to this webhook only, whatever it subscribes to. A paused webhook receives nothing, and the endpoint still answers with success
+- The test is dispatched as a `post.published` event to this webhook only, whatever it subscribes to. A paused webhook receives nothing, and the endpoint still answers `204`
 - The delivery arrives with `X-FoPost-Event: post.published` and `data.test: true`, which is how your handler tells it apart from a real publish
 
 Send the test and watch your logs. It remains the cheapest way to find out your handler is behind a firewall.

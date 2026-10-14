@@ -114,10 +114,11 @@ One record per account, newest first:
 {
   "data": [
     {
-      "id": "3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10",
+      "id": "e4c2a915-0b7d-4f3e-8a62-1d9b5c7e3f08",
+      "account_id": "3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10",
       "platform": "linkedin",
       "username": "yourbrand",
-      "publish_status": "published",
+      "status": "published",
       "posted_at": "2026-08-29T14:30:12.000Z",
       "external_url": "https://www.linkedin.com/feed/update/urn:li:share:6789",
       "attempts": 1,
@@ -125,9 +126,10 @@ One record per account, newest first:
     },
     {
       "id": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4",
+      "account_id": "5c0d7e3a-2f19-4b86-a4d1-9e6f8b2c7a35",
       "platform": "twitter",
       "username": "yourbrand",
-      "publish_status": "failed",
+      "status": "failed",
       "error_code": "media_too_large",
       "error_message": "The attached video exceeds the size this platform accepts.",
       "attempts": 3,
@@ -137,7 +139,7 @@ One record per account, newest first:
 }
 ```
 
-`publish_status` is one of `pending`, `queued`, `delayed`, `publishing`, `published`, `failed`, `cancelled`, `unpublished`. The post's own `status` summarises them: `published` when every delivery landed, `partially_failed` when some did.
+A delivery's `status` is one of `pending`, `queued`, `delayed`, `publishing`, `published`, `failed`, `cancelled`, `unpublished`. The post's own `status` summarises them: `published` when every delivery landed, `partially_failed` when some did.
 
 ## Retry a failure
 
@@ -181,12 +183,10 @@ Every network has to support deleting a live post (`remote_delete` on each post 
 
 ```json
 {
-  "data": {
-    "post_status": "unpublished",
-    "deliveries": [
-      { "account_id": "…", "platform": "linkedin", "removed": true }
-    ]
-  }
+  "post_status": "unpublished",
+  "deliveries": [
+    { "account_id": "…", "platform": "linkedin", "removed": true }
+  ]
 }
 ```
 
