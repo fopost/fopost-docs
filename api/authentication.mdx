@@ -42,7 +42,7 @@ A key can only reach endpoints covered by the scopes you gave it. Ask for the na
 | `ai` | AI captions and the credit balance. Spends credits, so it is never bundled into another scope |
 | `extension` | Reserved for the browser extension |
 
-Call an endpoint outside your scopes and you get `403` with `error: "insufficient_scope"`. Each endpoint in this reference names the scope it needs.
+Call an endpoint outside your scopes and you get `403` with `error: "forbidden"` and a `message` naming the missing scope. Each endpoint in this reference names the scope it needs.
 
 ## Workspace-bound keys
 
@@ -59,9 +59,10 @@ Keys can be regenerated or deleted at any time from the same screen, and both ta
 | Status | `error` | Cause |
 |:-------|:--------|:------|
 | 401 | `unauthorized` | Header missing, or the key does not match |
-| 403 | `insufficient_scope` | Key is valid but lacks the scope |
+| 403 | `forbidden` | Key is valid but lacks the scope; `message` names it |
 | 403 | `forbidden` | Resource belongs to a workspace the key cannot reach |
-| 402 | `subscription_required` | The account behind the key has no active plan |
+| 402 | `payment_method_required` | The account is past its free allowance with no payment method on file |
+| 402 | `insufficient_credits` | The AI balance ran out |
 
 ## OAuth for third-party apps
 
