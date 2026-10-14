@@ -17,7 +17,7 @@ curl https://api.fopost.com/v1/accounts \
   -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
-Each account carries its `id`, `platform`, `username`, display `name`, `avatar`, and whether it is `active`. `name` is the name you gave the account when it has been renamed, and `platformName` is always the network's own. Pass `group_id` to list only the accounts in one [account group](#account-groups). A workspace-bound key sees only that workspace's accounts.
+Each account carries its `id`, `platform`, `username`, display `name`, `avatar`, and whether it is `active`. `name` is the name you gave the account when it has been renamed, and `platform_name` is always the network's own. Pass `group_id` to list only the accounts in one [account group](#account-groups). A workspace-bound key sees only that workspace's accounts.
 
 ## Rename an account
 
@@ -119,7 +119,7 @@ To learn the outcome without a redirect, poll the session:
 GET /v1/connect-sessions/{id}
 ```
 
-`status` moves from `pending` to `used`, and `accountId` is set, once the user has connected. A session created in another workspace answers 404.
+`status` moves from `pending` to `used`, and `account_id` is set, once the user has connected. A session created in another workspace answers 404.
 
 ## Health
 
@@ -130,7 +130,7 @@ GET /v1/accounts/health
 GET /v1/accounts/{id}/health
 ```
 
-The summary endpoint takes an optional `workspaceId` and reports every account at once, which is what you want on a dashboard or a morning check. A degraded account still publishes, with a warning. An expired or revoked one fails immediately.
+The summary endpoint takes an optional `workspace_id` and reports every account at once, which is what you want on a dashboard or a morning check. A degraded account still publishes, with a warning. An expired or revoked one fails immediately.
 
 ```http
 POST /v1/accounts/{id}/validate
@@ -308,7 +308,7 @@ The asset has to be in a workspace you can reach, and JPEG or PNG. Anything else
 { "workspace_id": "b7c2…" }
 ```
 
-Every route here answers `503 configuration_error` until Google grants this deployment Business Profile API access.
+Every route here answers `503 not_configured` until Google grants this deployment Business Profile API access.
 
 ## Next
 
