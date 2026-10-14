@@ -36,7 +36,7 @@ Pass `workspaceId` to also save the files to that workspace's media library, whe
 ## Limits
 
 ```http
-GET /v1/media/limits?workspaceId=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90
+GET /v1/media/limits?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90
 ```
 
 The largest file your account can upload grows with the number of connected accounts on the billing account:
@@ -52,17 +52,15 @@ The **Large Uploads** add-on (Settings → Billing) lifts any account to 5 GB fo
 
 ```json
 {
-  "data": {
-    "maxFileBytes": 419430400,
-    "source": "accounts",
-    "connectedAccounts": 5,
-    "largeUploadsEnabled": false,
-    "nextTier": { "upToAccounts": 15, "maxFileBytes": 2147483648 },
-    "multipartMaxFileBytes": 104857600,
-    "maxFilesPerUpload": 5,
-    "directUploadAvailable": true,
-    "allowedTypes": ["image/jpeg", "image/png", "..."]
-  }
+  "max_file_bytes": 419430400,
+  "source": "accounts",
+  "connected_accounts": 5,
+  "large_uploads_enabled": false,
+  "next_tier": { "up_to_accounts": 15, "max_file_bytes": 2147483648 },
+  "multipart_max_file_bytes": 104857600,
+  "max_files_per_upload": 5,
+  "direct_upload_available": true,
+  "allowed_types": ["image/jpeg", "image/png", "..."]
 }
 ```
 
@@ -91,14 +89,12 @@ POST /v1/media/presign
 
 ```json
 {
-  "data": {
-    "uploadId": "b1a3…",
-    "uploadUrl": "https://…",
-    "method": "PUT",
-    "headers": { "Content-Type": "video/mp4" },
-    "expiresAt": "2026-09-19T14:00:00.000Z",
-    "maxFileBytes": 419430400
-  }
+  "upload_id": "b1a3…",
+  "upload_url": "https://…",
+  "method": "PUT",
+  "headers": { "Content-Type": "video/mp4" },
+  "expires_at": "2026-09-19T14:00:00.000Z",
+  "max_file_bytes": 419430400
 }
 ```
 
@@ -115,10 +111,10 @@ Send exactly the returned headers and no API key. The URL accepts one PUT and st
 **3. Complete it.**
 
 ```http
-POST /v1/media/presign/{uploadId}/complete
+POST /v1/media/presign/{upload_id}/complete
 ```
 
-Completion verifies the object where it sits and promotes it into the library with the same checks as an upload: allowed type, content matching the declared type, size, storage allowance. It answers with the same item shape as upload, including `previewUrl`. A refused object is deleted; `409` means the upload was already completed and `410` that it expired. An upload that is never completed is discarded after 24 hours and never appears in the library.
+Completion verifies the object where it sits and promotes it into the library with the same checks as an upload: allowed type, content matching the declared type, size, storage allowance. It answers with the same item shape as upload, including `preview_url`. A refused object is deleted; `409` means the upload was already completed and `410` that it expired. An upload that is never completed is discarded after 24 hours and never appears in the library.
 
 The SDKs wrap all three calls in one helper (`media.uploadDirect` or the language equivalent).
 
@@ -136,7 +132,7 @@ Returns the workspace's library items with their type, name, size, and URL.
 DELETE /v1/media/{id}
 ```
 
-Removes the item from the library. Posts that already published with it are unaffected, since the network holds its own copy.
+Removes the item from the library and answers `204` with no body. Posts that already published with it are unaffected, since the network holds its own copy.
 
 ## Attaching to a post
 
