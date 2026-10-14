@@ -1,0 +1,139 @@
+---
+title: Receiving Blog Articles
+description: Publish FoPost articles on your own site, whatever it is built with.
+icon: globe
+---
+
+The Website target sends every published article to a URL you control, as one signed JSON request. Your site stores the article and renders it however it likes. Any framework works: all it needs is an HTTPS route that can read a raw request body.
+
+## Set it up
+
+1. Open **Settings → Blog** and choose **Website** as the target
+2. Enter the URL of your receiver, for example `https://yourbrand.com/api/fopost/articles`. It has to be `https://` and it has to answer directly; redirects are not followed
+3. Copy the signing secret (`whsec_…`) that appears. It is shown once. Keep it in your site's environment, next to your other secrets
+4. Press **Send test**. FoPost sends a signed `article.test` request, and the page tells you what your site answered
+
+Lost the secret? Rotate it from the same page: the old one stops verifying at once and the new one is shown once.
+
+## What arrives
+
+A `POST` with `Content-Type: application/json` and these headers:
+
+| Header | Contents |
+|:-------|:---------|
+| `X-FoPost-Event` | `article.published`, or `article.test` for the test |
+| `X-FoPost-Delivery` | An id for this delivery |
+| `X-FoPost-Timestamp` | Unix seconds, when the request was sent |
+| `X-FoPost-Signature-256` | `sha256=` and the hex HMAC-SHA256 of `<timestamp>.<rawBody>`, keyed with your secret |
+| `X-FoPost-Signature` | `sha256=` and the hex HMAC-SHA256 of the raw body alone |
+
+The body is the usual envelope, with the whole article in `data`:
+
+```json
+{
+  "event": "article.published",
+  "data": {
+    "id": "b41e7c05-9d38-4a2f-8e60-1c7d5b3a9f24",
+    "title": "A Marathon Training Plan for First-Time Runners",
+    "slug": "marathon-training-plan-for-first-time-runners",
+    "excerpt": "Sixteen weeks, three runs a week, and one long run that grows slowly.",
+    "metaTitle": "Marathon Training Plan for Beginners (16 Weeks)",
+    "metaDescription": "A sixteen-week marathon plan for first-time runners.",
+    "bodyMarkdown": "## Why sixteen weeks\n\n...",
+    "bodyHtml": "<h2>Why sixteen weeks</h2><p>...</p>",
+    "featuredImage": { "mediaId": "6b0e9a4c-…", "url": "https://…", "alt": "A runner lacing shoes at dawn" },
+    "images": [{ "mediaId": "9c2f7b31-…", "url": "https://…", "alt": "A weekly mileage chart", "position": 2 }],
+    "tags": ["marathon", "training"],
+    "keyword": "marathon training plan for beginners",
+    "wordCount": 1540,
+    "publishedAt": "2026-10-14T07:00:00.000Z"
+  },
+  "timestamp": "2026-10-14T07:00:01.000Z"
+}
+```
+
+Use `bodyHtml` if your site renders HTML, `bodyMarkdown` if it has its own renderer. Both reference the images by the same URLs.
+
+**Image URLs stop working after 6 hours.** Download every image (`featuredImage` and each entry in `images`) while handling the request and serve them from your own storage, then rewrite the URLs in the body you store.
+
+## Verify before you store
+
+Anyone who finds the URL can send it JSON, so reject anything that does not verify:
+
+1. Read the body as **raw bytes**, before any JSON parsing. A re-serialised object is not byte-identical to what was sent
+2. Reject when `X-FoPost-Timestamp` is more than **5 minutes** from now. This is what stops a captured request from being replayed later
+3. Compute HMAC-SHA256 over `<timestamp>.<rawBody>` with your secret and compare it to `X-FoPost-Signature-256` in **constant time**
+4. Only then parse the JSON
+
+```ts
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+const TOLERANCE_SECONDS = 300;
+
+export function verifyArticleRequest(
+  rawBody: string,
+  headers: { timestamp: string | null; signature: string | null },
+  secret: string,
+): boolean {
+  if (!headers.timestamp || !headers.signature) return false;
+  const sent = Number(headers.timestamp);
+  if (!Number.isFinite(sent)) return false;
+  if (Math.abs(Date.now() / 1000 - sent) > TOLERANCE_SECONDS) return false;
+
+  const expected =
+    'sha256=' + createHmac('sha256', secret).update(`${headers.timestamp}.${rawBody}`).digest('hex');
+  const a = Buffer.from(headers.signature.trim());
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+```
+
+A receiver on the web standard `Request`, which most frameworks expose or wrap:
+
+```ts
+export async function receiveArticle(request: Request): Promise<Response> {
+  const rawBody = await request.text();
+  const ok = verifyArticleRequest(
+    rawBody,
+    {
+      timestamp: request.headers.get('x-fopost-timestamp'),
+      signature: request.headers.get('x-fopost-signature-256'),
+    },
+    process.env.FOPOST_WEBSITE_SECRET!,
+  );
+  if (!ok) return new Response('invalid signature', { status: 401 });
+
+  const { event, data } = JSON.parse(rawBody);
+
+  if (event === 'article.test') {
+    return Response.json({ ok: true });
+  }
+
+  const url = await saveArticle(data); // store the article and its images, return the live page URL
+  return Response.json({ url });
+}
+```
+
+Header names are case-insensitive; read them however your framework hands them to you. The official SDKs ship a `webhooks.verify` helper that does the check above, including the timestamp rule, so you do not have to write it in every language.
+
+## Answer
+
+A `2xx` tells FoPost the article landed; anything else, or no answer within 15 seconds, marks the article `failed` with the status your site returned, and you can publish it again from the dashboard once the receiver is fixed.
+
+Answering with JSON `{ "url": "https://yourbrand.com/blog/..." }` is optional and worth doing: FoPost stores it as the article's `publishedUrl`, so the dashboard links straight to the live page and the `article.published` event your other webhooks receive carries it too. Only an `https://` URL is kept.
+
+## Handle the test
+
+`article.test` carries a sample article in the same shape, with `tags: ["test"]` and no images. Verify it exactly like a real one, then answer `2xx` without storing anything. The settings page reports your response, so a `401` here means the secret or the raw-body handling is wrong, and a `404` means the route is not where you entered it.
+
+## Keep it idempotent
+
+Store articles keyed by `data.id`, and overwrite on a repeat rather than inserting twice. A publish that is retried after a timeout on your side arrives again with the same `id`.
+
+## Next
+
+<Cards>
+  <Card title="Blog API" href="/api/blog" />
+  <Card title="Webhook Events" href="/webhooks/events" />
+  <Card title="Brands" href="./brand-voices" />
+</Cards>
