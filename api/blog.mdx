@@ -6,7 +6,7 @@ icon: pencil-edit
 
 The blog writes articles for a website, not posts for a network. You describe the site once, a keyword plan fills a calendar, the writer drafts each article in the background, and after a review window the draft publishes to the target you chose: a connected account, your own website, or the product blog.
 
-Every route lives under `/v1/blog`, takes a `workspaceId` (in the query for `GET`, `PATCH` and `DELETE` routes with an id, in the body otherwise) and answers in the usual `{ "data": ... }` envelope. All fields are camelCase.
+Every route lives under `/v1/blog` and names its workspace: `workspace_id` in the query for `GET` and for every route with an id, `workspaceId` in the body otherwise. Responses use snake_case keys, a single resource comes back bare, and a list comes back as `{ "data": [...] }`. Request bodies keep the camelCase field names each route documents.
 
 | Scope | Covers |
 |:------|:-------|
@@ -20,19 +20,19 @@ Every route lives under `/v1/blog`, takes a `workspaceId` (in the query for `GET
 suggested keyword → planned → queued → writing → draft → scheduled → publishing → published
 ```
 
-1. **Plan.** `POST /keywords/plan` researches keywords for the site and marks the best ones `planned`, each with a `plannedFor` date. You can add your own with `POST /keywords`
-2. **Write.** When a planned date comes within `reviewHoldDays`, or when you call `POST /articles`, the writer runs in the background: research, outline, body, meta and images. The article is `queued`, then `writing`, then lands as a `draft`
-3. **Review.** A draft waits until `reviewUntil`. Edit it, reject it, or publish it early. With `autoPublish` on, a draft that nobody touched publishes on its own when the window closes
-4. **Publish.** The article goes to the target. `scheduled` means a date is set, `publishing` means the send is in flight, `published` means it landed, with `publishedUrl` when the target reported one
+1. **Plan.** `POST /keywords/plan` researches keywords for the site and marks the best ones `planned`, each with a `planned_for` date. You can add your own with `POST /keywords`
+2. **Write.** When a planned date comes within `review_hold_days`, or when you call `POST /articles`, the writer runs in the background: research, outline, body, meta and images. The article is `queued`, then `writing`, then lands as a `draft`
+3. **Review.** A draft waits until `review_until`. Edit it, reject it, or publish it early. With `auto_publish` on, a draft that nobody touched publishes on its own when the window closes
+4. **Publish.** The article goes to the target. `scheduled` means a date is set, `publishing` means the send is in flight, `published` means it landed, with `published_url` when the target reported one
 
 | Article status | Meaning |
 |:---------------|:--------|
 | `queued` | Waiting for the writer |
 | `writing` | The writer is running |
-| `draft` | Written, in review until `reviewUntil` |
-| `scheduled` | Will publish at `publishAt` |
+| `draft` | Written, in review until `review_until` |
+| `scheduled` | Will publish at `publish_at` |
 | `publishing` | Being sent to the target |
-| `published` | Live. `publishedAt` is set, `publishedUrl` when known |
+| `published` | Live. `published_at` is set, `published_url` when known |
 | `failed` | The write or the publish failed; `error` says why. Edit and publish again, or regenerate |
 | `rejected` | Rejected by a reviewer. It stays readable and can be edited back into review |
 
@@ -42,10 +42,10 @@ Keyword statuses are `suggested`, `planned`, `written` and `dismissed`.
 
 One target per workspace, set in the settings. Without one, every publish answers `409 no_target`.
 
-| `targetKind` | Where the article goes |
+| `target_kind` | Where the article goes |
 |:-------------|:-----------------------|
-| `account` | A connected account (`targetAccountId`), published as an article post on that network. Pick an account on a network that takes articles, such as WordPress, Medium, dev.to, Hashnode or Listmonk |
-| `website` | Your own site. The article is `POST`ed to `websiteUrl` as a signed `article.published` payload. See [receiving blog articles](/guide/receive-blog-articles) |
+| `account` | A connected account (`target_account_id`), published as an article post on that network. Pick an account on a network that takes articles, such as WordPress, Medium, dev.to, Hashnode or Listmonk |
+| `website` | Your own site. The article is `POST`ed to `website_url` as a signed `article.published` payload. See [receiving blog articles](/guide/receive-blog-articles) |
 | `product_blog` | The FoPost product blog. Available to admins only |
 
 Whatever the target, the workspace's [webhooks](/webhooks/events#articles) receive `article.published` as well.
@@ -53,55 +53,53 @@ Whatever the target, the workspace's [webhooks](/webhooks/events#articles) recei
 ## Settings
 
 ```http
-GET /v1/blog/settings?workspaceId=
+GET /v1/blog/settings?workspace_id=
 ```
 
 ```bash
-curl "https://api.fopost.com/v1/blog/settings?workspaceId=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90" \
+curl "https://api.fopost.com/v1/blog/settings?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90" \
   -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
 ```json
 {
-  "data": {
-    "siteUrl": "https://yourbrand.com",
-    "topic": "Running shoes and training plans",
-    "audience": "Amateur runners training for their first marathon",
-    "language": "en",
-    "locationCode": 2840,
-    "cadencePerWeek": 2,
-    "reviewHoldDays": 3,
-    "autoPublish": false,
-    "imageTier": "standard",
-    "inBodyImages": 2,
-    "minWords": 1200,
-    "maxWords": 1800,
-    "brandVoiceId": "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
-    "targetKind": "website",
-    "targetAccountId": null,
-    "targetPlatform": null,
-    "websiteUrl": "https://yourbrand.com/api/fopost/articles",
-    "hasWebsiteSecret": true,
-    "keywordDataAvailable": true,
-    "updatedAt": "2026-10-01T08:12:00.000Z"
-  }
+  "site_url": "https://yourbrand.com",
+  "topic": "Running shoes and training plans",
+  "audience": "Amateur runners training for their first marathon",
+  "language": "en",
+  "location_code": 2840,
+  "cadence_per_week": 2,
+  "review_hold_days": 3,
+  "auto_publish": false,
+  "image_tier": "standard",
+  "in_body_images": 2,
+  "min_words": 1200,
+  "max_words": 1800,
+  "brand_voice_id": "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+  "target_kind": "website",
+  "target_account_id": null,
+  "target_platform": null,
+  "website_url": "https://yourbrand.com/api/fopost/articles",
+  "has_website_secret": true,
+  "keyword_data_available": true,
+  "updated_at": "2026-10-01T08:12:00.000Z"
 }
 ```
 
 | Field | Description |
 |:------|:------------|
-| `siteUrl`, `topic`, `audience` | What the site is about and who reads it. The planner derives its seed keywords from these when you pass none |
-| `language`, `locationCode` | Language of the articles and the market keyword data is read for |
-| `cadencePerWeek` | Articles planned per week, 0 to 7. `0` turns planning off |
-| `reviewHoldDays` | How long a draft waits in review, 0 to 14 days. Writing starts this many days before the planned date, so the draft is reviewable for the whole window and publishes on the day |
-| `autoPublish` | Publish a draft on its own when its review window closes. Needs a target |
-| `imageTier` | `draft`, `standard` or `best`, the quality tier for generated images |
-| `inBodyImages` | Images placed under outline headings, 0 to 3, on top of the featured image |
-| `minWords`, `maxWords` | The length the writer aims for |
-| `brandVoiceId` | The [brand](/guide/brand-voices) the writer writes in |
-| `targetKind`, `targetAccountId`, `websiteUrl` | The target, above. `targetPlatform` is read-only and names the target account's network |
-| `hasWebsiteSecret` | Whether a website signing secret exists. The secret itself is never readable |
-| `keywordDataAvailable` | Whether search volume and difficulty can be fetched on this deployment |
+| `site_url`, `topic`, `audience` | What the site is about and who reads it. The planner derives its seed keywords from these when you pass none |
+| `language`, `location_code` | Language of the articles and the market keyword data is read for |
+| `cadence_per_week` | Articles planned per week, 0 to 7. `0` turns planning off |
+| `review_hold_days` | How long a draft waits in review, 0 to 14 days. Writing starts this many days before the planned date, so the draft is reviewable for the whole window and publishes on the day |
+| `auto_publish` | Publish a draft on its own when its review window closes. Needs a target |
+| `image_tier` | `draft`, `standard` or `best`, the quality tier for generated images |
+| `in_body_images` | Images placed under outline headings, 0 to 3, on top of the featured image |
+| `min_words`, `max_words` | The length the writer aims for |
+| `brand_voice_id` | The [brand](/guide/brand-voices) the writer writes in |
+| `target_kind`, `target_account_id`, `website_url` | The target, above. `target_platform` is read-only and names the target account's network |
+| `has_website_secret` | Whether a website signing secret exists. The secret itself is never readable |
+| `keyword_data_available` | Whether search volume and difficulty can be fetched on this deployment. Returned by `GET` only |
 
 ### Update settings
 
@@ -122,12 +120,15 @@ curl -X PATCH "https://api.fopost.com/v1/blog/settings" \
 
 ```json
 {
-  "data": { "targetKind": "website", "websiteUrl": "https://yourbrand.com/api/fopost/articles", "hasWebsiteSecret": true, "...": "..." },
-  "websiteSecret": "whsec_K3n9xq2YpB7vLh0dR4sWfT8mZc1aE6uJ"
+  "target_kind": "website",
+  "website_url": "https://yourbrand.com/api/fopost/articles",
+  "has_website_secret": true,
+  "...": "...",
+  "website_secret": "whsec_K3n9xq2YpB7vLh0dR4sWfT8mZc1aE6uJ"
 }
 ```
 
-Every field is optional except `workspaceId`; send the ones you want to change. Setting `websiteUrl` for the first time issues a signing secret, returned once as `websiteSecret` beside `data` and `null` on every other update. Clearing `websiteUrl` drops the secret. `targetKind: "product_blog"` answers `403` unless the key belongs to an admin.
+The body takes the settings fields above in camelCase (`siteUrl`, `cadencePerWeek`, `targetKind`, `websiteUrl` and so on). Every field is optional except `workspaceId`; send the ones you want to change. The response is the settings. Setting `websiteUrl` for the first time issues a signing secret, returned once as `website_secret` and `null` on every other update. Clearing `websiteUrl` drops the secret. `targetKind: "product_blog"` answers `403` unless the key belongs to an admin.
 
 ### Rotate the website secret
 
@@ -136,7 +137,7 @@ POST /v1/blog/settings/website-secret
 ```
 
 ```json
-{ "data": { "websiteSecret": "whsec_Q8vL2mB5xN1tY7cR0wP4kH9sA3dF6gJz" } }
+{ "website_secret": "whsec_Q8vL2mB5xN1tY7cR0wP4kH9sA3dF6gJz" }
 ```
 
 Body `{ "workspaceId": "..." }`. The old secret stops verifying immediately, and the new one is shown once.
@@ -147,23 +148,29 @@ Body `{ "workspaceId": "..." }`. The old secret stops verifying immediately, and
 POST /v1/blog/settings/website-test
 ```
 
-Body `{ "workspaceId": "..." }`. Sends a signed `article.test` envelope to `websiteUrl` and reports what the site said.
+Body `{ "workspaceId": "..." }`. Sends a signed `article.test` envelope to `website_url` and reports what the site said.
 
 ```json
-{ "data": { "ok": true, "status": 200, "error": null } }
+{ "http_status": 200 }
 ```
 
-The response is `200` when the site accepted it and `502` when it did not, with `status` set to what the site answered (or `null` when nothing came back) and `error` saying why.
+The response is `200` when the site accepted it. When it did not, the response is `502`:
+
+```json
+{ "error": "website_test_failed", "message": "The website answered 500", "http_status": 500 }
+```
+
+`http_status` is what the site answered, or `null` when nothing came back, and `message` says why.
 
 ## Keywords
 
 ```http
-GET /v1/blog/keywords?workspaceId=
+GET /v1/blog/keywords?workspace_id=
 ```
 
 | Parameter | Description |
 |:----------|:------------|
-| `workspaceId` | Required |
+| `workspace_id` | Required |
 | `status` | Comma-separated: `suggested`, `planned`, `written`, `dismissed` |
 | `limit` | Caps the list |
 
@@ -173,20 +180,20 @@ GET /v1/blog/keywords?workspaceId=
     {
       "id": "3f8a1d92-6c40-4b7e-a15d-90b2c4e6f8a1",
       "keyword": "marathon training plan for beginners",
-      "searchVolume": 9900,
+      "search_volume": 9900,
       "difficulty": 42,
       "cpc": 1.35,
       "intent": "informational",
       "source": "provider",
       "status": "planned",
-      "plannedFor": "2026-10-14",
-      "createdAt": "2026-10-01T08:15:00.000Z"
+      "planned_for": "2026-10-14",
+      "created_at": "2026-10-01T08:15:00.000Z"
     }
   ]
 }
 ```
 
-`searchVolume`, `difficulty` (0 to 100), `cpc` and `intent` are `null` when the deployment has no keyword data (`keywordDataAvailable` is `false`) or the keyword was added by hand. `source` is `provider`, `user` or `agent`.
+`search_volume`, `difficulty` (0 to 100), `cpc` and `intent` are `null` when the deployment has no keyword data (`keyword_data_available` is `false`) or the keyword was added by hand. `source` is `provider`, `user` or `agent`.
 
 ### Plan keywords
 
@@ -202,10 +209,10 @@ curl -X POST "https://api.fopost.com/v1/blog/keywords/plan" \
 ```
 
 ```json
-{ "data": { "status": "queued" } }
+{ "status": "queued" }
 ```
 
-Answers `202` and runs in the background: it researches the seeds (derived from `siteUrl`, `topic` and `audience` when omitted), stores the results as `suggested`, and marks enough of them `planned` to fill the calendar at `cadencePerWeek`. Spends AI credits; see [402](#when-the-balance-is-empty) below. Needs the `ai` scope.
+Answers `202` and runs in the background: it researches the seeds (derived from `site_url`, `topic` and `audience` when omitted), stores the results as `suggested`, and marks enough of them `planned` to fill the calendar at `cadence_per_week`. Spends AI credits; see [402](#when-the-balance-is-empty) below. Needs the `ai` scope.
 
 ### Add a keyword
 
@@ -218,7 +225,7 @@ Body `{ "workspaceId": "...", "keyword": "best trail running shoes", "plannedFor
 ### Update a keyword
 
 ```http
-PATCH /v1/blog/keywords/{id}?workspaceId=
+PATCH /v1/blog/keywords/{id}?workspace_id=
 ```
 
 Body takes `status` and `plannedFor` (`null` takes it off the calendar). Set `status: "dismissed"` to keep the planner from picking it again.
@@ -226,7 +233,7 @@ Body takes `status` and `plannedFor` (`null` takes it off the calendar). Set `st
 ### Remove a keyword
 
 ```http
-DELETE /v1/blog/keywords/{id}?workspaceId=
+DELETE /v1/blog/keywords/{id}?workspace_id=
 ```
 
 Answers `204`. An article already written from it is untouched.
@@ -234,12 +241,12 @@ Answers `204`. An article already written from it is untouched.
 ## Articles
 
 ```http
-GET /v1/blog/articles?workspaceId=
+GET /v1/blog/articles?workspace_id=
 ```
 
 | Parameter | Description |
 |:----------|:------------|
-| `workspaceId` | Required |
+| `workspace_id` | Required |
 | `status` | Comma-separated article statuses |
 | `limit` | Caps the list |
 
@@ -252,24 +259,24 @@ GET /v1/blog/articles?workspaceId=
       "slug": "marathon-training-plan-for-first-time-runners",
       "keyword": "marathon training plan for beginners",
       "excerpt": "Sixteen weeks, three runs a week, and one long run that grows slowly.",
-      "metaTitle": "Marathon Training Plan for Beginners (16 Weeks)",
-      "metaDescription": "A sixteen-week marathon plan for first-time runners, with weekly mileage and the long run that gets you to the start line.",
-      "featuredImage": {
-        "mediaId": "6b0e9a4c-2d71-4f3a-9c18-5e7d0a1b2c34",
+      "meta_title": "Marathon Training Plan for Beginners (16 Weeks)",
+      "meta_description": "A sixteen-week marathon plan for first-time runners, with weekly mileage and the long run that gets you to the start line.",
+      "featured_image": {
+        "media_id": "6b0e9a4c-2d71-4f3a-9c18-5e7d0a1b2c34",
         "url": "https://api.fopost.com/v1/media/6b0e9a4c-2d71-4f3a-9c18-5e7d0a1b2c34/file",
         "alt": "A runner lacing shoes at dawn"
       },
       "tags": ["marathon", "training"],
-      "wordCount": 1540,
+      "word_count": 1540,
       "status": "draft",
       "origin": "plan",
-      "reviewUntil": "2026-10-14T06:00:00.000Z",
-      "publishAt": null,
-      "publishedAt": null,
-      "publishedUrl": null,
+      "review_until": "2026-10-14T06:00:00.000Z",
+      "publish_at": null,
+      "published_at": null,
+      "published_url": null,
       "error": null,
-      "createdAt": "2026-10-11T06:00:00.000Z",
-      "updatedAt": "2026-10-11T06:09:00.000Z"
+      "created_at": "2026-10-11T06:00:00.000Z",
+      "updated_at": "2026-10-11T06:09:00.000Z"
     }
   ]
 }
@@ -307,30 +314,30 @@ Exactly one of `title`, `keyword` or `keywordId` is required. Answers `202` with
 ### Get an article
 
 ```http
-GET /v1/blog/articles/{id}?workspaceId=
+GET /v1/blog/articles/{id}?workspace_id=
 ```
 
 Everything the list shows, plus:
 
 | Field | Description |
 |:------|:------------|
-| `bodyMarkdown` | The article body in Markdown, inline image references included |
-| `bodyHtml` | The same body rendered to HTML |
+| `body_markdown` | The article body in Markdown, inline image references included |
+| `body_html` | The same body rendered to HTML |
 | `outline` | The headings the writer worked from |
-| `brief` | The research behind the article, or `null` |
+| `brief` | The research behind the article (`competitors`, `questions`, `search_volume`, `difficulty`), or `null` |
 | `instructions` | What was asked for |
-| `images` | In-body images: `mediaId`, `url`, `alt` and `position`, the index of the outline heading each sits under |
+| `images` | In-body images: `media_id`, `url`, `alt` and `position`, the index of the outline heading each sits under |
 
 Image `url`s here are dashboard URLs that re-check your membership on every request. The URLs that reach a target and a webhook are different: fetchable by anyone for six hours, then gone.
 
 ### Edit an article
 
 ```http
-PATCH /v1/blog/articles/{id}?workspaceId=
+PATCH /v1/blog/articles/{id}?workspace_id=
 ```
 
 ```bash
-curl -X PATCH "https://api.fopost.com/v1/blog/articles/b41e7c05-9d38-4a2f-8e60-1c7d5b3a9f24?workspaceId=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90" \
+curl -X PATCH "https://api.fopost.com/v1/blog/articles/b41e7c05-9d38-4a2f-8e60-1c7d5b3a9f24?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90" \
   -H "X-API-Key: $FOPOST_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{ "title": "The 16-Week Beginner Marathon Plan", "publishAt": "2026-10-14T07:00:00.000Z" }'
@@ -340,7 +347,7 @@ curl -X PATCH "https://api.fopost.com/v1/blog/articles/b41e7c05-9d38-4a2f-8e60-1
 |:------|:------------|
 | `title`, `slug` | `slug` is lowercase letters, digits and hyphens |
 | `excerpt`, `metaTitle`, `metaDescription` | Each nullable |
-| `bodyMarkdown` | Replaces the body; `bodyHtml` is re-rendered from it |
+| `bodyMarkdown` | Replaces the body; `body_html` is re-rendered from it |
 | `tags` | Replaces the list |
 | `publishAt` | A future time puts the draft on the calendar as `scheduled`; `null` returns it to review |
 
@@ -349,7 +356,7 @@ Only a `draft`, `scheduled`, `failed` or `rejected` article can be edited. Anyth
 ### Regenerate an article
 
 ```http
-POST /v1/blog/articles/{id}/regenerate?workspaceId=
+POST /v1/blog/articles/{id}/regenerate?workspace_id=
 ```
 
 Runs the writer again on the same brief and instructions; the current body is replaced when it finishes. Answers `202` with the article back in `queued`, `409` while it is writing or publishing. Spends AI credits and needs the `ai` scope.
@@ -357,16 +364,16 @@ Runs the writer again on the same brief and instructions; the current body is re
 ### Publish an article
 
 ```http
-POST /v1/blog/articles/{id}/publish?workspaceId=
+POST /v1/blog/articles/{id}/publish?workspace_id=
 ```
 
 ```bash
-curl -X POST "https://api.fopost.com/v1/blog/articles/b41e7c05-9d38-4a2f-8e60-1c7d5b3a9f24/publish?workspaceId=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90" \
+curl -X POST "https://api.fopost.com/v1/blog/articles/b41e7c05-9d38-4a2f-8e60-1c7d5b3a9f24/publish?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90" \
   -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
 ```json
-{ "data": { "id": "b41e7c05-...", "status": "scheduled", "publishAt": "2026-10-11T09:30:04.000Z", "...": "..." } }
+{ "id": "b41e7c05-...", "status": "scheduled", "publish_at": "2026-10-11T09:30:04.000Z", "...": "..." }
 ```
 
 Sends the draft to the target now, without waiting for the review window. Answers `202`; the article moves through `publishing` to `published` in the background, or to `failed` with an `error`. Needs the `publish` scope.
@@ -375,12 +382,12 @@ Sends the draft to the target now, without waiting for the review window. Answer
 { "error": "no_target", "message": "Choose where articles publish first" }
 ```
 
-`409 no_target` means the workspace has no `targetKind`. Set one in the settings and publish again. A `409` with another message means the article is not in a state that can publish, such as `writing`.
+`409 no_target` means the workspace has no `target_kind`. Set one in the settings and publish again. A `409` with another message means the article is not in a state that can publish, such as `writing`.
 
 ### Reject a draft
 
 ```http
-POST /v1/blog/articles/{id}/reject?workspaceId=
+POST /v1/blog/articles/{id}/reject?workspace_id=
 ```
 
 Marks the article `rejected` and takes it off the calendar. Nothing is sent. Edit it to put it back into review.
@@ -388,7 +395,7 @@ Marks the article `rejected` and takes it off the calendar. Nothing is sent. Edi
 ### Delete an article
 
 ```http
-DELETE /v1/blog/articles/{id}?workspaceId=
+DELETE /v1/blog/articles/{id}?workspace_id=
 ```
 
 Answers `204`. An article already published stays wherever it was published; only FoPost's copy goes. This cannot be undone.
