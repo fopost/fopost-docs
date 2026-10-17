@@ -22,6 +22,26 @@ A Pinterest post is a Pin: one image, a title, a description, and a destination 
 
 A Pin requires an image; a post without one fails with a clear message. Video Pins and multi-image carousel Pins are not supported today.
 
+## Boards
+
+The board a Pin lands on is chosen per post in the composer, and defaults to the one picked when the account was connected. The picker lists every board this connection can pin to, and **New Board** creates one without leaving the composer.
+
+Over the API:
+
+```bash
+# Boards this connection can pin to
+curl https://api.fopost.com/v1/accounts/{account_id}/pinterest/boards \
+  -H "X-API-Key: $FOPOST_API_KEY"
+
+# Create one
+curl -X POST https://api.fopost.com/v1/accounts/{account_id}/pinterest/boards \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Weeknight dinners", "privacy": "PUBLIC"}'
+```
+
+`privacy` is `PUBLIC`, `PROTECTED`, or `SECRET`. Pass the returned id as the `board_id` platform setting on a post to pin to it.
+
 ## Analytics
 
 Per Pin, over the trailing 30 days: impressions, Pin clicks, outbound clicks, and saves. Per account: followers, following, and Pin count. Recent Pins are included in [analytics](/guide/analytics).

@@ -29,6 +29,43 @@ The settings TikTok requires a posting tool to expose:
 - **AI-generated content** label
 - **Commercial content disclosure**: your brand, branded content, or both
 
+## Creator limits
+
+Several posting switches are set on the TikTok account itself, not in FoPost: whether comments, Duet and Stitch are allowed, which privacy levels are open, and how long a video the account may post. The composer reads them and disables anything TikTok has turned off, rather than offering a toggle that will be refused.
+
+```bash
+curl https://api.fopost.com/v1/accounts/{account_id}/tiktok/creator-info \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+Change any of them in the TikTok app and the composer picks it up on the next load.
+
+## Music and places
+
+The composer searches TikTok's Commercial Music Library and TikTok's places, and stores the picked track and place on the post as `music_id` and `location_id`.
+
+```bash
+curl "https://api.fopost.com/v1/accounts/{account_id}/tiktok/music?q=sunrise" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+
+curl "https://api.fopost.com/v1/accounts/{account_id}/tiktok/locations?q=blue%20bottle" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+Both searches run on TikTok's Business API, behind its Marketing API product. Until that product is granted to the app, they answer `403` naming what to enable rather than an empty list that would read as no matches.
+
+## Repurposing a TikTok video
+
+Resolve a share link to one of the connected account's own videos and hand the result to [repurposing](/guide/sources).
+
+```bash
+curl -X POST https://api.fopost.com/v1/accounts/{account_id}/tiktok/video-download \
+  -H "X-API-Key: $FOPOST_API_KEY" -H "Content-Type: application/json" \
+  -d '{"url": "https://www.tiktok.com/@you/video/7300000000000000000"}'
+```
+
+TikTok serves no raw media file, so `download_url` is the share address, which is what the transcript step reads. A link to a video the connection does not own answers `404`, and a `vm.tiktok.com` short link carries no id, so open it once and pass the full link.
+
 ## TikTok's guardrails
 
 TikTok enforces its own posting pace. Too many posts in a day, or too many still processing, and TikTok refuses with a clear reason; FoPost backs off and the post retries rather than dying. If a video's format is refused, TikTok wants MP4 or MOV with H.264, 3 seconds to 10 minutes.

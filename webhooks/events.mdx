@@ -4,7 +4,7 @@ description: Every webhook event FoPost can send, when it fires, and its payload
 icon: lightning
 ---
 
-Seventeen events, in five families. Subscribe to `delivery.*` when you want per-account granularity, `post.*` when you only care about the overall outcome. Subscribing to both means two notifications for the same publish, which is fine as long as your handler expects it.
+Nineteen events, in six families. Subscribe to `delivery.*` when you want per-account granularity, `post.*` when you only care about the overall outcome. Subscribing to both means two notifications for the same publish, which is fine as long as your handler expects it.
 
 ## Posts
 
@@ -66,6 +66,40 @@ One event per account on the post.
 
 This is the one worth wiring even if you skip the rest. It is how you learn a token died before a scheduled post silently fails. It fires on recovery too, so you can close the alert it opened. When the change comes from a failed token refresh rather than a health check, the payload carries a `reason` instead of a `username`.
 
+## Articles
+
+| Event | Fires when |
+|:------|:-----------|
+| `article.published` | A [blog article](/api/blog) was published to its target: a connected account, your website, or the product blog |
+
+Unlike the other events, `data` carries the whole article, so a website can store it without a follow-up `GET`:
+
+```json
+{
+  "id": "b41e7c05-9d38-4a2f-8e60-1c7d5b3a9f24",
+  "title": "A Marathon Training Plan for First-Time Runners",
+  "slug": "marathon-training-plan-for-first-time-runners",
+  "excerpt": "Sixteen weeks, three runs a week, and one long run that grows slowly.",
+  "metaTitle": "Marathon Training Plan for Beginners (16 Weeks)",
+  "metaDescription": "A sixteen-week marathon plan for first-time runners.",
+  "bodyMarkdown": "## Why sixteen weeks\n\n...",
+  "bodyHtml": "<h2>Why sixteen weeks</h2><p>...</p>",
+  "featuredImage": { "mediaId": "6b0e9a4c-…", "url": "https://…", "alt": "A runner lacing shoes at dawn" },
+  "images": [{ "mediaId": "9c2f7b31-…", "url": "https://…", "alt": "A weekly mileage chart", "position": 2 }],
+  "tags": ["marathon", "training"],
+  "keyword": "marathon training plan for beginners",
+  "wordCount": 1540,
+  "publishedAt": "2026-10-14T07:00:00.000Z",
+  "publishedUrl": "https://yourbrand.com/blog/marathon-training-plan-for-first-time-runners"
+}
+```
+
+`excerpt`, `metaTitle`, `metaDescription`, `featuredImage`, `keyword` and `publishedUrl` are `null` when there is nothing to put in them. `position` on an in-body image is the index of the outline heading it sits under; the featured image has none. `bodyMarkdown` references the same image URLs inline.
+
+**Image URLs expire after 6 hours.** Download each image and store your own copy when the event arrives; a URL kept past that window stops working.
+
+The Website target `POST`s this same envelope straight to the URL in your blog settings, signed with its own secret, and sends `article.test` from the settings page. The [receiving guide](/guide/receive-blog-articles) covers that receiver.
+
 ## Inbox
 
 One event per new inbound item, as the inbox poll picks it up. Your own replies never fire one.
@@ -75,12 +109,13 @@ One event per new inbound item, as the inbox poll picks it up. Your own replies 
 | `inbox.comment_received` | Someone commented on one of your posts |
 | `inbox.mention_received` | Someone mentioned one of your accounts |
 | `inbox.message_received` | A direct message arrived |
+| `inbox.review_received` | A review or Page recommendation arrived |
 
 ```json
 { "itemId": "…", "type": "comment", "platform": "instagram", "accountId": "…", "receivedAt": "2026-09-01T09:00:12.000Z" }
 ```
 
-The payload is ids only. Fetch the item from the [inbox](/guide/inbox) for its text and author, so nothing a customer wrote sits in your webhook logs.
+The payload is ids only. Fetch the item from the [inbox](/guide/inbox) for its text and author, so nothing a customer wrote sits in your webhook logs. Building a bot on `inbox.message_received`? The [chat adapter](/sdks/chat-adapter) does the verify-and-fetch half for you.
 
 ## Automations
 

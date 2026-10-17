@@ -18,6 +18,8 @@
     "kotlin",
     "dart",
     "elixir",
+    "---Shared tooling---",
+    "chat-adapter",
     "---Framework integrations---",
     "laravel",
     "symfony",

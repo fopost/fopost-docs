@@ -1,0 +1,6 @@
+{
+  "title": "Enterprise",
+  "description": "Single sign-on and directory provisioning",
+  "icon": "box",
+  "pages": ["scim"]
+}

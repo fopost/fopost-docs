@@ -1,4 +1,9 @@
 {
   "title": "Instagram",
-  "pages": ["index", "publishing", "analytics"]
+  "pages": [
+    "index",
+    "publishing",
+    "analytics",
+    "messaging"
+  ]
 }
