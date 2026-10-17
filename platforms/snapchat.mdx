@@ -1,0 +1,63 @@
+---
+icon: social-snapchat
+title: Snapchat
+description: Stories, Saved Stories, and Spotlight on your Public Profile.
+---
+
+<Callout type="warn">
+Snapchat is in preparation. The adapter, composer controls, and scheduling are built, and the connection opens once Snap allowlists the FoPost app for the Public Profile API. Until then Snapchat shows as Coming Soon in Connections.
+</Callout>
+
+FoPost publishes to a Snapchat **Public Profile** through Snap's Public Profile API. That is the profile a creator or business runs from Snapchat's Business Dashboard, not a personal Snapchat account.
+
+## Connecting
+
+**Connections → Snapchat**, then sign in with the Snapchat account that has a membership in the organization owning the profile. FoPost asks for the `snapchat-profile-api` scope and connects the first Public Profile it finds in your organizations.
+
+One Public Profile per workspace slot. To publish to a second profile, connect it in another workspace.
+
+## What you can publish
+
+Snapchat is the most restrictive network FoPost supports: **exactly one media item per post, and never a text-only post.**
+
+| Post type | What it is | Media | Text |
+|:----------|:-----------|:------|:-----|
+| Story | Expires after the window you pick | One video | None. Snapchat renders no caption |
+| Saved Story | Stays on the profile permanently | One video | Title, up to 45 characters |
+| Spotlight | Goes to the Spotlight feed | One video | Description, up to 160 characters, hashtags included |
+
+Pick the type in the composer under the account's **Snapchat Settings**. Story is the default.
+
+### Media limits
+
+| Limit | Value |
+|:------|:------|
+| Items per post | 1 |
+| Format | MP4 |
+| Duration, Story and Saved Story | 5 to 60 seconds |
+| Duration, Spotlight | 6 to 60 seconds |
+| File size | 1 GB |
+| Minimum resolution | 540 x 960 |
+| Recommended aspect ratio | 9:16 |
+
+A post with no media, with two or more items, with a non-MP4 file, or with a video outside the duration window fails preflight and never leaves FoPost.
+
+### Story lifetime
+
+A Story defaults to 24 hours. Set **Story lifetime** in the composer to keep it up for two days, three days, or a week.
+
+## Analytics
+
+Story, Saved Story, and Spotlight metrics come back as views, unique viewers, screenshots, shares, and replies, plus view time. Profile-level numbers carry subscribers and subscribers gained. Snapchat serves at most the past 90 days.
+
+## Deletion
+
+Snapchat's Public Profile API exposes no delete for a published Story, Saved Story, or Spotlight. Deleting the post in FoPost removes the FoPost record; remove the Snap itself from the Snapchat Business Dashboard.
+
+## Next
+
+<Cards>
+  <Card title="Connecting Accounts" href="/guide/connecting-accounts" />
+  <Card title="Creating Posts" href="/guide/creating-posts" />
+  <Card title="All Platforms" href="/platforms" />
+</Cards>

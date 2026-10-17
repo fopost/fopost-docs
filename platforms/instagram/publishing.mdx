@@ -25,9 +25,47 @@ Every Instagram post needs media: a post with no image or video fails before it 
 
 Instagram fetches and processes video on its own side; FoPost waits for that to finish, and a video Instagram is still processing after a few minutes fails with a message to try a shorter or smaller file. In a carousel, one failed item fails the whole post rather than publishing it incomplete.
 
+## Reel audio
+
+A Reel can carry a track from Instagram's own audio library. The composer searches it as you type and answers with what is trending when the box is empty.
+
+```bash
+curl "https://api.fopost.com/v1/accounts/{account_id}/instagram/audio?q=birthday" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+`audio_type` is `music` (the default) or `original_sound`. Send the id you pick as the `audio_id` platform setting on the post.
+
+## Publishing limit
+
+Instagram caps how many posts an account may publish in a rolling 24 hours, and refuses the one that goes over. The composer shows what is left.
+
+```bash
+curl https://api.fopost.com/v1/accounts/{account_id}/instagram/publishing-limit \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+## Stories
+
+Stories publish like any other post: pick Story as the post type and attach one image or video. A story takes no caption.
+
+Stories still inside their 24 hours are listed on the account in Connections, with the views, reach, replies and navigation Instagram reports. They are not on the media edge, so this is its own call.
+
+```bash
+# Active stories, with insights
+curl "https://api.fopost.com/v1/accounts/{account_id}/instagram/stories?insights=true" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+
+# Insights for one story
+curl https://api.fopost.com/v1/accounts/{account_id}/instagram/stories/{story_id}/insights \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+Instagram withholds insights for a story too young or too small to report and answers empty; that is a normal answer, not an error.
+
 ## Not supported
 
-Stories, and deleting a published post: Instagram's API offers neither. Delete in the Instagram app; FoPost's copy of the post keeps its history either way.
+Deleting a published post: Instagram's API does not offer it. Delete in the Instagram app; FoPost's copy of the post keeps its history either way.
 
 ## Next
 

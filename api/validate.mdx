@@ -1,7 +1,7 @@
 ---
 title: Validation
 description: Check content, text length, and media against platform rules before a post exists.
-icon: check-circle
+icon: check
 ---
 
 Preflight checks a saved post. The validation endpoints run the same checks on content you have not saved yet, so a form can tell a user what will fail before anything is created. Nothing is stored, and every endpoint needs the `posts` scope.
@@ -44,36 +44,34 @@ The response has one entry per platform, in the shape preflight uses per account
 
 ```json
 {
-  "data": {
-    "ready": false,
-    "platforms": [
-      {
-        "platform": "twitter",
-        "ready": true,
-        "issues": [],
-        "score": 97,
-        "signals": [
-          { "level": "info", "code": "no_emoji", "message": "Adding a relevant emoji can lift engagement on twitter." }
-        ]
-      },
-      {
-        "platform": "instagram",
-        "ready": true,
-        "issues": [],
-        "score": 94,
-        "signals": [
-          { "level": "info", "code": "link_in_caption", "message": "instagram doesn't render links in captions. Consider \"link in bio\" instead." }
-        ]
-      },
-      {
-        "platform": "linkedin",
-        "ready": false,
-        "issues": ["Unsupported media type: image/webp"],
-        "score": 95,
-        "signals": []
-      }
-    ]
-  }
+  "ready": false,
+  "platforms": [
+    {
+      "platform": "twitter",
+      "ready": true,
+      "issues": [],
+      "score": 97,
+      "signals": [
+        { "level": "info", "code": "no_emoji", "message": "Adding a relevant emoji can lift engagement on twitter." }
+      ]
+    },
+    {
+      "platform": "instagram",
+      "ready": true,
+      "issues": [],
+      "score": 94,
+      "signals": [
+        { "level": "info", "code": "link_in_caption", "message": "instagram doesn't render links in captions. Consider \"link in bio\" instead." }
+      ]
+    },
+    {
+      "platform": "linkedin",
+      "ready": false,
+      "issues": ["Unsupported media type: image/webp"],
+      "score": 95,
+      "signals": []
+    }
+  ]
 }
 ```
 
@@ -102,14 +100,12 @@ curl -X POST https://api.fopost.com/v1/validate/length \
 
 ```json
 {
-  "data": {
-    "ok": true,
-    "platforms": [
-      { "platform": "twitter", "length": 55, "limit": 25000, "unit": "chars", "ok": true, "signals": [] },
-      { "platform": "bluesky", "length": 61, "limit": 300, "unit": "chars", "ok": true, "signals": [] },
-      { "platform": "youtube", "length": 61, "limit": 5000, "unit": "bytes", "ok": true, "signals": [] }
-    ]
-  }
+  "platforms": [
+    { "platform": "twitter", "length": 55, "limit": 25000, "unit": "chars", "ok": true, "signals": [] },
+    { "platform": "bluesky", "length": 61, "limit": 300, "unit": "chars", "ok": true, "signals": [] },
+    { "platform": "youtube", "length": 61, "limit": 5000, "unit": "bytes", "ok": true, "signals": [] }
+  ],
+  "ok": true
 }
 ```
 
@@ -136,14 +132,12 @@ The file is fetched and put through the same checks as an upload: the type has t
 
 ```json
 {
-  "data": {
-    "ok": true,
-    "issues": [],
-    "name": "launch.png",
-    "size": 240000,
-    "mime_type": "image/png",
-    "type": "image"
-  }
+  "name": "launch.png",
+  "size": 240000,
+  "issues": [],
+  "ok": true,
+  "mime_type": "image/png",
+  "type": "image"
 }
 ```
 

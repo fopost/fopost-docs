@@ -29,6 +29,21 @@ Per post you can set **visibility**: public, or connections only.
 | Documents | PDF |
 | Alt text | Up to 4,086 characters per image |
 
+## Mentions
+
+LinkedIn renders a mention only when the text carries the entity's URN, in the form `@[Devtestco](urn:li:organization:2414183)`. The composer searches organizations and hands you that snippet to paste.
+
+Turn on **Turn @names into LinkedIn mentions** and each `@name` in the post is looked up when it publishes. One that resolves becomes a mention under the organization's own name; one that does not stays exactly as you typed it. The switch is off unless you set it, so an ordinary `@` in a sentence is never turned into a link behind your back.
+
+```bash
+curl "https://api.fopost.com/v1/accounts/{account_id}/linkedin/mentions?q=devtestco" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+Over the API, set `resolve_mentions` to `true` in the post's LinkedIn platform settings, or write the `@[Name](urn)` form yourself and leave the switch off.
+
+People cannot be searched: LinkedIn has no public person search, so a member mention has to be written with a URN you already hold.
+
 ## No native articles
 
 LinkedIn has no API for authoring articles: that is LinkedIn's gap, not a toggle. A post composed as an article reaches LinkedIn as its companion link post: title, description, and link card pointing at the article's home.
