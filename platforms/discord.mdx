@@ -1,14 +1,42 @@
 ---
 icon: social-discord
 title: Discord
-description: Posts delivered to a channel through its webhook.
+description: Messages to a channel, by webhook or the bot, with server events, roles, members and direct messages.
 ---
 
-Discord delivery goes through a **channel webhook**: no bot to invite, no OAuth. Anything FoPost publishes appears in that one channel.
+Discord connects two ways, and the way you pick decides what the connection can do.
 
 ## Connecting
 
-In Discord, open the channel's settings → **Integrations → Webhooks**, create one, copy its URL, and paste it in **Accounts → Connect → Discord**. You need permission to manage webhooks in that server.
+- **Bot** (recommended): in **Connections → Discord**, choose **Install Discord Bot**, approve the install into your server, then pick the channel in FoPost. You need **Manage Server** in the server to install an app.
+- **Channel webhook**: open the channel's settings → **Integrations → Webhooks**, create one, copy its URL, and paste it in the same dialog. Simplest, write-only: it can post messages and nothing else.
+
+A webhook connection keeps working exactly as before. To turn one into a bot connection, open the account in **Connections** and choose **Upgrade to Bot** — the account keeps its history and its scheduled posts.
+
+To post to a different channel later, open the account and pick another one under **Server → Channel**.
+
+### Channel permissions
+
+Installing the bot grants it permissions across the **whole server**. It cannot ask for an
+exception to a **channel**'s own permissions, and Discord deliberately leaves those with you —
+otherwise adding an app could quietly unlock a restricted channel.
+
+So a channel can sit in a server the bot belongs to and still refuse it. A locked announcement
+channel usually denies **Send Messages** to `@everyone`, which applies to the bot too.
+
+FoPost checks this for you: a channel the bot cannot post in appears greyed out, both when you
+pick the channel at connect and in **Server → Channel** afterwards. To open one up, in Discord
+choose **Edit Channel → Permissions → Advanced permissions**, add **FoPost**, and allow
+**Send Messages** — plus Embed Links, Attach Files, Manage Messages, Read Message History,
+Create Public Threads and Send Messages in Threads if you want pins, media and threads to work
+there.
+
+If permissions change after you connect, a publish to that channel fails with a message naming
+the channel and the fix.
+
+## Posting identity
+
+A bot connection can wear its own nickname and avatar in your server instead of the app's. Open the account in **Connections** and set **Nickname** and **Avatar URL** under **Server**. Over the API, it's `PATCH /v1/accounts/{id}/discord/identity`; see [Accounts](/api/accounts).
 
 ## What you can publish
 
@@ -19,11 +47,25 @@ In Discord, open the channel's settings → **Integrations → Webhooks**, creat
 
 A plain post arrives as a normal message. A post with a **title** or a **link** arrives as an embed instead: title, link, description, the first image, and tags in the footer. Attached files are delivered to the channel alongside it.
 
-The 10 MB ceiling is Discord's own webhook upload limit. Reply chains are not possible through a webhook, so thread blocks are not supported on Discord.
+The 10 MB ceiling is Discord's own upload limit for a server with no boosts. Reply chains are not published as thread blocks on either connection; on a bot connection you start a thread on a message yourself.
+
+## Managing the server
+
+A bot connection opens the server up beyond posting, from the account's **Server** panel or the API:
+
+- **Messages** — delete, pin, unpin, list the pins, crosspost an announcement to servers following the channel, and start a thread on a message
+- **Events** — create, read, update and delete the server's scheduled events
+- **Members** — list the roster or search it, and read one member
+- **Roles** — create, update and delete roles, and give one to a member or take it away
+- **Direct messages** — send one message to a member of the server
+
+## Slash commands
+
+FoPost answers slash commands from your server on a signed interactions endpoint. It replies only to the person who ran the command, and it tells them which channel the server is connected to. Reading the server's ongoing conversation is not part of this integration, so Discord is not an [inbox](/guide/inbox) source.
 
 ## Analytics and deletion
 
-Webhooks are write-only, so there are **no analytics**. Deleting the post in FoPost does delete the webhook message from the channel.
+Discord reports no per-message metrics, so there are **no analytics** on either connection. Deleting the post in FoPost deletes the message from the channel, on a webhook and on a bot connection alike.
 
 ## Next
 
