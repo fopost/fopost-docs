@@ -6,7 +6,7 @@ icon: megaphone
 
 LinkedIn is a second ad network behind the same `/v1/ads` endpoints as [Meta](/api/ads). Everything on that page works here: the campaign tree, creatives, audiences, insights, lead forms. This page covers what is different, plus the endpoints only a business-to-business network answers: forecasts, conversion rules and the public ad library.
 
-LinkedIn's Advertising API is a restricted product. Until it is approved on the deployment you are calling, `GET /v1/ads/providers` reports LinkedIn with `configured: false` and connecting answers `503`.
+LinkedIn Ads has to be set up on the deployment you are calling. Until it is, `GET /v1/ads/providers` reports LinkedIn with `configured: false` and connecting answers `503`, so read that flag rather than assuming the network is there.
 
 ## What a connection can do
 
