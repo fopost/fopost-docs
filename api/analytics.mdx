@@ -1,12 +1,12 @@
 ---
 title: Analytics
-description: Overview totals, time series, top posts, demographics, and label roll-ups.
+description: Overview totals, time series, top posts, decay, cadence, demographics, and label roll-ups.
 icon: chart-trending-up
 ---
 
 Analytics endpoints need the `analytics` scope. Metrics are collected on a schedule in the background, so a post published a minute ago has not been measured yet.
 
-All of these accept `workspace_id` to scope the answer and `accountId` to narrow it to one account. Ranges are given either as `days` or as an explicit `from` and `to`.
+All of these accept `workspace_id` to scope the answer and `account_id` to narrow it to one account. Ranges are given either as `days` or as an explicit `from` and `to`.
 
 ## Overview
 
@@ -35,7 +35,7 @@ Daily buckets of engagement, followers, and post counts. Use `days`, or `from` a
 GET /v1/analytics/top-posts
 ```
 
-Posts ranked by engagement, or newest first with `sort=recent`. Takes `limit`, a range, `accountId`, and `label`.
+Posts ranked by engagement, or newest first with `sort=recent`. Takes `limit`, a range, `account_id`, and `label`.
 
 It includes posts published natively on the network, not only ones that went out through FoPost, so the ranking reflects the account rather than the tool.
 
@@ -71,15 +71,87 @@ GET /v1/analytics/posts-table
 
 Posts with their per-account delivery breakdown, for building a table rather than a chart.
 
+## Content decay
+
+```http
+GET /v1/analytics/decay
+```
+
+```bash
+curl "https://api.fopost.com/v1/analytics/decay?days=30" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+How long a post keeps earning. Each post is measured many times as it ages, so the readings can be grouped into age bands: under an hour, 1-3 hours, and so on up to a week. Every band reports where the average post had got to by that age and `share_of_final`, what fraction of everything it eventually earned that was.
+
+`half_life_bucket` is the first band where the average post had passed half its final engagement. On most networks that lands inside the first few hours, which is the number worth arguing with your posting schedule about.
+
+`days` filters by publish time, not reading time: it selects posts published in the window, then uses every reading taken of them. A post published a minute ago contributes nothing useful yet, and a band with `posts: 0` means nothing was measured at that age rather than that nothing happened.
+
+## Posting frequency
+
+```http
+GET /v1/analytics/frequency
+```
+
+Whether posting more earned more. Weeks run Monday to Sunday in UTC and are grouped into cadence bands by their own post count, so a week with four posts is compared against other four-post weeks rather than against the average. Each band reports the engagement the average post in those weeks earned, and `best` names the cadence that earned the most per post.
+
+A week with no posts belongs to no band and is left out, so an idle month does not drag a cadence down.
+
+## Post timeline
+
+```http
+GET /v1/analytics/posts/{id}/timeline
+```
+
+Every reading held for one post, oldest first, with one timeline per delivery, because the same post on two networks decays differently. Each point carries the reading and `delta`, what moved since the point before it.
+
+`id` is a FoPost post id, or the URL-encoded permalink of a post made natively on the network:
+
+```bash
+curl "https://api.fopost.com/v1/analytics/posts/$(printf %s 'https://x.com/acme/status/1' | jq -sRr @uri)/timeline" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+A post in a workspace you are not in answers `404`, the same as one that does not exist.
+
+## Changes since
+
+```http
+GET /v1/analytics/changes?since=2026-03-02T00:00:00Z
+```
+
+Readings recorded after `since`, oldest first, with a `meta.next_cursor` to pass as the next `since`. This is how you mirror our metrics into your own store without refetching the whole history: poll on whatever interval suits you, store `next_cursor`, pass it back.
+
+Omitting `since` gives the last seven days. `has_more` tells you the page was full and another call will return more; `next_cursor` is null when nothing changed.
+
+## Posts made outside FoPost
+
+```http
+GET /v1/accounts/{id}/native-posts
+```
+
+Posts that exist on the account but never went out through FoPost, newest first, with the freshest metrics held for each. Useful for reconciling an account you started managing partway through, or for seeing what a client posted by hand.
+
+Paginate with `page` and `per_page`; `days` narrows to posts published recently. An API key needs the `analytics` scope as well as `accounts`.
+
 ## Collect on demand
 
 ```http
 POST /v1/analytics/collect
 ```
 
-Forces a collection run for the active accounts instead of waiting for the next scheduled one. It is throttled per user: when you are over the limit, the `429` body carries `retryAfter` in seconds.
+Forces a collection run for the active accounts instead of waiting for the next scheduled one. It is throttled per user: when you are over the limit, the `429` body carries `retry_after` in seconds.
 
 Use it after publishing something you want to measure now. Do not put it on a timer, since the scheduled collection is already doing that.
+
+To refresh a single post rather than every account:
+
+```http
+POST /v1/posts/{id}/analytics/collect
+```
+
+`id` is a FoPost post id or a URL-encoded permalink, the same as the timeline endpoint. One post is still a call to the network, so it spends the same per-user budget as the full run and answers the same `429` with `retry_after`. An API key needs the `analytics` scope as well as `posts`.
 
 ## Next
 
@@ -88,3 +160,49 @@ Use it after publishing something you want to measure now. Do not put it on a ti
   <Card title="Analytics guide" href="/guide/analytics" />
   <Card title="Rate Limits" href="/api/rate-limits" />
 </Cards>
+
+## Per-network metrics
+
+```http
+GET /v1/accounts/{id}/insights?raw=true
+```
+
+```bash
+curl "https://api.fopost.com/v1/accounts/$ACCOUNT_ID/insights?raw=true" \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+Every endpoint above answers in one vocabulary, so a number can be compared across networks. This one does the opposite: it answers in the network's own vocabulary, keyed by the metric names the platform itself uses.
+
+That is where the numbers live that have no equivalent anywhere else. Facebook reports ad-break earnings for a monetised Page and splits impressions into paid and organic. Instagram reports how viewers left a story, split into taps forward, taps back, exits and swipes. TikTok reports its four video counts. YouTube reports a daily views series and, per video, an audience-retention curve. LinkedIn reports reactions split by type and page views split by surface. Google Business reports how people found the listing and which search terms surfaced it.
+
+```json
+{
+  "platform": "facebook",
+  "account": {
+    "fetched_at": "2026-09-20T02:00:00.000Z",
+    "metrics": [
+      { "key": "page_impressions", "label": "Page Impressions", "kind": "count", "value": 41800 },
+      {
+        "key": "page_daily_video_ad_break_earnings",
+        "label": "Ad Break Earnings",
+        "kind": "currency_usd",
+        "value": 42.15
+      }
+    ]
+  },
+  "post": {
+    "external_post_id": "1234567890_9876543210",
+    "fetched_at": "2026-09-20T02:00:00.000Z",
+    "metrics": [
+      { "key": "post_impressions_paid", "label": "Paid Impressions", "kind": "count", "value": 1500 }
+    ]
+  }
+}
+```
+
+`key` is the platform's own metric name and never changes. `label` is ours and may be reworded, so read `key` if you are storing anything. `kind` tells you how to render the value: `count`, `duration_ms`, `currency_usd`, `ratio`, or `series` for a value that is an array of points rather than a number.
+
+Both blocks come from the newest collected snapshot, not a live call to the network, so `fetched_at` is when the numbers were true. A network that reports nothing per post answers an empty `post.metrics`.
+
+Reads are throttled the same way the rest of the API is, and the endpoint needs the `analytics` scope. Some networks gate their metrics behind an access grant we have requested and not yet received; those answer `503` with `platform_metrics_unavailable` rather than an empty set, so a pending grant never reads as a zero.

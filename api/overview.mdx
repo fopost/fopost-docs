@@ -46,6 +46,14 @@ A collection is wrapped in `data` with a `meta` block:
 }
 ```
 
+A call that has nothing to return, such as a delete, answers `204 No Content` with an empty body.
+
+Every key in a response, and every query parameter, is `snake_case`. Request bodies take the field names each endpoint documents. The [ads endpoints](/api/ads) are the one exception: their responses keep `camelCase` keys.
+
+## Request ids
+
+Every response carries an `X-Request-Id` header. Quote it when you contact support about a call.
+
 ## Pagination
 
 List endpoints take `page` (default `1`) and `per_page` (default `30`, maximum `100`). Read `meta.total_pages` rather than paging until you get an empty array.
@@ -54,6 +62,8 @@ List endpoints take `page` (default `1`) and `per_page` (default `30`, maximum `
 curl "https://api.fopost.com/v1/posts?page=2&per_page=50" \
   -H "X-API-Key: $FOPOST_API_KEY"
 ```
+
+Feeds that grow while you read them page by cursor instead. Their `meta` is `{ "next_cursor": "…", "has_more": true }`; pass `next_cursor` back as the parameter the endpoint names, and stop when `has_more` is false. The ads endpoints keep their own `nextCursor` and `after`.
 
 ## Identifiers and timestamps
 
@@ -70,22 +80,26 @@ Errors use one envelope on every endpoint:
 }
 ```
 
-`error` is the stable machine-readable code, `message` is for humans and may change. Some errors add context fields, such as `retry_after` on a 429.
+`error` is the stable machine-readable code, `message` is for humans and may change. Some errors add context fields, such as `retry_after` on a 429. An unknown route and a fault on our side answer with the same envelope (`not_found` and `internal_error`), never with plain text.
 
 | Status | Meaning |
 |:-------|:--------|
 | 200 | Success |
 | 201 | Created |
-| 400 | Malformed request or a bad identifier |
+| 400 | Malformed request, a failed validation (`validation_error`) or a bad identifier |
 | 401 | Missing or invalid API key |
 | 402 | Usage credit exhausted with no payment method on file |
-| 403 | Key lacks the required scope, or the resource is in another workspace |
-| 404 | No such resource |
-| 422 | Validation failed |
+| 403 | Key lacks the required scope |
+| 404 | No such resource, or a resource in a workspace you do not belong to |
+| 409 | The request conflicts with the current state of the resource |
+| 413 | The body is larger than the endpoint accepts |
+| 422 | A platform refused the request; `message` carries its reason |
 | 429 | Rate limited. See [Rate Limits](/api/rate-limits) for the per-plan ceiling and the `retry_after` field |
 | 500 | Something broke on our side |
+| 502 | A platform or provider answered with something we could not use |
+| 503 | The feature is not configured for this deployment, or its provider is down |
 
-A 403 is also what you get for a workspace you do not belong to. The API never distinguishes "not yours" from "does not exist" in a way that would let you probe for other tenants' data.
+A resource in a workspace you do not belong to answers the same 404 as one that does not exist, so the API never lets you probe for other tenants' data.
 
 ## Versioning
 

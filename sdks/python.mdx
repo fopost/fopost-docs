@@ -102,10 +102,28 @@ Failed requests raise a typed exception carrying the status and the API's
 `error` code. A `402` means the usage credit ran out (add a payment method) and should not be retried; a
 `429` carries the seconds to wait.
 
+## Chat adapter
+
+`fopost.chat_adapter` wraps the inbox conversation and reply endpoints in a send/receive
+interface, for plugging FoPost into a chatbot framework:
+
+```python
+from fopost.chat_adapter import ChatAdapter
+
+chat = ChatAdapter(client, workspace_id=workspace_id, webhook_secret=secret)
+event = chat.parse_webhook(raw_body, request.headers)
+message = chat.receive_one(event)
+if message:
+    chat.send(reply_to=message.id, text="On it.")
+```
+
+Full walkthrough: [chat adapter](/sdks/chat-adapter).
+
 ## Next
 
 <Cards>
   <Card title="API Reference" href="/api/overview" />
+  <Card title="Chat Adapter" href="/sdks/chat-adapter" />
   <Card title="TypeScript SDK" href="/sdks/typescript" />
   <Card title="Webhooks" href="/webhooks" />
 </Cards>

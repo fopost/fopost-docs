@@ -50,9 +50,24 @@ curl -X POST https://api.fopost.com/v1/posts \
 | `summary` | string | No | Summary, for platforms that take one |
 | `auto_plug` | boolean | No | Post a follow-up comment after publishing |
 
-Media items take `type` (`image`, `video`, `gif`), `name`, and `url`, plus optional `alt` and `thumbnail`. Upload files first through the [media endpoints](/api/media) and pass what they return.
+Media items take `type` (`image`, `video`, `gif`), `name`, and `url`, plus optional `alt` and `thumbnail`. Upload files first through the [media endpoints](/api/media) and pass what they return, or send them with the post as below.
 
 The response is the created post, with `id` and `status`.
+
+### Create a post with files
+
+The same endpoint takes `multipart/form-data`: the JSON body goes in a `post` field and up to five files under `files`. The files are stored in the workspace library and attached to the first content block, so one request does it all.
+
+```bash
+curl -X POST https://api.fopost.com/v1/posts \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -F 'post={"workspace_id":"7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90","accounts":["3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10"],"content":[{"text":"Doors open Monday."}],"status":"draft"}' \
+  -F "files=@launch.mp4"
+```
+
+`PUT /v1/posts/{id}` takes the same form; the files join the first block of the `content` you send, or of the stored content when you send none.
+
+A multipart request passes through the API's edge, which refuses any request over 100 MB before FoPost sees it, so each file is capped at 100 MB here as well as at your [account's limit](/api/media#limits). A bigger file, a 2 GB video for YouTube say, goes through [direct upload](/api/media#direct-upload) first and is attached by `url`. The SDKs hide the split: pass a file to `posts.create` and the client picks the route by size. A file over either ceiling answers `413` with `file_too_large` and `max_file_bytes`.
 
 ## Publish it
 
@@ -99,10 +114,11 @@ One record per account, newest first:
 {
   "data": [
     {
-      "id": "3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10",
+      "id": "e4c2a915-0b7d-4f3e-8a62-1d9b5c7e3f08",
+      "account_id": "3a9f1d20-6c77-4b2e-9a01-8f5d2c3b4e10",
       "platform": "linkedin",
       "username": "yourbrand",
-      "publish_status": "published",
+      "status": "published",
       "posted_at": "2026-08-29T14:30:12.000Z",
       "external_url": "https://www.linkedin.com/feed/update/urn:li:share:6789",
       "attempts": 1,
@@ -110,9 +126,10 @@ One record per account, newest first:
     },
     {
       "id": "b81e4f02-91a3-4c55-8de6-77a0c1f2d3e4",
+      "account_id": "5c0d7e3a-2f19-4b86-a4d1-9e6f8b2c7a35",
       "platform": "twitter",
       "username": "yourbrand",
-      "publish_status": "failed",
+      "status": "failed",
       "error_code": "media_too_large",
       "error_message": "The attached video exceeds the size this platform accepts.",
       "attempts": 3,
@@ -122,7 +139,7 @@ One record per account, newest first:
 }
 ```
 
-`publish_status` is one of `pending`, `queued`, `delayed`, `publishing`, `published`, `failed`, `cancelled`, `unpublished`. The post's own `status` summarises them: `published` when every delivery landed, `partially_failed` when some did.
+A delivery's `status` is one of `pending`, `queued`, `delayed`, `publishing`, `published`, `failed`, `cancelled`, `unpublished`. The post's own `status` summarises them: `published` when every delivery landed, `partially_failed` when some did.
 
 ## Retry a failure
 
@@ -166,12 +183,10 @@ Every network has to support deleting a live post (`remote_delete` on each post 
 
 ```json
 {
-  "data": {
-    "post_status": "unpublished",
-    "deliveries": [
-      { "account_id": "…", "platform": "linkedin", "removed": true }
-    ]
-  }
+  "post_status": "unpublished",
+  "deliveries": [
+    { "account_id": "…", "platform": "linkedin", "removed": true }
+  ]
 }
 ```
 
