@@ -1,0 +1,255 @@
+---
+title: Ads Tracking
+description: Pixels, the Conversions API, custom conversions and event match quality.
+icon: target
+---
+
+Tracking is the measurement side of the [Ads](/docs/api/ads) section: the pixel on your site, the events your server sends to it, the custom conversions that read it, and how well those events match people. Every route dispatches by the connection you pass, so a network that declares `capabilities.pixels` and `capabilities.conversions` works the same way. Today that is Meta Ads; TikTok takes pixel events too.
+
+These endpoints need the `ads` scope. Nothing here spends or goes live, so `publish` is not required. Amounts are in the ad account's currency, in minor units.
+
+<Callout>
+  Identity never lands anywhere in the clear. Email, phone and your own user id are hashed before anything leaves FoPost, only the hashes are stored, and the response carries no identity at all.
+</Callout>
+
+## Send conversions
+
+```http
+POST /v1/ads/conversions/events
+Idempotency-Key: order-8831
+```
+
+Sends a batch of events to a pixel through the network's Conversions API. The `Idempotency-Key` header is required here: send one key per batch and retry as often as you like. A second delivery of the same key in the same workspace answers the first outcome with `replayed: true` and an `Idempotency-Replayed: true` header, and the network is reached once.
+
+`POST /v1/ads/conversions` is the same route with the header optional, kept for callers written before the alias existed.
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/conversions/events \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Idempotency-Key: order-8831" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "adAccountId": "act_123456789",
+    "pixelId": "987654321012345",
+    "events": [
+      {
+        "eventName": "Purchase",
+        "occurredAt": "2026-10-18T10:00:00Z",
+        "eventId": "order-8831",
+        "actionSource": "website",
+        "sourceUrl": "https://yourbrand.com/checkout/done",
+        "email": "casey@example.com",
+        "phone": "+1 415 555 0199",
+        "externalId": "user-7",
+        "clientIpAddress": "203.0.113.9",
+        "clientUserAgent": "Mozilla/5.0",
+        "clickId": "fb.1.1700000000.abc",
+        "valueMinor": 1999,
+        "currency": "USD",
+        "orderId": "8831"
+      }
+    ]
+  }'
+```
+
+| Field | Required | Description |
+|:------|:---------|:------------|
+| `pixelId` | Yes | A pixel on the ad account, from `GET /v1/ads/pixels` |
+| `eventName` | Yes | A standard event such as `Purchase` or `Lead`, or your own |
+| `occurredAt` | Yes | When it happened, ISO 8601 |
+| `eventId` | No | Your own id for the event. Send the same id from the browser pixel and the network deduplicates the pair |
+| `actionSource` | No | `website`, `app`, `email`, `phone_call`, `chat`, `physical_store`, `system_generated`, `business_messaging` or `other`. `website` when omitted |
+| `email`, `phone`, `externalId` | No | Hashed before they leave; never stored or echoed |
+| `clientIpAddress`, `clientUserAgent`, `clickId`, `browserId` | No | Passed through for matching; never stored |
+| `valueMinor`, `currency`, `orderId`, `contentIds` | No | What the conversion was worth |
+
+Up to 1000 events per batch. The answer is `202`:
+
+```json
+{
+  "data": {
+    "id": "0192f1a2-3b4c-7d5e-8f60-1a2b3c4d5e6f",
+    "accepted": 1,
+    "eventCount": 1,
+    "replayed": false
+  }
+}
+```
+
+`accepted` is how many events the network received. A pixel the ad account does not own, or a connection outside your workspace, answers `404`.
+
+### What was sent
+
+```http
+GET /v1/ads/conversions/events?workspace_id=&connection_id=&limit=
+```
+
+The batches sent through FoPost, newest first, up to 100. Each event carries hashes where identity was given, so you can see what was matched on without ever seeing who.
+
+```json
+{
+  "data": [
+    {
+      "id": "0192f1a2-3b4c-7d5e-8f60-1a2b3c4d5e6f",
+      "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+      "adAccountId": "act_123456789",
+      "pixelId": "987654321012345",
+      "idempotencyKey": "order-8831",
+      "eventCount": 1,
+      "accepted": 1,
+      "events": [
+        {
+          "eventName": "Purchase",
+          "occurredAt": "2026-10-18T10:00:00.000Z",
+          "eventId": "order-8831",
+          "actionSource": "website",
+          "emailHash": "f1d2…",
+          "phoneHash": "9a0b…",
+          "externalIdHash": "c3d4…",
+          "valueMinor": 1999,
+          "currency": "USD",
+          "orderId": "8831"
+        }
+      ],
+      "createdAt": "2026-10-18T10:00:02.000Z",
+      "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90"
+    }
+  ]
+}
+```
+
+## Pixels
+
+```http
+GET /v1/ads/pixels?workspace_id=&connection_id=&ad_account_id=
+POST /v1/ads/pixels
+GET /v1/ads/pixels/{id}?workspace_id=&connection_id=&ad_account_id=
+PATCH /v1/ads/pixels/{id}
+POST /v1/ads/pixels/{id}/share
+```
+
+Create takes `workspaceId`, `connectionId`, `adAccountId` and a `name`, and answers `201` with the pixel and its install code:
+
+```json
+{
+  "data": {
+    "id": "987654321012345",
+    "name": "Website",
+    "code": "<!-- Meta Pixel Code --> <script>…</script>",
+    "createdAt": "2026-10-18T09:58:00+0000",
+    "lastFiredAt": null,
+    "isUnavailable": false,
+    "dataUseSetting": "advertising_and_analytics"
+  }
+}
+```
+
+Read answers the same shape. Update takes `name` and `dataUseSetting` (`advertising_and_analytics` or `analytics_only`). Share takes `targetAdAccountId`, another ad account under the same business portfolio; a connection made with a personal login answers `400 validation_error`, since only a portfolio can share.
+
+### Stats and match quality
+
+```http
+GET /v1/ads/pixels/{id}/stats?workspace_id=&connection_id=&ad_account_id=
+GET /v1/ads/pixels/{id}/match-quality?workspace_id=&connection_id=&ad_account_id=
+```
+
+Stats answers fires per event name over the last 28 days:
+
+```json
+{
+  "data": {
+    "since": "2026-09-20T10:00:00.000Z",
+    "until": "2026-10-18T10:00:00.000Z",
+    "events": [
+      { "eventName": "PageView", "count": 48213 },
+      { "eventName": "Purchase", "count": 312 }
+    ]
+  }
+}
+```
+
+Match quality is the network's own score of how well the identity on sent events matched people, out of 10, with which identifiers the events carried and how often:
+
+```json
+{
+  "data": [
+    {
+      "eventName": "Purchase",
+      "score": 6.2,
+      "matchKeys": [
+        { "identifier": "email", "coveragePercent": 80 },
+        { "identifier": "external_id", "coveragePercent": 100 }
+      ]
+    }
+  ]
+}
+```
+
+A low score with low email coverage means your server is sending events without the fields the network matches on; the fix is in the batch you send, not the pixel.
+
+## Custom conversions
+
+```http
+GET /v1/ads/custom-conversions?workspace_id=&connection_id=&ad_account_id=
+POST /v1/ads/custom-conversions
+GET /v1/ads/custom-conversions/{id}?workspace_id=&connection_id=&ad_account_id=
+PATCH /v1/ads/custom-conversions/{id}
+DELETE /v1/ads/custom-conversions/{id}
+```
+
+A custom conversion counts a pixel event as a conversion when a rule matches. The rule is an event name plus an optional URL condition:
+
+```bash
+curl -X POST https://api.fopost.com/v1/ads/custom-conversions \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspaceId": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "connectionId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+    "adAccountId": "act_123456789",
+    "pixelId": "987654321012345",
+    "name": "Order confirmed",
+    "eventType": "PURCHASE",
+    "rule": { "eventName": "PageView", "urlContains": "/checkout/done" },
+    "defaultValueMinor": 4900
+  }'
+```
+
+| Field | Required | Description |
+|:------|:---------|:------------|
+| `pixelId` | Yes | The pixel the rule reads; must be on the ad account |
+| `eventType` | Yes | What it counts as: `PURCHASE`, `LEAD`, `COMPLETE_REGISTRATION`, `ADD_TO_CART`, `INITIATED_CHECKOUT`, `ADD_PAYMENT_INFO`, `ADD_TO_WISHLIST`, `CONTENT_VIEW`, `SEARCH`, `CONTACT`, `CUSTOMIZE_PRODUCT`, `DONATE`, `FIND_LOCATION`, `SCHEDULE`, `START_TRIAL`, `SUBMIT_APPLICATION`, `SUBSCRIBE` or `OTHER` |
+| `rule.eventName` | No | The pixel event to read; `PageView` when omitted |
+| `rule.urlContains`, `rule.urlEquals` | No | One or the other |
+| `defaultValueMinor` | No | Value of one conversion when the event carries none |
+
+```json
+{
+  "data": {
+    "id": "556677889900112",
+    "name": "Order confirmed",
+    "pixelId": "987654321012345",
+    "eventType": "PURCHASE",
+    "rule": { "eventName": "PageView", "urlContains": "/checkout/done" },
+    "description": null,
+    "defaultValueMinor": 4900,
+    "isArchived": false,
+    "isUnavailable": false,
+    "createdAt": "2026-10-18T10:05:00+0000",
+    "lastFiredAt": null
+  }
+}
+```
+
+Update takes `name`, `description` and `defaultValueMinor`; the rule is fixed once created, so a different rule is a new conversion. Delete removes it on the network and answers `204`. Every item route takes the ad account the conversion sits on, and an id on any other account answers `404`.
+
+## Errors
+
+| Status | `error` | When |
+|:-------|:--------|:-----|
+| `400` | `validation_error` | A field is missing or out of range, or the alias was called without `Idempotency-Key` |
+| `400` | `unsupported` | The connection's network does not take pixel events or has no custom conversions |
+| `404` | `not_found` | The connection, ad account, pixel or conversion is not one the workspace reaches |
+| `422` | `platform_error` | The network refused; `message` carries its reason |
