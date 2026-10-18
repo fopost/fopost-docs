@@ -28,6 +28,9 @@
     "ads-google",
     "ads-linkedin",
     "ads-tiktok",
+    "ads-pinterest",
+    "ads-x",
+    "ads-openai",
     "---Operations---",
     "rate-limits",
     "ai"
