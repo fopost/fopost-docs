@@ -110,10 +110,13 @@ One event per new inbound item, as the inbox poll picks it up. Your own replies 
 | `inbox.mention_received` | Someone mentioned one of your accounts |
 | `inbox.message_received` | A direct message arrived |
 | `inbox.review_received` | A review or Page recommendation arrived |
+| `inbox.reply_sent` | A reply you sent from the inbox reached the platform |
 
 ```json
 { "itemId": "…", "type": "comment", "platform": "instagram", "accountId": "…", "receivedAt": "2026-09-01T09:00:12.000Z" }
 ```
+
+`inbox.reply_sent` carries the same ids plus `replyId` (the platform's id for your reply) and `sentAt` instead of `receivedAt`.
 
 The payload is ids only. Fetch the item from the [inbox](/guide/inbox) for its text and author, so nothing a customer wrote sits in your webhook logs. Building a bot on `inbox.message_received`? The [chat adapter](/sdks/chat-adapter) does the verify-and-fetch half for you.
 
