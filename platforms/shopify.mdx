@@ -1,0 +1,68 @@
+---
+title: Shopify
+description: Publish and edit blog articles on a Shopify store, and read or update its products.
+icon: social-shopify
+---
+
+Shopify publishing writes an **article** to a blog on your store. Unlike most networks, the connection is two-way: FoPost can also list, read, change and delete the articles already on the store, and read and update the store's products.
+
+## Connecting
+
+Two ways in, and both reach the same blogs and products:
+
+- **Install the app**: **Accounts → Connect → Shopify**, enter your store domain (`your-store.myshopify.com`), and approve the permissions on Shopify. The token does not expire.
+- **Admin API access token**: create a custom app in **Settings → Apps and sales channels → Develop apps** inside your own store admin, grant it the four permissions below, install it, and paste its Admin API access token into FoPost.
+
+Either way the store needs these permissions: `read_content` and `write_content` for blogs and articles, `read_products` and `write_products` for the catalogue.
+
+<Callout type="info">
+  Only `*.myshopify.com` store domains are accepted. That is the host Shopify's Admin API answers on; your customer-facing custom domain will not work here.
+</Callout>
+
+## What you can publish
+
+| Limit | Value |
+|:------|:------|
+| Body | 100,000 characters, rendered to HTML: headings, lists, quotes, code, and inline images all carry over |
+| Title | From the post title, or the start of the body |
+| Image | One featured image (JPEG, PNG, GIF, or WebP), 20 MB |
+| Tags | Carried over to the article's tags |
+| Link | Appended to the article body |
+
+A post published to Shopify goes to the store's first blog unless you pick another one. Per post you can publish live or hold the article as a **draft** to finish in the store admin.
+
+## Managing articles already on the store
+
+The store's own articles are readable and writable, whether FoPost created them or not.
+
+- **List** every article on a blog, drafts included, newest first
+- **Read** one article in full
+- **Create** a new article on any blog
+- **Update** a live article in place. Only the fields you send change, and the article is addressed by its own id, so an edit never leaves a duplicate behind
+- **Delete** an article from the store
+
+Ask the agent for "what's on the store blog" to list them, and see [Blogs and articles](/api/blogs) for the API.
+
+## Products
+
+FoPost can list the store's products with their status, price, vendor, type and tags, and update a product's title, description, tags, type, vendor or status. Nothing in the catalogue changes unless you ask for it.
+
+## Inbox
+
+Not supported: Shopify blog comments have no API FoPost can read or answer.
+
+## Analytics
+
+None: the Admin API exposes no per-article metrics.
+
+## Deleting
+
+Deleting the post in FoPost deletes the article on the store permanently. This cannot be undone.
+
+## Next
+
+<Cards>
+  <Card title="Blogs and Articles" href="/api/blogs" />
+  <Card title="WordPress" href="/platforms/wordpress" />
+  <Card title="Connecting Accounts" href="/guide/connecting-accounts" />
+</Cards>
