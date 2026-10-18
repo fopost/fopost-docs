@@ -31,6 +31,26 @@ These talk to your FoPost account with an API key.
 
 All of them are MIT licensed and open source. All are 0.x, so pin an exact version if a breaking minor would hurt.
 
+### What every client covers
+
+Each language SDK wraps every operation in the [OpenAPI spec](https://api.fopost.com/v1/openapi.json), and a check in the API collections repository fails whenever one falls behind. The resources, by family:
+
+| Resource | What it does |
+|:---------|:-------------|
+| Posts | Create, update, schedule, publish, retry, cancel, unpublish, duplicate, preflight, deliveries, bulk import |
+| Posting queue | Queue slots, the next free slot, a preview of upcoming slots, and `schedule: "queue"` on a post |
+| Accounts | Connected accounts, health, groups, per-network settings and extras |
+| Connect sessions | Hosted connect links that let your own users connect an account |
+| Workspaces, labels | Create, read, update, delete |
+| Webhooks | Endpoints, a test send, the delivery log, and redelivery |
+| Automations | Automations, runs, stats, and saved versions with restore |
+| Analytics | Overview, time series, top posts, labels, demographics, posting streak, inbox |
+| Inbox, contacts, broadcasts, sequences | Comments, messages, conversations, and outbound messaging |
+| Media | The media library, uploads, and direct uploads |
+| Blog, knowledge, communities, Google Business, WhatsApp | The per-feature resources those features expose |
+| Ads | Ad connections, campaigns, audiences, leads, and the per-network ad resources |
+| Logs | The request log for an API key |
+
 ## Framework integrations
 
 Each one wraps the client for its language and adds the wiring that framework expects: configuration, dependency injection, background jobs, console commands, and a signature-verified webhook endpoint. None of them adds to the API surface, so the language SDK's page stays the reference for resources and errors.
