@@ -169,6 +169,22 @@ DELETE /v1/accounts/{accountId}/communities/{communityId}
 
 `sync` pulls the communities the account belongs to, `search` looks one up, and `manual` adds one by id when you already know it.
 
+## X follow
+
+```http
+POST /v1/accounts/{id}/x/follow
+POST /v1/accounts/{id}/x/unfollow
+```
+
+Follows or unfollows an X user from the account, by the user's numeric X id in `user_id`. Both need the `inbox` and `publish` scopes, and each is one metered X call. An account connected before FoPost asked for the follow permission answers `409` with `reconnect_required` until it is reconnected.
+
+```bash
+curl -X POST https://api.fopost.com/v1/accounts/0f1c4a1e-8f3c-4c62-9f6a-2a4b1a9e77d1/x/follow \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "user_id": "2244994945" }'
+```
+
 ## Slack channels, members and identity
 
 A Slack account connected through the app (not a webhook) has three extra resources:

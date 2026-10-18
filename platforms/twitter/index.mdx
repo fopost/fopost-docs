@@ -4,11 +4,13 @@ title: X (Twitter)
 description: Posts, threads, articles, media, analytics, and the inbox on X.
 ---
 
-X gets the full surface: posts and thread chains, articles, media, per-post and account analytics, competitor tracking, and mentions, replies, and DMs in the inbox.
+X gets the full surface: posts and thread chains, articles, media, per-post and account analytics, competitor tracking, mentions, replies, and DMs in the inbox, and engagement from the inbox.
 
 ## Connecting
 
-**Accounts → Connect → X**, approve on X. The grant covers reading and writing posts, media upload, and direct messages, and tokens refresh automatically. Disconnecting revokes FoPost's authorisation on X's side too.
+**Accounts → Connect → X**, approve on X. The grant covers reading and writing posts, media upload, direct messages, likes, bookmarks and follows, and tokens refresh automatically. Disconnecting revokes FoPost's authorisation on X's side too.
+
+An account connected before the engagement permissions were added keeps publishing and reading as before, but shows **Reconnect** on its Connections card: reposting, bookmarking and following need the newer grant, and X refuses them until the account is reconnected.
 
 ## At a glance
 
@@ -19,7 +21,14 @@ X gets the full surface: posts and thread chains, articles, media, per-post and 
 | Media | 4 photos, or 1 GIF, or 1 video per post |
 | Analytics | [Post, account, and competitor metrics](/platforms/twitter/analytics) |
 | Inbox | Mentions, replies, and DMs, with replies from FoPost |
+| Engagement | Like, repost, bookmark, hide a reply, follow, each with undo |
 | Deletion | Deleting in FoPost deletes on X |
+
+## Engagement
+
+From an X item in the inbox you can **Like**, **Repost** and **Bookmark**, and take each back; a reply under your own post can be hidden and unhidden. The agent can propose a repost or bookmark too, and nothing reaches X until you approve it. Following an X user, looking a post up by id and searching recent posts are available through the [API](/api/inbox#x-posts-beyond-the-inbox).
+
+Every engagement call is an X API call billed to your workspace at the same rate as a read. Hiding only works on replies under posts your account wrote; X refuses it anywhere else.
 
 ## Limits that matter
 

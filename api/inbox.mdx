@@ -51,6 +51,8 @@ An item looks like this:
   "can_hide": true,
   "can_delete": true,
   "can_like": true,
+  "can_repost": false,
+  "can_bookmark": false,
   "can_pin": false,
   "can_edit": false,
   "can_react": false,
@@ -59,6 +61,8 @@ An item looks like this:
   "can_private_reply": true,
   "rating": null,
   "liked": false,
+  "reposted": false,
+  "bookmarked": false,
   "pinned": false,
   "reaction": null,
   "edited_at": null,
@@ -163,16 +167,31 @@ DELETE /v1/inbox/{id}
 
 Hide and delete act on the platform, not just in FoPost. They are available where the item's `can_hide` or `can_delete` is true. A hidden item stays in the inbox with `hidden: true`. Delete also removes a reply your account wrote; deleting your own reply needs the `publish` scope.
 
-## Like and pin
+## Like, repost, bookmark and pin
 
 ```http
 POST /v1/inbox/{id}/like
 POST /v1/inbox/{id}/unlike
+POST /v1/inbox/{id}/repost
+POST /v1/inbox/{id}/unrepost
+POST /v1/inbox/{id}/bookmark
+POST /v1/inbox/{id}/unbookmark
 POST /v1/inbox/{id}/pin
 POST /v1/inbox/{id}/unpin
 ```
 
-Like acts as the connected account: a like on most networks, an upvote on Reddit, a favourite on Mastodon. It is available where `can_like` is true, and the item then reports `liked: true`. Pin works on a comment your account wrote, where `can_pin` is true. All four need the `publish` scope.
+Like acts as the connected account: a like on most networks, an upvote on Reddit, a favourite on Mastodon. It is available where `can_like` is true, and the item then reports `liked: true`. Repost puts the post on the account's own timeline and bookmark saves it privately; both exist on X, where `can_repost` and `can_bookmark` are true, and the item reports `reposted` and `bookmarked`. Pin works on a comment your account wrote, where `can_pin` is true. Every one of these needs the `publish` scope, and the undo route reverses it.
+
+On X each call is a pass-through API call billed to the workspace like a read. If X's own balance is spent the call answers `402` with `platform_balance_spent`, and nothing is charged.
+
+## X posts beyond the inbox
+
+```http
+GET /v1/x/posts/{id}?account_id=
+GET /v1/x/search?q=&account_id=
+```
+
+Both read through the X account you name with `account_id`, and both need the `inbox` scope. The lookup returns one post by its X id with its author and public metrics; `404` means X has no post with that id. The search is X's recent search over the last seven days, up to 512 characters of query, `max_results` from 10 to 100, and a `next_token` in `meta` for the next page. Each call, and each page, is one metered X read. Following a user from an account is on the [accounts page](/api/accounts#x-follow).
 
 ## Direct messages
 
