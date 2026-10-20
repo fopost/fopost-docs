@@ -4,7 +4,7 @@ description: Every API request made in a workspace, who made it, and what it ans
 icon: list
 ---
 
-**Logs** is the request log of a workspace: one row for every call that reached the API in the last 30 days, whether it came from the dashboard, the agent, an SDK, the MCP server, the CLI, or your own code with an API key.
+**Logs** is the activity log of a workspace: one row for every call that reached the API in the last 30 days, whether it came from the dashboard, the agent, an SDK, the MCP server, the CLI, or your own code with an API key, and one row for every publish attempt the worker made on your behalf.
 
 Use it when something you sent did not do what you expected: find the call, read its status and message, and open the row for the full path.
 
@@ -17,6 +17,8 @@ Use it when something you sent did not do what you expected: find the call, read
 | **Activity** | The method and route, for example `POST /v1/posts/{id}/publish` |
 | **Source** | Who made the call, and the API key's name when one was used |
 | **Platform** | The network, for calls that name one |
+| **Account** | The connected account the call touched. Click to copy its id, or open the connection |
+| **Profile** | That account's id on the network. Click to copy, or open the public profile |
 | **Duration** | How long the API took to answer |
 | **Message** | The error text a failed request returned, with credentials removed |
 
@@ -32,14 +34,17 @@ Use it when something you sent did not do what you expected: find the call, read
 | **Integration** | Zapier, n8n, or Make |
 | **API** | Anything else calling with an API key |
 | **Connected App** | A third-party app the workspace authorised through OAuth |
+| **Publishing** | The worker delivering a post to a network. `200` when it went out, `502` with the network's reason when it did not |
 
 ## Filtering
 
-Narrow by time window, status, method, source, or platform, or search the path and message text. Turn on **Live** to keep the list refreshing.
+Narrow by time window, status, method, source, or platform, or search the path and message text. Click a bar in the chart to zoom into that hour or day; **Clear** widens the window again. Turn on **Live** to keep the list refreshing.
 
-## What is not here
+## Opening a row
 
-A request that was accepted is not a post that went out. `POST /v1/posts/{id}/publish` answers `202` as soon as the delivery is queued; what the network then said is on the post's own page, in the **Destinations** card and the **Publish log**. The [Activity](/api/workspaces#activity) feed lists publishes, failures, and account changes as events.
+Each row opens with what it touched. A publish shows the account, the result with the platform's post id and a link to the live post, or the reason it failed, plus a preview of the content, the media count, and the post id. A request shows its path, the account it addressed when it named one, and the error text it returned.
+
+A request that was accepted is not a post that went out: `POST /v1/posts/{id}/publish` answers `202` as soon as the delivery is queued, and the **Publishing** row that follows is what the network said.
 
 ## From the agent
 

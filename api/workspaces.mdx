@@ -71,14 +71,18 @@ Each event carries a `summary` and an `actor`: the `type` (`user`, `api_key`, `a
 
 ## Request logs
 
-`GET /v1/logs` lists the raw API requests of the last 30 days, newest first, with the same `workspace_id`, `days`, `limit`, and cursor parameters. Each row carries the `method`, `route`, `path`, `status_code`, `duration_ms`, `platform`, and the error `message` of a failed call, plus who made it:
+`GET /v1/logs` lists the API requests and publish attempts of the last 30 days, newest first, with the same `workspace_id`, `days`, `limit`, and cursor parameters, or an explicit `since` and `until` window. Each row carries the `method`, `route`, `path`, `status_code`, `duration_ms`, `platform`, and the error `message` of a failed call, plus who made it and what it touched:
 
 | Field | |
 |:--|:--|
-| `source` | `dashboard`, `mcp`, `sdk-<language>`, `cli`, `github-action`, `integration`, `api`, or `oauth` |
+| `source` | `dashboard`, `mcp`, `sdk-<language>`, `cli`, `github-action`, `integration`, `api`, `oauth`, or `worker` for a publish attempt |
 | `api_key_name` | The key's name when the call used one |
+| `account_id`, `account_username`, `account_external_id` | The connected account the call touched, and its id on the network |
+| `post_id` | The post the call touched |
 
 Filter with `status` (`success` or `failed`), `method`, `platform`, `route`, `q` (path and message text), or `source`, where `sdk` matches every SDK.
+
+`GET /v1/logs/{id}` returns one row with `delivery` (`status`, `attempts`, `platform_post_id`, `external_url`, `error_code`, `error_message`) and `post` (`title`, `content_type`, `preview`, `media_count`) when it was a publish attempt, both `null` otherwise.
 
 ## Next
 
