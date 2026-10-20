@@ -69,6 +69,17 @@ Filtering to `kind=security` gives you the audit log: who changed access or a se
 
 Each event carries a `summary` and an `actor`: the `type` (`user`, `api_key`, `agent`, or `system`) and a `name` where there is one. `GET /v1/logs` is separate: it lists raw API requests, not workspace events.
 
+## Request logs
+
+`GET /v1/logs` lists the raw API requests of the last 30 days, newest first, with the same `workspace_id`, `days`, `limit`, and cursor parameters. Each row carries the `method`, `route`, `path`, `status_code`, `duration_ms`, `platform`, and the error `message` of a failed call, plus who made it:
+
+| Field | |
+|:--|:--|
+| `source` | `dashboard`, `mcp`, `sdk-<language>`, `cli`, `github-action`, `integration`, `api`, or `oauth` |
+| `api_key_name` | The key's name when the call used one |
+
+Filter with `status` (`success` or `failed`), `method`, `platform`, `route`, `q` (path and message text), or `source`, where `sdk` matches every SDK.
+
 ## Next
 
 <Cards>

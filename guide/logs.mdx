@@ -1,0 +1,46 @@
+---
+title: Logs
+description: Every API request made in a workspace, who made it, and what it answered.
+icon: list
+---
+
+**Logs** is the request log of a workspace: one row for every call that reached the API in the last 30 days, whether it came from the dashboard, the agent, an SDK, the MCP server, the CLI, or your own code with an API key.
+
+Use it when something you sent did not do what you expected: find the call, read its status and message, and open the row for the full path.
+
+## What a row carries
+
+| | |
+|:--|:--|
+| **Time** | When the request arrived |
+| **Status** | The HTTP status it answered. Anything from 400 up is a failure |
+| **Activity** | The method and route, for example `POST /v1/posts/{id}/publish` |
+| **Source** | Who made the call, and the API key's name when one was used |
+| **Platform** | The network, for calls that name one |
+| **Duration** | How long the API took to answer |
+| **Message** | The error text a failed request returned, with credentials removed |
+
+## Sources
+
+| Source | What it means |
+|:--|:--|
+| **Dashboard** | A signed-in session in the web app or the mobile app |
+| **MCP** | The [MCP server](/mcp) |
+| **SDK** | One of the [official SDKs](/sdks), named by language |
+| **CLI** | The [command line](/cli) |
+| **GitHub Action** | The GitHub Action |
+| **Integration** | Zapier, n8n, or Make |
+| **API** | Anything else calling with an API key |
+| **Connected App** | A third-party app the workspace authorised through OAuth |
+
+## Filtering
+
+Narrow by time window, status, method, source, or platform, or search the path and message text. Turn on **Live** to keep the list refreshing.
+
+## What is not here
+
+A request that was accepted is not a post that went out. `POST /v1/posts/{id}/publish` answers `202` as soon as the delivery is queued; what the network then said is on the post's own page, in the **Destinations** card and the **Publish log**. The [Activity](/api/workspaces#activity) feed lists publishes, failures, and account changes as events.
+
+## From the agent
+
+Ask the agent what failed and it reads the same log through `list_request_logs`, scoped to the workspace you are in.
