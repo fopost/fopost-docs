@@ -246,7 +246,7 @@ curl -X POST "https://api.fopost.com/v1/ads/linkedin/conversion-rules/urn:li:con
 GET /v1/ads/library?connection_id=&countries=&q=&page_ids=&limit=&after=
 ```
 
-The same endpoint [Meta](/docs/api/ads) serves: it searches the ads the network publishes for everyone, not the ads on your account. `countries` is required, a comma-separated list of two-letter codes. `q` searches the ad copy and the advertiser name, and `page_ids` narrows to named advertisers.
+The same endpoint [Meta](/api/ads) serves: it searches the ads the network publishes for everyone, not the ads on your account. `countries` is required, a comma-separated list of two-letter codes. `q` searches the ad copy and the advertiser name, and `page_ids` narrows to named advertisers.
 
 Each entry carries the advertiser, the creative bodies and titles, the dates it ran and a `snapshotUrl` into the library. LinkedIn's library discloses an impression band rather than spend, so the spend and impression range fields come back null. Pass `nextCursor` back as `after` for the next page. Available wherever `capabilities.adLibrary` is true.
 

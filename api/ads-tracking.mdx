@@ -4,7 +4,7 @@ description: Pixels, the Conversions API, custom conversions and event match qua
 icon: target
 ---
 
-Tracking is the measurement side of the [Ads](/docs/api/ads) section: the pixel on your site, the events your server sends to it, the custom conversions that read it, and how well those events match people. Every route dispatches by the connection you pass, so a network that declares `capabilities.pixels` and `capabilities.conversions` works the same way. Today that is Meta Ads; TikTok takes pixel events too.
+Tracking is the measurement side of the [Ads](/api/ads) section: the pixel on your site, the events your server sends to it, the custom conversions that read it, and how well those events match people. Every route dispatches by the connection you pass, so a network that declares `capabilities.pixels` and `capabilities.conversions` works the same way. Today that is Meta Ads; TikTok takes pixel events too.
 
 These endpoints need the `ads` scope. Nothing here spends or goes live, so `publish` is not required. Amounts are in the ad account's currency, in minor units.
 
