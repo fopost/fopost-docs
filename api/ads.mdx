@@ -4,7 +4,7 @@ description: Boost published posts and run ads, audiences and lead forms on a co
 icon: megaphone
 ---
 
-Ads run on an ad network connection, and this page covers Meta. Google Ads and TikTok Ads use these same endpoints through their own connections, each with a surface of its own: see [Google Ads](/docs/api/ads-google), [LinkedIn Ads](/docs/api/ads-linkedin), [TikTok Ads](/docs/api/ads-tiktok), [Pinterest Ads](/docs/api/ads-pinterest), [X Ads](/docs/api/ads-x) and [OpenAI Ads](/docs/api/ads-openai). `GET /v1/ads/providers` lists every network with a `capabilities` block; read that rather than branching on a network's name.
+Ads run on an ad network connection, and this page covers Meta. Google Ads and TikTok Ads use these same endpoints through their own connections, each with a surface of its own: see [Google Ads](/api/ads-google), [LinkedIn Ads](/api/ads-linkedin), [TikTok Ads](/api/ads-tiktok), [Pinterest Ads](/api/ads-pinterest), [X Ads](/api/ads-x) and [OpenAI Ads](/api/ads-openai). `GET /v1/ads/providers` lists every network with a `capabilities` block; read that rather than branching on a network's name.
 
 A Meta Ads connection is a Meta business or user login that reaches ad accounts and Facebook Pages, separate from the account used for posting. With one in place you can boost a post FoPost already published, create an ad in one call or build its campaign, ad set, creative and ad one at a time, manage everything already on the ad account, read insights, build audiences, run product catalogs, predict reach, search the public ad archive and collect leads from Instant Forms. These endpoints need the `ads` scope, and every one that can start or stop spend, or change what the public sees on an ad, also needs `publish`.
 
@@ -487,9 +487,9 @@ A `422` means the network refused the request and `message` carries its reason, 
 ## Next
 
 <Cards>
-  <Card title="LinkedIn Ads" href="/docs/api/ads-linkedin" />
-  <Card title="Pinterest Ads" href="/docs/api/ads-pinterest" />
-  <Card title="X Ads" href="/docs/api/ads-x" />
-  <Card title="OpenAI Ads" href="/docs/api/ads-openai" />
+  <Card title="LinkedIn Ads" href="/api/ads-linkedin" />
+  <Card title="Pinterest Ads" href="/api/ads-pinterest" />
+  <Card title="X Ads" href="/api/ads-x" />
+  <Card title="OpenAI Ads" href="/api/ads-openai" />
   <Card title="Inbox" href="/api/inbox" />
 </Cards>
