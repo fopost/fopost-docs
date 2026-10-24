@@ -4,16 +4,34 @@ description: Publish FoPost articles on your own site, whatever it is built with
 icon: globe
 ---
 
-The Website target sends every published article to a URL you control, as one signed JSON request. Your site stores the article and renders it however it likes. Any framework works: all it needs is an HTTPS route that can read a raw request body.
+An article publishes to the destinations you tick on it. **Articles → Destinations** lists every place one can go; a destination publishes once it shows **Live**.
+
+## Destinations
+
+| Destination | Status | How it connects |
+|:------------|:-------|:----------------|
+| Your website (webhook) | Live | Enter a receiver URL on **Articles → Destinations**; the rest of this page is about it |
+| WordPress | Live | Connect the site under **Channels**; pick the post status per article |
+| Shopify | Live | Connect the store under **Channels**; pick the blog per article |
+| Medium | Live where the deployment has Medium credentials | Connect the account under **Channels**; pick the visibility per article |
+| Dev.to | Live where the deployment has Dev.to credentials | Connect the account under **Channels**; pick the status per article |
+| Hashnode | Live where the deployment has Hashnode credentials | Connect the publication under **Channels** |
+| Webflow, Framer, Wix, Notion, Ghost, Substack, X Articles, LinkedIn Articles | Coming soon | No action yet |
+
+A connected account on a platform the deployment holds no credentials for shows **Coming Soon** instead of **Live**, and an article cannot publish until at least one ticked destination is live.
+
+## The website destination
+
+The website destination sends every published article to a URL you control, as one signed JSON request. Your site stores the article and renders it however it likes. Any framework works: all it needs is an HTTPS route that can read a raw request body.
 
 ## Set it up
 
-1. Open **Settings → Blog** and choose **Website** as the target
-2. Enter the URL of your receiver, for example `https://yourbrand.com/api/fopost/articles`. It has to be `https://` and it has to answer directly; redirects are not followed
+1. Open **Articles → Destinations** and find the **Your website** card
+2. Enter the URL of your receiver, for example `https://yourbrand.com/api/fopost/articles`, and press **Save URL**. It has to be `https://` and it has to answer directly; redirects are not followed
 3. Copy the signing secret (`whsec_…`) that appears. It is shown once. Keep it in your site's environment, next to your other secrets
-4. Press **Send test**. FoPost sends a signed `article.test` request, and the page tells you what your site answered
+4. Press **Send Test Article**. FoPost sends a signed `article.test` request, and the card tells you what your site answered
 
-Lost the secret? Rotate it from the same page: the old one stops verifying at once and the new one is shown once.
+Lost the secret? Rotate it from the same card: the old one stops verifying at once and the new one is shown once.
 
 ## What arrives
 
@@ -124,7 +142,7 @@ Answering with JSON `{ "url": "https://yourbrand.com/blog/..." }` is optional an
 
 ## Handle the test
 
-`article.test` carries a sample article in the same shape, with `tags: ["test"]` and no images. Verify it exactly like a real one, then answer `2xx` without storing anything. The settings page reports your response, so a `401` here means the secret or the raw-body handling is wrong, and a `404` means the route is not where you entered it.
+`article.test` carries a sample article in the same shape, with `tags: ["test"]` and no images. Verify it exactly like a real one, then answer `2xx` without storing anything. The Destinations page reports your response, so a `401` here means the secret or the raw-body handling is wrong, and a `404` means the route is not where you entered it.
 
 ## Keep it idempotent
 
