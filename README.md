@@ -1,6 +1,6 @@
 # FoPost Documentation
 
-The content for the FoPost documentation site at [fopost.com/docs](https://fopost.com/docs).
+The content for the [FoPost](https://fopost.com) documentation site at [fopost.com/docs](https://fopost.com/docs).
 
 This repository holds only the documentation itself. The site application lives in a private repository and consumes this repo as a git submodule mounted at its content path.
 
