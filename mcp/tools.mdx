@@ -99,23 +99,34 @@ Inbox items (comments, mentions, DMs) newest first.
 |:----------|:---------|:------|
 | `workspace_id` | No | Restrict to one workspace |
 | `type` | No | `comment`, `mention`, or `dm` |
-| `platform`, `account_id` | No | Narrow to one network or one connected account |
-| `state` | No | `unread`, `read`, `resolved`, or `snoozed` |
+| `account_id` | No | One or more connected accounts, comma-separated |
+| `status` | No | `unanswered`, `replied`, or `resolved` |
+| `since` | No | ISO 8601 date-time. Only items dated at or after it |
 | `post_id` | No | Comments under one FoPost post |
 | `post_external_id` | No | Comments under one platform post, including posts not published through FoPost |
 | `conversation_id` | No | One DM thread |
 | `direction` | No | `inbound` or `outbound` |
-| `q` | No | Search text |
-| `sort` | No | `newest`, `oldest`, or `unanswered` |
+| `sort` | No | `newest` or `oldest` |
 | `page`, `per_page` | No | `per_page` is 1–100 |
 
 ### `list_inbox_threads`
 
-Comment threads under your posts (`kind` = `comments`, the default) or posts you were tagged in (`kind` = `mentions`). Takes the same `workspace_id`, `platform`, `account_id`, `state`, `q`, `sort`, `page`, and `per_page` filters as `list_inbox`.
+Comment threads under your posts (`kind` = `comments`, the default) or posts you were tagged in (`kind` = `mentions`). Takes the same `workspace_id`, `account_id`, `status`, `since`, `sort`, `page`, and `per_page` filters as `list_inbox`.
 
 ### `list_inbox_conversations`
 
 DM conversations across connected accounts. Same filters as `list_inbox_threads`, without `kind`.
+
+### `resolve_inbox`
+
+Marks every unanswered item of one type resolved. Nothing reaches a platform.
+
+| Parameter | Required | Notes |
+|:----------|:---------|:------|
+| `workspace_id` | Yes | The workspace to resolve in |
+| `type` | Yes | `comment`, `mention`, `review`, or `dm` |
+| `older_than_days` | No | Only items older than this many days |
+| `account_id` | No | Only items on one connected account |
 
 ### `get_inbox_unread_count`
 
