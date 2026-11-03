@@ -13,7 +13,7 @@ GET /v1/inbox
 ```
 
 ```bash
-curl "https://api.fopost.com/v1/inbox?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90&state=unread" \
+curl "https://api.fopost.com/v1/inbox?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90&status=unanswered" \
   -H "X-API-Key: $FOPOST_API_KEY"
 ```
 
@@ -21,15 +21,14 @@ curl "https://api.fopost.com/v1/inbox?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6
 |:----------|:------------|
 | `workspace_id` | One workspace. Omit it to span every workspace the key can reach; each item then carries `workspace_id` |
 | `type` | `comment`, `mention`, `review`, or `dm` |
-| `state` | `unread`, `read`, `resolved`, or `snoozed` |
-| `platform` | A platform slug, such as `instagram` |
-| `account_id` | One connected account |
+| `account_id` | One or more connected accounts, comma-separated: `account_id=a,b,c` |
+| `status` | `unanswered`, `replied`, or `resolved`. A reply also resolves an item, so the three never overlap |
+| `since` | An ISO 8601 date-time. Only items the platform dates at or after it |
 | `post_id` | Comments under one FoPost post |
 | `post_external_id` | Comments under one platform post, including posts you did not publish through FoPost |
 | `conversation_id` | One DM thread |
 | `direction` | `inbound` or `outbound` |
-| `q` | Searches text and author |
-| `sort` | `newest` (default), `oldest`, or `unanswered` |
+| `sort` | `newest` (default) or `oldest` |
 | `page`, `per_page` | Pagination, `per_page` up to 100 |
 
 An item looks like this:
@@ -89,7 +88,7 @@ GET /v1/inbox/posts
 GET /v1/inbox/conversations
 ```
 
-`/posts` returns one row per platform post that has collected comments, with counts and the latest comment. Pass `kind=mentions` for the posts your account was tagged in, or `kind=reviews` for one row per review, each carrying its `rating`. `/conversations` returns one row per DM thread, latest first. Both accept `workspace_id`, `platform`, `account_id`, `state`, `q`, `sort` and pagination.
+`/posts` returns one row per platform post that has collected comments, with counts and the latest comment. Pass `kind=mentions` for the posts your account was tagged in, or `kind=reviews` for one row per review, each carrying its `rating`. `/conversations` returns one row per DM thread, latest first. Both accept `workspace_id`, `account_id`, `status`, `since`, `sort` and pagination.
 
 To read a thread, list items with the pair the row gives you:
 
@@ -129,6 +128,34 @@ curl -X POST https://api.fopost.com/v1/inbox/0f1c4a1e-8f3c-4c62-9f6a-2a4b1a9e77d
 ```
 
 A media id from another workspace answers `404`, the same as one that does not exist.
+
+## Resolve in bulk
+
+```http
+POST /v1/inbox/resolve
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/inbox/resolve \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90", "type": "comment", "before": "2026-09-11T00:00:00.000Z" }'
+```
+
+Marks every unanswered item of one type resolved, so it leaves the `unanswered` list. Nothing reaches a platform.
+
+| Field | Description |
+|:------|:------------|
+| `workspace_id` | Required. The workspace to resolve in |
+| `type` | Required. `comment`, `mention`, `review`, or `dm` |
+| `account_id` | An array of connected account ids. Only items on those accounts |
+| `before` | An ISO 8601 date-time. Only items the platform dates before it |
+
+The response says how many items were resolved:
+
+```json
+{ "data": { "resolved": 42 } }
+```
 
 ## Change state
 
