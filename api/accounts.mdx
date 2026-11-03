@@ -49,7 +49,7 @@ curl -X POST https://api.fopost.com/v1/accounts/{id}/move \
 
 The account moves with its connection, so nothing has to be reauthorized, and its inbox and analytics history move with it in the same step. You must own both workspaces; any other target answers `404`.
 
-A move is all or nothing. When the account still has records that belong to its current workspace, such as posts, recycling queues, ads, or monitoring rules, the move is refused with `409 move_blocked` and a `blocking_tables` list naming them. A target that already has an account on the same network also answers `409`. The account leaves its account groups, since those belong to the old workspace.
+A move is all or nothing. When the account still has records that belong to its current workspace, such as posts, ads, or monitoring rules, the move is refused with `409 move_blocked` and a `blocking_tables` list naming them. A target that already has an account on the same network also answers `409`. The account leaves its account groups, since those belong to the old workspace.
 
 ## Account groups
 
