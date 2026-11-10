@@ -107,6 +107,10 @@ Upload a CSV or TSV, up to 500 data rows and 2 MB. Columns:
 | `media_url` | No | A URL to attach |
 | `caption_<platform>` | No | Overrides the text for one platform, for example `caption_twitter` |
 
+Files made for Buffer, Publer or Hootsuite bulk upload are read as they are, with their own column names and date formats.
+
+Send an optional `accounts` form field (comma-separated account ids or platform names) to fill every row whose `accounts` cell is empty.
+
 `validate` dry-runs the file and returns per-row results without creating anything. `commit` re-validates and creates one scheduled post per row, all stamped with a fresh batch id. Commit is all or nothing: if any row fails, nothing is created and the failing rows come back.
 
 `DELETE /v1/posts/bulk-import/{batchId}` removes the batch's posts that are still draft or scheduled and cancels their queued deliveries. It refuses with `409` once any post in the batch has published, because that half of the batch is already public.
