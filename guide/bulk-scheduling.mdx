@@ -21,6 +21,14 @@ CSV or TSV, up to 500 rows and 2 MB.
 
 Accounts and labels are given by name, so the spreadsheet stays readable and does not need ids pasted into it.
 
+## From another tool
+
+Files made for Buffer, Publer or Hootsuite bulk upload import as they are. Their column names are read (`Text`, `Posting Time`, `Image URL`, `Tags`, `Date`, `Link`), Hootsuite's file without a header row works, and columns we have no use for are skipped. A `Link` is added to the end of the post text.
+
+Dates can also be written `YYYY/MM/DD HH:mm` or `MM/DD/YYYY HH:mm`. When any date in the file starts with a day above 12, every date in it is read day first.
+
+Those files have no accounts column, so pick the accounts on the import page. They apply to every row that names none.
+
 ## Validate first
 
 Upload and the file is checked without creating anything. You get a row-by-row report: a name that matches no account, a date in the past, content over a network's limit.
