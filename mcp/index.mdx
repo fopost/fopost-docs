@@ -45,6 +45,15 @@ Clients configured through a JSON file take the URL on its own:
 }
 ```
 
+### The Claude directory address
+
+`https://api.fopost.com/mcp/claude` is the address FoPost uses for Claude's connector directory. Sign-in, permissions, and approvals work exactly as on `/mcp`. Two things differ:
+
+- It leaves out AI image and video generation. Every other tool is there.
+- Its tool descriptions say what each tool does and nothing else, so they read the same in any client.
+
+Use `/mcp` if you want the generation tools; both addresses reach the same workspace data.
+
 ### Signing in
 
 The client sends you to a FoPost consent screen. Pick the workspace the assistant works in and approve the permissions it asks for. The connection stays locked to that workspace, and you can cut it off at any time from **Settings → Connected Apps**.
@@ -53,9 +62,9 @@ A client that can send custom headers may skip the sign-in and pass an API key a
 
 ### What the hosted server can do
 
-It serves the same tools as the [FoPost Agent](/guide/agent): drafting and editing posts, reading the calendar, the inbox, analytics, Radar, and more. Each tool needs the permission that covers it, so a connection without `ai` cannot spend credits, and one without `publish` cannot touch the schedule.
+It serves the tools of the [FoPost Agent](/guide/agent), apart from the few that only work inside the dashboard chat: drafting and editing posts, reading the calendar, the inbox, analytics, Radar, and more. Each tool needs the permission that covers it, so a connection without `ai` cannot spend credits, and one without `publish` cannot touch the schedule.
 
-Anything that publishes, schedules, or sends waits for your approval. The assistant can propose it; nothing reaches a network until you approve.
+Anything that publishes, schedules, or sends waits for your approval. The assistant can propose it; nothing reaches a network until you approve. Each proposal waits on its own, so a second one never cancels the first.
 
 ## Local server (stdio)
 
@@ -110,7 +119,7 @@ Same command, `npx -y @fopost/mcp`, with `FOPOST_API_KEY` in the environment.
 
 ### The tools
 
-Forty-one tools across posts, accounts, AI, the inbox, and ads: listing, scheduling, publishing, delivery status, account health, captions, the credit balance, comments and DMs, reply approvals, boosts, ads, audiences, and leads. Each one is a thin wrapper over the REST API.
+Tools across posts, accounts, AI, the inbox, and ads: listing, scheduling, publishing, delivery status, account health, captions, the credit balance, comments and DMs, reply approvals, boosts, ads, audiences, and leads. Each one is a thin wrapper over the REST API.
 
 <Cards>
   <Card title="Tools Reference" href="/mcp/tools" description="Every stdio tool, its parameters, and its caveats." />
