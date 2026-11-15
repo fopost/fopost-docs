@@ -43,7 +43,7 @@ client = FoPost.new(api_key: "fp_...")   # or set FOPOST_API_KEY
 {:ok, result} = FoPost.Posts.publish(client, post.id)
 ```
 
-Create a key at **Settings → API Keys** in the dashboard. It travels as the `X-API-Key` header, never as a bearer token.
+Create a key at **Developers → API Keys** in the dashboard. It travels as the `X-API-Key` header, never as a bearer token.
 
 The client is a plain struct with no process behind it, so build it once and pass it around, including across processes.
 

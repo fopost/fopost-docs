@@ -33,7 +33,7 @@ you know when it lands.
 
 The connection asks for one thing: a FoPost API key.
 
-1. Create a key at **Settings → API Keys** in the dashboard. It is shown once.
+1. Create a key at **Developers → API Keys** in the dashboard. It is shown once.
 2. Paste it into the connection. Make verifies it immediately with a call to `GET /v1/workspaces` and refuses to save a key the API rejects.
 
 A key can be scoped to a single workspace. A workspace-scoped key only ever sees that workspace: naming another one returns a permission error, and list modules return only its records. The key is stripped from every execution log.

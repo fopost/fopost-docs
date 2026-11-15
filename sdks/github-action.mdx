@@ -32,7 +32,7 @@ The action is not listed in the GitHub Marketplace yet: that listing is a one-ti
 
 ## Getting an API key
 
-Create one at **Settings → API Keys** in the dashboard. It needs the `posts` scope, plus `media` if you attach local files. Store it as a repository secret named `FOPOST_API_KEY` and reference it as `${{ secrets.FOPOST_API_KEY }}`. Never paste the key into the workflow file, and never into a `run:` step.
+Create one at **Developers → API Keys** in the dashboard. It needs the `posts` scope, plus `media` if you attach local files. Store it as a repository secret named `FOPOST_API_KEY` and reference it as `${{ secrets.FOPOST_API_KEY }}`. Never paste the key into the workflow file, and never into a `run:` step.
 
 The action calls `core.setSecret` on the key before it does anything else, so the runner masks it in every log line, including the ones this action writes.
 

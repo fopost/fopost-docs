@@ -47,7 +47,7 @@ Audit rows are append-only: nothing in FoPost rewrites one, and unlike the rest 
 
 ## API keys
 
-Programmatic access goes through API keys, managed at **Settings → API Keys**, and only there: managing keys requires a signed-in dashboard session, so a leaked key cannot be used to mint more keys.
+Programmatic access goes through API keys, managed at **Developers → API Keys**, and only there: managing keys requires a signed-in dashboard session, so a leaked key cannot be used to mint more keys.
 
 - **Shown once.** The full key appears only at creation (or regeneration). It is stored hashed and verified server-side on every request, so it cannot be displayed again. The list shows a short prefix for identification
 - **Scoped.** A key reaches only the endpoints covered by the scopes you granted it. The full scope list and what each covers is in [Authentication](/api/authentication)

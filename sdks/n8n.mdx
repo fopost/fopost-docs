@@ -32,7 +32,7 @@ npm install n8n-nodes-fopost
 
 ## Credentials
 
-1. Create a key at **Settings → API Keys** in the FoPost dashboard, with the scopes your workflow needs (`posts`, `accounts`, `analytics`, `webhooks`, and so on). A key can be bound to a single workspace, which confines every request to it.
+1. Create a key at **Developers → API Keys** in the FoPost dashboard, with the scopes your workflow needs (`posts`, `accounts`, `analytics`, `webhooks`, and so on). A key can be bound to a single workspace, which confines every request to it.
 2. In n8n, create a new **FoPost API** credential and paste the key.
 
 The key travels as the `X-API-Key` header on every request. The credential's **Test** button calls `GET /v1/workspaces`, so a green check means the key is live and has at least read access.
