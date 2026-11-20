@@ -126,6 +126,44 @@ GET /v1/media
 
 Returns the workspace's library items with their type, name, size, and URL.
 
+## Read a file
+
+```http
+GET /v1/media/{id}/file
+```
+
+The lasting address of a library item, and what every `preview_url` points at. It checks that the caller is a member of the item's workspace, then redirects (`302`) to a short-lived signed URL for the bytes. Add `?format=json` to get that URL back as `{ "url": "…" }` instead of a redirect, for a browser that needs to fetch the bytes itself.
+
+This address works for a signed-in member, which is what lets a plain `<img src>` in the dashboard use it. It does not take an API key.
+
+## Generate alt text
+
+```http
+POST /v1/media/{id}/alt-text
+```
+
+<Callout type="info">
+  Generated alt text is being rolled out with [Designs](/api/designs) and is available to accounts
+  with access enabled. Without it, this endpoint answers `403` with `feature_not_enabled`.
+</Callout>
+
+Describes an image in the library and saves the description as the item's alt text, replacing any text it held before. It needs the `ai` scope on top of `posts`, and is billed as AI usage.
+
+```bash
+curl -X POST https://api.fopost.com/v1/media/5c1e2f80-9a3b-4d7e-8c21-6b0f4a9d3e57/alt-text \
+  -H "X-API-Key: $FOPOST_API_KEY"
+```
+
+```json
+{
+  "alt_text": "A storefront with the lights coming on at dusk",
+  "alt_text_source": "ai",
+  "tags": ["storefront", "evening", "retail"]
+}
+```
+
+Only images can be described: anything else answers `400`. When the balance cannot cover it, it answers `402` with `upgrade_url`. If generation fails, it answers `502` with `generation_failed` and the previous alt text stays in place.
+
 ## Delete
 
 ```http
@@ -170,5 +208,7 @@ The library counts against your account's free storage allowance; past it, stora
 
 <Cards>
   <Card title="Publishing" href="/api/publishing" />
+  <Card title="Designs" href="/api/designs" />
+  <Card title="Video Edits" href="/api/video-edits" />
   <Card title="Media Library guide" href="/guide/media-library" />
 </Cards>
