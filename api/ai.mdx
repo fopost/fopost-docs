@@ -4,7 +4,7 @@ description: What an API key can do with AI, and where the rest of the AI featur
 icon: sparkles
 ---
 
-Most AI in FoPost runs inside the dashboard and the [FoPost Agent](/guide/agent), where a person is in the loop. Two endpoints are reachable with an API key, both under the `ai` scope.
+Most AI in FoPost runs inside the dashboard and the [FoPost Agent](/guide/agent), where a person is in the loop. The endpoints on this page and a [few others](#everything-else) are reachable with an API key, all under the `ai` scope.
 
 The `ai` scope is deliberately separate from every other scope, because it is the only one that spends money. A key that can publish cannot generate unless you also grant `ai`.
 
@@ -39,7 +39,9 @@ Funds never expire and the free credit on account fees refreshes monthly. See [P
 
 ## Everything else
 
-Rewriting for each platform, hashtags, turning a URL into posts, voice notes, alt text, and image and video generation are dashboard and agent features and are not exposed to API keys. They are documented in the [guide](/guide), not here.
+Three more AI calls live with the feature they belong to and also need the `ai` scope: [generated alt text](/api/media#generate-alt-text), [text to slides](/api/designs#text-to-slides), and the AI [video edit operations](/api/video-edits#operations) (subtitles, translated subtitles, clips and voiceover). They are being rolled out to accounts with access enabled.
+
+Rewriting for each platform, hashtags, turning a URL into posts, voice notes, and image and video generation are dashboard and agent features and are not exposed to API keys. They are documented in the [guide](/guide), not here.
 
 ## Next
 
