@@ -1,0 +1,118 @@
+---
+title: Fonts
+description: List the font library, and upload or remove a workspace's own fonts for designs and subtitles.
+icon: pencil-edit
+---
+
+<Callout type="info">
+  Fonts are being rolled out with [Designs](/api/designs) and are available to accounts with access
+  enabled. Without it, every endpoint on this page answers `403` with `feature_not_enabled`.
+</Callout>
+
+A design's text layers and a video's subtitles name their font by family. That family comes from one of two places: the **font library** every workspace shares, or a font **uploaded** to the workspace, such as your brand typeface. Every endpoint here needs the `posts` scope.
+
+## List fonts
+
+```http
+GET /v1/fonts?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90
+```
+
+Answers the library, and the workspace's uploaded fonts when you pass `workspace_id`. Without it, `uploaded` is empty.
+
+```json
+{
+  "library": [
+    {
+      "slug": "geist",
+      "family": "Geist",
+      "category": "sans",
+      "scripts": ["latin"],
+      "weights": ["100 900"],
+      "files": [
+        {
+          "path": "/fonts/create/geist/geist-latin-100-900.woff2",
+          "subset": "latin",
+          "weight": "100 900",
+          "style": "normal",
+          "unicode_range": "U+0000-00FF, …"
+        }
+      ]
+    }
+  ],
+  "uploaded": [
+    {
+      "id": "a3f0c6d2-5b19-4e7a-8c40-1d9e2b7f6a35",
+      "family": "Your Brand Sans",
+      "style": "normal",
+      "weight": 700,
+      "format": "woff2",
+      "file_url": "https://api.fopost.com/v1/fonts/a3f0c6d2-5b19-4e7a-8c40-1d9e2b7f6a35/file",
+      "created_at": "2026-11-20T09:12:00.000Z"
+    }
+  ]
+}
+```
+
+`category` is `sans`, `serif`, `display`, `handwriting` or `monospace`, and `scripts` lists the writing systems the family covers. A library weight is a string: one weight such as `"400"`, or a range such as `"100 900"` for a variable font. To use a font, put its `family` in a text layer's `fontFamily` or a subtitles operation's `fontFamily`.
+
+`file_url` serves the font to a signed-in member of the workspace, which is how the dashboard previews it. It does not take an API key.
+
+## Upload a font
+
+```http
+POST /v1/fonts
+```
+
+Send `multipart/form-data`, one font per request:
+
+```bash
+curl -X POST https://api.fopost.com/v1/fonts \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -F "workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90" \
+  -F "file=@YourBrandSans-Bold.woff2" \
+  -F "family=Your Brand Sans" \
+  -F "weight=700"
+```
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `workspace_id` | uuid | Yes | Workspace to add the font to |
+| `file` | file | Yes | A TTF, OTF, WOFF or WOFF2 file, up to 5 MB |
+| `family` | string | No | The family name layers refer to. Default the file name |
+| `weight` | integer | No | 100 to 1000. Default 400 |
+| `style` | enum | No | `normal` or `italic`. Default `normal` |
+
+Upload each weight and style of a family as its own file under the same `family`. The format is read from the file itself, not the extension. It answers `201` with the uploaded font in the shape above.
+
+A workspace holds up to 200 uploaded fonts, and they count against the account's storage allowance.
+
+## Delete a font
+
+```http
+DELETE /v1/fonts/{id}
+```
+
+Removes an uploaded font and answers `204` with no body. Library fonts cannot be deleted.
+
+## Errors
+
+| Status | `error` | When |
+|:-------|:--------|:-----|
+| `400` | `validation_error` | `workspace_id` or `file` is missing |
+| `400` | `unsupported_font` | The file is not a TTF, OTF, WOFF or WOFF2 font |
+| `403` | `feature_not_enabled` | Fonts are not enabled on this account |
+| `404` | `not_found` | The workspace or font does not exist or is not yours |
+| `409` | `font_limit_reached` | The workspace already holds 200 fonts. Remove one to upload another |
+| `413` | `file_too_large` | The file is over 5 MB |
+| `413` | `storage_limit_reached` | The account's storage allowance has no room left |
+
+## In the dashboard
+
+Uploaded fonts live under **Create**, in the font picker's **My Fonts** list, where a font can be added or removed.
+
+## Next
+
+<Cards>
+  <Card title="Designs" href="/api/designs" />
+  <Card title="Video Edits" href="/api/video-edits" />
+</Cards>

@@ -1,0 +1,146 @@
+---
+title: Video Edits
+description: Trim, cut, subtitle, reframe, and clip videos in the media library as background jobs.
+icon: layers
+---
+
+<Callout type="info">
+  Video edits are being rolled out and are available to accounts with access enabled. Without it,
+  every endpoint on this page answers `403` with `feature_not_enabled`.
+</Callout>
+
+A video edit takes a video from the [media library](/api/media), runs a list of operations on it in order, and saves the result back to the library as a new item. The source is never changed. Editing runs in the background, so you start a job and then read it until it finishes.
+
+Every endpoint here needs the `posts` scope. Operations that use AI also need `ai`; see [which ones](#operations).
+
+## Start an edit
+
+```http
+POST /v1/video-edits
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/video-edits \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: launch-teaser-1" \
+  -d '{
+    "media_id": "4e8b1f20-7c3a-4d59-a6e2-0b9f5c7d1a83",
+    "operations": [
+      { "op": "trim", "params": { "startSec": 2, "endSec": 32 } },
+      { "op": "reframe", "params": { "aspect": "9:16" } },
+      { "op": "subtitles", "params": { "style": "word_highlight", "position": "bottom" } }
+    ]
+  }'
+```
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `media_id` | uuid | Yes | The video to edit |
+| `operations` | object[] | Yes | 1 to 10 operations, run in order |
+| `operations[].op` | enum | Yes | The operation name, from the table below |
+| `operations[].params` | object | No | The operation's settings. Defaults apply to anything left out |
+| `workspace_id` | uuid | No | The workspace. Default the one that owns `media_id` |
+
+The source must be a video. The one exception is `audiogram`, which also takes an audio file when it is the only operation.
+
+It answers `201` with the job, already `queued`. Send an `Idempotency-Key` header to make a retry safe: a repeat of the same key answers the first job instead of starting a second one.
+
+## Read a job
+
+```http
+GET /v1/video-edits/{id}
+```
+
+```json
+{
+  "id": "c0f7a3e1-2b8d-4c69-9e14-5a6d3f2b7c08",
+  "status": "succeeded",
+  "progress": 100,
+  "source_media_id": "4e8b1f20-7c3a-4d59-a6e2-0b9f5c7d1a83",
+  "operations": [
+    { "op": "trim", "params": { "startSec": 2, "endSec": 32 } }
+  ],
+  "result_media_id": "7a2c9e40-1f6b-4d38-b5a7-3e0d8c1f9b26",
+  "result_media": {
+    "id": "7a2c9e40-1f6b-4d38-b5a7-3e0d8c1f9b26",
+    "preview_url": "https://api.fopost.com/v1/media/7a2c9e40-1f6b-4d38-b5a7-3e0d8c1f9b26/file",
+    "mime_type": "video/mp4"
+  },
+  "extra_outputs": [
+    { "media_id": "d18e…", "label": "Subtitles (SRT)", "mime": "text/plain", "preview_url": "…" }
+  ],
+  "result": { "cues": [], "language": "en" },
+  "error": null,
+  "created_at": "2026-11-20T09:12:00.000Z",
+  "updated_at": "2026-11-20T09:13:40.000Z",
+  "completed_at": "2026-11-20T09:13:40.000Z"
+}
+```
+
+`status` moves from `queued` to `running` to `succeeded` or `failed`, and `progress` counts from 0 to 100 on the way. Read the job every few seconds until it is done; long videos and AI operations take minutes, not seconds.
+
+On success, `result_media_id` is the edited video, a new library item you can attach to a post. `extra_outputs` holds anything else the job made, such as a subtitle file or each clip. `result` carries data from the operations, such as the subtitle cues or the clips chosen with their titles and times. On failure, `error` says why in a sentence.
+
+## List jobs
+
+```http
+GET /v1/video-edits?media_id=4e8b1f20-7c3a-4d59-a6e2-0b9f5c7d1a83
+```
+
+Newest first. Filter by `media_id` for the edits of one video, or pass `workspace_id` for the whole workspace; one of the two is required. `limit` defaults to 20, at most 100. Answers `{ "data": [ … ] }` with jobs in the shape above.
+
+## Operations
+
+```http
+GET /v1/video-edits/ops
+```
+
+Lists every operation with `name`, `available` and `uses_ai`. An operation that is not `available` cannot be started right now and answers `400` if you try, so read this list before offering a tool.
+
+Parameter names are in camelCase, as below. Times are seconds from the start of the video.
+
+| `op` | What it does | Main `params` |
+|:-----|:-------------|:--------------|
+| `trim` | Keep one span | `startSec`, `endSec` |
+| `cut` | Remove spans | `ranges`: up to 100 `{ startSec, endSec }` |
+| `speed` | Speed up or slow down | `factor`: 0.25 to 4 |
+| `merge` | Append other videos after this one | `mediaIds`: up to 20 library videos |
+| `volume` | Change or mute the audio | `level`: 0 to 2, default 1. `mute` |
+| `remove_silence` | Cut quiet stretches | `thresholdDb` (default -35), `minSilenceMs` (600), `paddingMs` (150) |
+| `denoise` | Reduce background noise | `strength`: `light`, `medium` or `strong` |
+| `subtitles` | Transcribe and add captions | `style` (`plain`, `word_highlight`), `position` (`top`, `middle`, `bottom`), `size` (`small`, `medium`, `large`), `burnIn` (default true), `language`, `fontFamily`, `brandVoiceId`, `textColor`, `highlightColor`, `keywordColor`, `keywords`, `cues` |
+| `translate_subtitles` | Subtitles in other languages | `targetLanguages`: up to 10. `sourceLanguage`, `burnIn` (default false), `cues` |
+| `clips` | Pick the strongest moments as short clips | `count` (1 to 10, default 3), `minSec` (15), `maxSec` (60), `aspect` (default `9:16`), `subtitles` (default true) |
+| `music` | Add a music bed | One of `mediaId` or `trackUrl`. `volume` (default 0.3), `duckUnderSpeech` (default true), `startSec`, `fadeInSec`, `fadeOutSec` |
+| `voiceover` | Add a spoken narration | `script`: up to 5,000 characters. `voiceId`, `subtitles` |
+| `watermark` | Place a logo in a corner | One of `logoMediaId` or `brandVoiceId`. `corner` (default `bottom-right`), `sizePct` (default 12), `opacity` (default 0.8) |
+| `cover` | Set the cover image | One of `atSec` or `imageMediaId`. `titleText` |
+| `reframe` | Change the aspect ratio | `aspect`: `9:16`, `1:1`, `4:5` or `16:9` |
+| `audiogram` | Turn audio into a video with a waveform | `aspect` (`1:1`, `9:16`, `16:9`), `backgroundColor`, `waveColor`, `imageMediaId`, `startSec`, `endSec`, `cues` |
+
+Colours are hex, like `#FFFFFF`. A subtitle cue is `{ startSec, endSec, text }` with optional per-word timings under `words`. Send your own `cues` to `subtitles`, `translate_subtitles` or `audiogram` to use a transcript you already have.
+
+`subtitles`, `translate_subtitles` and `clips` use AI and are billed as AI usage; `voiceover` also needs the `ai` scope. A job holding any of them needs `ai` on the key and checks the balance before it starts, answering `402` with `upgrade_url` when the balance cannot cover it. See [AI](/api/ai#running-out).
+
+## Errors
+
+| Status | `error` | When |
+|:-------|:--------|:-----|
+| `400` | `validation_error` | Bad params, an unknown or unavailable operation, more than 10 operations, or a source that is not a video. `details` names the field when params are wrong |
+| `402` | `insufficient_credits` | An AI operation with no balance to cover it |
+| `403` | `forbidden` | An AI operation with a key that lacks the `ai` scope |
+| `403` | `feature_not_enabled` | Video edits are not enabled on this account |
+| `404` | `not_found` | The video, a merged video, the workspace or the job does not exist or is not yours |
+
+## In the dashboard
+
+Every video in the media library has **Edit Video** (and audio files **Edit Audio**), which opens these same operations with a preview. Jobs started there show up in this list too.
+
+## Next
+
+<Cards>
+  <Card title="Media" href="/api/media" />
+  <Card title="Designs" href="/api/designs" />
+  <Card title="AI" href="/api/ai" />
+</Cards>

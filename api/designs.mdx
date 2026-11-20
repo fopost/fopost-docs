@@ -1,0 +1,371 @@
+---
+title: Designs
+description: Create, edit, version, export and review designs, and turn text or a post into one.
+icon: palette
+---
+
+<Callout type="info">
+  Designs are being rolled out and are available to accounts with access enabled. Without it, every
+  endpoint on this page answers `403` with `feature_not_enabled`.
+</Callout>
+
+A design is an image, a story, a carousel or a card, kept as an editable document in a workspace. You create and change it through the API, export its pages into the [media library](/api/media), and attach the exported files to a post like any other upload.
+
+Every endpoint here needs the `posts` scope. [Text to slides](#text-to-slides) also needs `ai`, because it is billed as AI usage. Members with read-only access can list and read designs but not change them.
+
+## The model
+
+A **design** has a `name`, a `kind` and a `document`. The kind is one of `story`, `post`, `carousel`, `thumbnail`, `card` or `collage`, and only labels the design: the size comes from the document.
+
+The **document** describes the canvas: its size, a background, and one or more pages, each holding layers. A page is one image in a carousel, one slide of a story, or the whole design when there is only one.
+
+Each save can also write a **version**, so earlier states can be listed and restored. Exporting renders pages into **media library** items, which is how a design reaches a post.
+
+## The document
+
+```json
+{
+  "width": 1080,
+  "height": 1080,
+  "background": { "type": "color", "color": "#ffffff" },
+  "pages": [
+    {
+      "id": "page-1",
+      "layers": [
+        {
+          "id": "headline",
+          "type": "text",
+          "x": 90,
+          "y": 420,
+          "width": 900,
+          "height": 240,
+          "content": "Spring sale starts Monday",
+          "fontFamily": "Geist",
+          "fontSize": 96,
+          "weight": 700,
+          "color": "#111111"
+        },
+        {
+          "id": "photo",
+          "type": "image",
+          "x": 0,
+          "y": 0,
+          "width": 1080,
+          "height": 400,
+          "mediaId": "5c1e2f80-9a3b-4d7e-8c21-6b0f4a9d3e57"
+        }
+      ]
+    }
+  ]
+}
+```
+
+The document is stored exactly as you send it, so its own field names stay in camelCase while the request fields around it are snake_case. Read a design back to see the full shape the dashboard writes.
+
+| Layer `type` | What it is |
+|:-------------|:-----------|
+| `text` | Text with a font, size, weight, colour, alignment, and an optional style and animation |
+| `image` | A media library item by `mediaId`, with optional crop, filters and corner radius |
+| `shape` | A rectangle, ellipse, line or triangle with a fill and stroke |
+| `sticker` | An emoji, GIF, sticker, logo or widget |
+| `drawing` | Freehand strokes |
+| `group` | Other layers under `children` |
+
+Every layer has an `id`, a position (`x`, `y`), a size (`width`, `height`), and optional `rotation`, `opacity`, `locked` and `hidden`. A background, on the document or on one page, is a solid `color`, a `gradient`, or a library item as `media`.
+
+`fontFamily` names a family from the [font library](/api/fonts) or one uploaded to the workspace. Every `mediaId` must be an item in the same workspace, or the request answers `400`.
+
+| Limit | Value |
+|:------|:------|
+| Pages | 20 |
+| Layers per page | 200 at the top level, 1,000 counting groups |
+| Group nesting | 8 deep |
+| Width and height | 16 to 4096 pixels |
+| Text per layer | 5,000 characters |
+
+## Create a design
+
+```http
+POST /v1/designs
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/designs \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+    "name": "Spring Sale",
+    "kind": "post",
+    "document": {
+      "width": 1080,
+      "height": 1080,
+      "pages": [{ "id": "page-1", "layers": [] }]
+    }
+  }'
+```
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `workspace_id` | uuid | Yes | Workspace the design belongs to |
+| `kind` | enum | Yes | `story`, `post`, `carousel`, `thumbnail`, `card` or `collage` |
+| `document` | object | Yes | The design document |
+| `name` | string | No | Up to 255 characters. Default `Untitled Design` |
+| `brand_voice_id` | uuid | No | The [brand](/guide/brand-voices) the design is made for |
+
+It answers `201` with the design:
+
+```json
+{
+  "data": {
+    "id": "e41a7c90-2d5b-4f86-a3c1-9b7e0d2f6a14",
+    "name": "Spring Sale",
+    "kind": "post",
+    "width": 1080,
+    "height": 1080,
+    "document": { "...": "..." },
+    "thumbnail_media_id": null,
+    "thumbnail_url": null,
+    "created_at": "2026-11-20T09:12:00.000Z",
+    "updated_at": "2026-11-20T09:12:00.000Z"
+  }
+}
+```
+
+A thumbnail of the first page is rendered in the background after a design is created and whenever a save writes a version, so `thumbnail_url` fills in on a later read.
+
+## List designs
+
+```http
+GET /v1/designs?workspace_id=7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90
+```
+
+Newest first, without their documents. Filter with `kind`, and page with `limit` (default 50, at most 100) and `offset`.
+
+## Get, update and delete
+
+```http
+GET /v1/designs/{id}
+PATCH /v1/designs/{id}
+DELETE /v1/designs/{id}
+```
+
+`PATCH` takes any of `name`, `kind` and `document`, plus `create_version`. It answers the updated design and the version it wrote, or `null` when it wrote none:
+
+```json
+{
+  "data": { "id": "e41a7c90-…", "name": "Spring Sale", "...": "..." },
+  "version": { "id": "0b8d…", "version": 4, "created_at": "2026-11-20T09:30:00.000Z" }
+}
+```
+
+`DELETE` answers `{ "data": { "id": "…", "deleted": true } }`.
+
+## Versions
+
+A save with `"create_version": true` always writes a version. Other saves write one every tenth save, so frequent autosaves keep a history without a row per keystroke.
+
+```http
+GET /v1/designs/{id}/versions
+```
+
+Lists up to 100 versions, newest first, each with `id`, `version` and `created_at`. Add `?include=document` to get each version's document too.
+
+```http
+POST /v1/designs/{id}/versions/{versionId}/restore
+```
+
+Puts that version's document back on the design and answers the design plus the version the restore wrote, so a restore can itself be undone.
+
+## Duplicate
+
+```http
+POST /v1/designs/{id}/duplicate
+```
+
+Copies the design into a new one in the same workspace and answers `201`. Send `name` to name the copy.
+
+## Export
+
+```http
+POST /v1/designs/{id}/export
+```
+
+```bash
+curl -X POST https://api.fopost.com/v1/designs/e41a7c90-2d5b-4f86-a3c1-9b7e0d2f6a14/export \
+  -H "X-API-Key: $FOPOST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "format": "png" }'
+```
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `format` | enum | Yes | `png`, `jpg`, `pdf`, `mp4` or `gif` |
+| `page_indexes` | integer[] | No | Zero-based pages to export. Default every page |
+| `duration_sec` | integer | No | `5`, `10` or `15`. Length of each page for `mp4` and `gif`. Default `5` |
+
+`png`, `jpg`, `mp4` and `gif` produce one file per page. `pdf` produces one file holding every page, which is the shape a LinkedIn document carousel wants. `mp4` and `gif` play the text animations and any video background.
+
+```json
+{
+  "data": {
+    "format": "png",
+    "files": [
+      {
+        "media_id": "9f3c2a71-…",
+        "page_index": 0,
+        "mime_type": "image/png",
+        "preview_url": "https://api.fopost.com/v1/media/9f3c2a71-…/file"
+      }
+    ]
+  }
+}
+```
+
+Each file is a new media library item and counts against storage like any upload. Pass its `media_id` where a post takes media. One export runs per workspace at a time: a second one while the first is still rendering answers `429` with `busy`, so wait and send it again.
+
+## Posts that used a design
+
+```http
+GET /v1/designs/{id}/posts
+```
+
+Up to 100 posts that carry any file exported from this design, newest first, each with `id`, `status`, `title`, the start of its `text`, `schedule_at`, `published_at`, the `platforms` it went to, and `engagement` and `views` once they are measured.
+
+## Many from one
+
+```http
+POST /v1/designs/{id}/bulk
+```
+
+Makes one copy of a design per row, with each row's values filled into the layers it names. Use it for a set of quote cards, product tiles or event posters from one layout.
+
+```json
+{
+  "rows": [
+    { "headline": "Spring sale starts Monday", "photo": "5c1e2f80-9a3b-4d7e-8c21-6b0f4a9d3e57", "label": "Monday" },
+    { "headline": "Free shipping all week", "photo": "b2d47e19-0c6a-4f38-9e15-7a3c8d1f2b60", "label": "Shipping" }
+  ],
+  "name_column": "label"
+}
+```
+
+A key matches a layer by its `id` or its `name`. On a text layer the value becomes the text; on an image layer it is a media library id. Keys that match no layer are ignored. `name_column` names the key whose value becomes each new design's name; without it the copies are numbered.
+
+Up to 50 rows per request. It answers `201` with the new designs, which keep the original's kind and brand.
+
+## From a post
+
+```http
+POST /v1/designs/from-post
+```
+
+Lays out a post's text as an image, or as a carousel when the text is long. No AI is involved, so it needs no `ai` scope and costs nothing.
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `workspace_id` | uuid | Yes | Workspace to create the design in |
+| `text` | string | One of `text` or `post_id` | Up to 5,000 characters |
+| `post_id` | uuid | One of `text` or `post_id` | Use the text of a post in the workspace |
+| `style` | enum | No | `quote`, `post` or `plain`. Default `quote` |
+| `preset` | string | No | Size for a single image: `square`, `portrait`, `story`, `landscape`, `linkedin`, `youtube-thumbnail` |
+| `carousel` | boolean | No | Force a carousel or a single image. Default: a carousel when the text runs past 420 characters |
+| `account_id` | uuid | No | Show this connected account's name and handle as the author |
+| `name` | string | No | Name of the new design |
+| `brand_voice_id` | uuid | No | Brand whose colours and fonts to use. Default the workspace's default brand |
+
+It answers `201` with the new design.
+
+## Text to slides
+
+```http
+POST /v1/designs/text-to-slides
+```
+
+Splits long text into a carousel outline: a cover, one point per slide, and a closing call to action, written in the brand's voice. It returns the content, not a design, so you can review it and then lay it out with [Create a design](#create-a-design).
+
+```json
+{
+  "workspace_id": "7d2b8c11-4e5a-4a8f-b0d9-3c5e6f7a8b90",
+  "text": "Our full notes from launch week…",
+  "max_slides": 6
+}
+```
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `workspace_id` | uuid | Yes | Workspace whose brand to use |
+| `text` | string | One of `text` or `post_id` | Up to 20,000 characters |
+| `post_id` | uuid | One of `text` or `post_id` | Use the text of a post in the workspace |
+| `max_slides` | integer | No | 2 to 18 content slides. Default 8 |
+| `brand_voice_id` | uuid | No | Brand to write for. Default the workspace's default brand |
+
+```json
+{
+  "data": {
+    "cover": { "title": "Five things launch week taught us", "subtitle": "Notes from yourbrand.com" },
+    "slides": [
+      { "heading": "Ship the smallest version", "body": "We cut scope twice and still launched on time." }
+    ],
+    "cta": { "heading": "Read the full notes", "body": "Find them on yourbrand.com/blog." },
+    "brand": {
+      "colors": ["#111111", "#f5c518"],
+      "fonts": { "heading": "Geist", "body": "Geist" },
+      "logo_media_id": "c7a90e14-…"
+    }
+  }
+}
+```
+
+It is billed as AI usage, once per successful answer. When the balance cannot cover it, it answers `402` with `upgrade_url`; see [AI](/api/ai#running-out).
+
+## Review
+
+A design can go through approval before it is posted. Any member who can edit asks for a review; a workspace owner or admin approves it or asks for changes. Comments can be pinned to a spot on a page.
+
+```http
+GET /v1/designs/{id}/review
+POST /v1/designs/{id}/review/request
+POST /v1/designs/{id}/review/decision
+```
+
+`GET` answers the latest `review` (with its `status`: `pending`, `approved` or `changes_requested`, who asked and who decided), the `comments`, the live review `links`, and `can_approve` for the caller. A decision takes `{ "decision": "approved" }` or `{ "decision": "changes_requested" }` and answers `403` for anyone but an owner or admin.
+
+```http
+GET /v1/designs/{id}/comments
+POST /v1/designs/{id}/comments
+PATCH /v1/designs/{id}/comments/{commentId}
+DELETE /v1/designs/{id}/comments/{commentId}
+```
+
+A comment takes `body` (up to 2,000 characters), `page_index` (default `0`), optional `x` and `y` as fractions of the page from `0` to `1` to pin it, and an optional `parent_id` to reply. `PATCH` takes `{ "resolved": true }` or `false`. Only the author, an owner or an admin can delete one.
+
+```http
+POST /v1/designs/{id}/review-links
+DELETE /v1/designs/{id}/review-links/{linkId}
+```
+
+A review link lets someone outside the workspace view the design, comment and decide without an account. Send `expires_in_days` (1 to 90, default 14). The response carries the `url` to share; it is shown once, so keep it. Deleting the link revokes it at once.
+
+## Errors
+
+| Status | `error` | When |
+|:-------|:--------|:-----|
+| `400` | `validation_error` | The body or the document is invalid, or names media or a brand outside the workspace |
+| `402` | `insufficient_credits` | Text to slides with no balance to cover it |
+| `403` | `feature_not_enabled` | Designs are not enabled on this account |
+| `404` | `not_found` | The design, workspace or post does not exist or is not yours |
+| `429` | `busy` | Another export is still running in this workspace |
+
+## In the dashboard
+
+Designs are made under **Create** in the dashboard, with templates, the brand kit, and a page editor. Everything there is saved through these endpoints, so a design made in the dashboard can be read, exported and bulk-copied through the API, and the other way round.
+
+## Next
+
+<Cards>
+  <Card title="Fonts" href="/api/fonts" />
+  <Card title="Video Edits" href="/api/video-edits" />
+  <Card title="Media" href="/api/media" />
+  <Card title="Publishing" href="/api/publishing" />
+</Cards>
