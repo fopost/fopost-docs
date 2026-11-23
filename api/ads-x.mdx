@@ -21,9 +21,7 @@ X Ads runs on the same `/v1/ads` endpoints every network does: you name a `conne
 | Audiences | Customer lists only |
 | Targeting search | Interests and locations |
 | Insights and timeline | Yes |
-| Creatives as their own object | No |
 | Lead forms | No |
-| Duplicate an object | No |
 
 An X line item is what the shared shapes call an ad set, and a promoted post is what they call an ad.
 
@@ -35,12 +33,6 @@ X charges per API call from a pay-per-use balance, the same way its organic read
 - **The API call** is metered to your workspace as it happens and appears on your invoice as `X Ads API reads` and `X Ads API writes`, priced like the organic X calls.
 
 Two consequences worth designing for. A workspace with no balance left is refused before the request goes out, with a message saying the balance has run out, so a script cannot quietly spend nothing and read nothing. And when X's own developer balance is spent, X answers `402` and FoPost surfaces that as a stored error on the connection rather than an empty result, so an empty list always means empty and never means unpaid.
-
-Because reads cost money, prefer the campaign tree over walking the levels separately:
-
-```http
-GET /v1/ads/accounts/{adAccountId}/tree
-```
 
 ## Ad accounts, not Pages
 
@@ -54,7 +46,7 @@ An ad account needs a funding instrument before a campaign can be created; witho
 
 ## The post is the creative
 
-There is no creative object. A promoted post names a post that is already published, so the chain is campaign, line item, promoted post. `POST /v1/ads` with its own text and image is refused: publish the post first and boost it.
+A promoted post names a post that is already published, so a boost creates a campaign, a line item and a promoted post. `POST /v1/ads` with its own text and image is refused: publish the post first and boost it.
 
 ```bash
 curl -X POST https://api.fopost.com/v1/ads/boost \
@@ -86,7 +78,7 @@ X will not create a campaign without a budget, so FoPost always sends one and th
 
 ## Targeting
 
-Targeting on X is its own resource: FoPost turns the shared targeting shape into targeting criteria and attaches them to the line item in one batch. Countries and location keys, interests, custom audiences, gender and age buckets all map across. Updating an ad set's `targeting` replaces the criteria.
+Targeting on X is its own resource: FoPost turns the shared targeting shape into targeting criteria and attaches them to the line item in one batch. Countries and location keys, interests, custom audiences, gender and age buckets all map across.
 
 ```http
 GET /v1/ads/targeting/search?type=interest&q=
@@ -97,7 +89,7 @@ POST /v1/ads/reach-estimate
 
 ## Pausing a promoted post
 
-A promoted post cannot be edited on X, and pausing one is the same action as removing it from its line item. So `PATCH` on a promoted post accepts only a status, `PAUSED` detaches it, and there is no way to resume it: promote the post again. Pausing the line item above it is usually what you want, and that is reversible.
+A promoted post cannot be edited on X, and pausing one is the same action as removing it from its line item. So pausing a promoted post detaches it, and there is no way to resume it: promote the post again. Pausing the line item above it with `POST /v1/ads/status` is usually what you want, and that is reversible.
 
 ## Audiences
 

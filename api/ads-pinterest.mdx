@@ -21,9 +21,7 @@ Pinterest Ads runs on the same `/v1/ads` endpoints every network does: you name 
 | Audiences | Customer lists only |
 | Targeting search | Interests and locations |
 | Insights and timeline | Yes |
-| Creatives as their own object | No |
 | Lead forms | No |
-| Duplicate an object | No |
 
 `GET /v1/ads/providers` returns the same list as `capabilities`, so a client can hide what a network cannot do rather than discovering it from a `400`.
 
@@ -47,7 +45,7 @@ Ad account ids are numeric, and so are campaign, ad group and ad ids.
 
 ## The Pin is the creative
 
-There is no creative object to create and reuse. An ad names a Pin that is already published, so the chain is campaign, ad group, ad:
+An ad names a Pin that is already published, so a boost creates a campaign, an ad group and an ad:
 
 ```bash
 curl -X POST https://api.fopost.com/v1/ads/boost \
@@ -110,7 +108,7 @@ Totals and, with `daily=true`, a day by day timeline. Pinterest reports no uniqu
 
 ## Stopping and deleting
 
-Pinterest has no delete. `DELETE` on a campaign, ad group or ad archives it, which stops it for good and keeps its history readable. `PATCH` with a status pauses and resumes as usual.
+Pinterest has no delete. `DELETE /v1/ads/{id}` archives the campaign behind the ad, which stops it for good and keeps its history readable. `PATCH` with a status pauses and resumes as usual.
 
 ## Errors
 
