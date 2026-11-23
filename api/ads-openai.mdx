@@ -17,7 +17,6 @@ OpenAI Ads runs on the same `/v1/ads` endpoints every network does: you name a `
 | Capability | OpenAI |
 |:-----------|:-------|
 | Campaigns, ad groups, ads | Yes |
-| Creatives | Inline on the ad |
 | Measurement pixel | Yes |
 | Conversion events | Yes |
 | Boost a published post | No |
@@ -37,11 +36,11 @@ Ids are prefixed: `adacct_…` for the ad account, `cmpn_…`, `adgrp_…` and `
 
 ## Budgets are lifetime only
 
-There is no daily budget. `budget.type` must be `lifetime`; `daily` answers `400`. The budget lives on the campaign as a lifetime spend limit and has to be at least one whole currency unit. The ad group carries a maximum bid rather than a budget, so patching an ad set's `budgetMinor` moves that bid, and patching its `endAt` moves the campaign's end time, which is where scheduling lives.
+There is no daily budget. `budget.type` must be `lifetime`; `daily` answers `400`. The budget lives on the campaign as a lifetime spend limit and has to be at least one whole currency unit. The ad group carries a maximum bid rather than a budget, and takes the same amount as its ceiling. `budget.endAt` sets the campaign's end time, which is where scheduling lives.
 
 ## The creative is inline
 
-An ad is a chat card: a title, a body, an image and a destination URL, rendered inside a conversation. There is no creative object to reuse, so `POST /v1/ads` carries the card and FoPost sends it with the ad.
+An ad is a chat card: a title, a body, an image and a destination URL, rendered inside a conversation. `POST /v1/ads` carries the card and FoPost sends it with the ad.
 
 ```bash
 curl -X POST https://api.fopost.com/v1/ads \
@@ -67,11 +66,11 @@ Every ad comes back with a review state of its own. An ad that reads `rejected` 
 
 ## Targeting is on the campaign
 
-Locations and custom audiences are set on the campaign, not the ad group, so patching an ad set's `targeting` answers `400` with `error: "unsupported"`. There is no targeting search and no reach estimate.
+Locations and custom audiences are set on the campaign, not the ad group. There is no targeting search and no reach estimate.
 
 ## Nothing is deletable
 
-`DELETE` on a campaign, ad group or ad archives it. Archiving cannot be undone, so archive only what you have no further use for; pause with `PATCH` when you may want it back.
+`DELETE /v1/ads/{id}` archives the campaign behind the ad, with its ad group and ad. Archiving cannot be undone, so archive only what you have no further use for; pause with `PATCH` when you may want it back.
 
 ## Measurement
 

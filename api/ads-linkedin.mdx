@@ -4,7 +4,7 @@ description: Run LinkedIn campaigns, B2B audiences, forecasts, conversions and l
 icon: megaphone
 ---
 
-LinkedIn is a second ad network behind the same `/v1/ads` endpoints as [Meta](/api/ads). Everything on that page works here: the campaign tree, creatives, audiences, insights, lead forms. This page covers what is different, plus the endpoints only a business-to-business network answers: forecasts, conversion rules and the public ad library.
+LinkedIn is a second ad network behind the same `/v1/ads` endpoints as [Meta](/api/ads). Everything on that page works here: boosts, ads, audiences, insights, lead forms. This page covers what is different, plus the endpoints only a business-to-business network answers: forecasts and conversion rules.
 
 LinkedIn Ads has to be set up on the deployment you are calling. Until it is, `GET /v1/ads/providers` reports LinkedIn with `configured: false` and connecting answers `503`, so read that flag rather than assuming the network is there.
 
@@ -25,7 +25,6 @@ Each network reports what it supports, so you never have to hard-code it:
   "capabilities": {
     "campaigns": true,
     "boost": true,
-    "creatives": true,
     "audiences": true,
     "targetingSearch": true,
     "insights": true,
@@ -33,9 +32,7 @@ Each network reports what it supports, so you never have to hard-code it:
     "pixels": true,
     "externalAds": true,
     "conversions": true,
-    "forecasts": true,
-    "adLibrary": true,
-    "catalogs": false
+    "forecasts": true
   },
   "targetingFacets": ["country", "industry", "job_title", "seniority"],
   "trackingMacros": [
@@ -65,22 +62,19 @@ Meta addresses objects with numbers and `act_…`; LinkedIn uses URNs, and FoPos
 | Campaign | `urn:li:sponsoredCampaignGroup:123` |
 | Ad set | `urn:li:sponsoredCampaign:123` |
 | Ad | `urn:li:sponsoredCreative:123` |
-| Creative | `urn:li:share:123` |
 | Audience | `urn:li:adSegment:123` |
 | Lead form | `urn:li:leadGenForm:123` |
 | Conversion rule | `urn:li:conversion:123` |
 
-LinkedIn's own tree is campaign group → campaign → creative. FoPost maps that onto the campaign → ad set → ad it uses everywhere else, so `/v1/ads/campaigns`, `/v1/ads/ad-sets`, `/v1/ads/ads`, `/duplicate`, `/v1/ads/status` and `/v1/ads/accounts/{id}/tree` behave exactly as they do on Meta. Read an id from a listing and pass it back as-is.
+LinkedIn's own tree is campaign group → campaign → creative. FoPost maps that onto the campaign → ad set → ad it uses everywhere else, so `/v1/ads/status` behaves exactly as it does on Meta. Read an id from a listing and pass it back as-is.
 
-## Creatives
+## Ads
 
-`format` is `image` or `video`. A LinkedIn creative is the post the ad points at, so creating one publishes a post that is visible only as an ad and never appears in the organization's feed; `POST /v1/ads/ads` then puts it in an ad set. Carousels are not supported and answer `400` with `error: "unsupported"`.
-
-Boosting works the same way as on Meta, for a LinkedIn post FoPost already published.
+A LinkedIn ad points at a post. `POST /v1/ads` publishes one that is visible only as an ad and never appears in the organization's feed. Boosting works the same way as on Meta, for a LinkedIn post FoPost already published.
 
 ### Tracking parameters
 
-`urlTags` is appended to the creative's destination, and LinkedIn expands its own macros at delivery:
+`urlTags` is appended to the ad's destination, and LinkedIn expands its own macros at delivery:
 
 | Macro | Value |
 |:------|:------|
@@ -240,16 +234,6 @@ curl -X POST "https://api.fopost.com/v1/ads/linkedin/conversion-rules/urn:li:con
 
 `happenedAt` is epoch milliseconds. `eventId` is your own id, so sending the same event twice is counted once. The address is hashed inside the API: the network never receives it, and FoPost stores nothing about an event. The answer is `{ "data": { "accepted": n } }`.
 
-## Ad library
-
-```http
-GET /v1/ads/library?connection_id=&countries=&q=&page_ids=&limit=&after=
-```
-
-The same endpoint [Meta](/api/ads) serves: it searches the ads the network publishes for everyone, not the ads on your account. `countries` is required, a comma-separated list of two-letter codes. `q` searches the ad copy and the advertiser name, and `page_ids` narrows to named advertisers.
-
-Each entry carries the advertiser, the creative bodies and titles, the dates it ran and a `snapshotUrl` into the library. LinkedIn's library discloses an impression band rather than spend, so the spend and impression range fields come back null. Pass `nextCursor` back as `after` for the next page. Available wherever `capabilities.adLibrary` is true.
-
 ## Lead forms
 
 Lead gen forms belong to an organization, so `pageId` is a `urn:li:organization:…`. Creating, reading, listing leads and archiving all work as on Meta.
@@ -258,7 +242,7 @@ The leads feed (`POST /v1/ads/lead-pages`) is webhook-driven and LinkedIn has no
 
 ## Errors
 
-A `400` with `error: "unsupported"` means the network cannot do what was asked: a carousel creative, a lookalike audience, a targeting type it does not serve. A `422` means the network refused the request and `message` carries its reason. A `503` with `error: "not_configured"` means the Advertising API product is not approved on this deployment yet.
+A `400` with `error: "unsupported"` means the network cannot do what was asked: a lookalike audience, a targeting type it does not serve. A `422` means the network refused the request and `message` carries its reason. A `503` with `error: "not_configured"` means the Advertising API product is not approved on this deployment yet.
 
 ## Next
 
